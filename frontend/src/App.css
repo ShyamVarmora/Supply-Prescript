@@ -1,0 +1,42 @@
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px;
+  background: #f5f7fa;
+  font-family: Arial, sans-serif;
+}
+
+.app-header {
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.app-header p {
+  margin: 0;
+  color: #666;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  padding: 24px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.section h2 {
+  margin: 0;
+  font-size: 20px;
+}

@@ -1,28 +1,22 @@
 # Supply Prescript — Requirement Checklist
 
-## Predictive Model
-- [ ] XGBoost / LightGBM predicts disruption probability and duration.
-- [ ] Historical supply-chain data is used.
+## Week 1 — Predictive Baseline
 
-## Prescriptive Solver
-- [ ] SciPy / PuLP optimization is implemented.
-- [ ] Budget constraint is enforced.
-- [ ] Time constraint is considered.
-- [ ] Capacity constraint is considered.
-- [ ] Three best alternative actions are generated.
+### Predictive Model
 
-## Operational UI
-- [ ] React/Retool application exists.
-- [ ] Recommendations are displayed.
-- [ ] Cost vs Speed trade-offs are shown.
-- [ ] User can execute a decision.
+- [ ] XGBoost baseline model is implemented.
+- [ ] Historical mock supply-chain data is used.
+- [ ] Shipment-delay prediction is produced.
+- [ ] Model evaluation result is recorded.
+- [ ] No fabricated performance numbers are reported.
 
-## Write-Back
-- [ ] Decision is inserted into the operational database.
+### App Scaffolding
 
-## Closed Loop
-- [ ] Predicted cost is compared with actual outcome.
-- [ ] Decision ROI is shown.
+- [ ] React application is implemented.
+- [ ] Main Supply Prescript screen loads.
+- [ ] Required Week 1 UI foundation exists.
+- [ ] PostgreSQL or Snowflake connection is configured.
+- [ ] Actual database connectivity is verified when the database is available.- [ ] Decision ROI is shown.
 
 ## Continuous Learning
 - [ ] Discrepancies trigger XGBoost retraining.

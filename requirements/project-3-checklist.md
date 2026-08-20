@@ -16,10 +16,4 @@
 - [ ] Main Supply Prescript screen loads.
 - [ ] Required Week 1 UI foundation exists.
 - [ ] PostgreSQL or Snowflake connection is configured.
-- [ ] Actual database connectivity is verified when the database is available.- [ ] Decision ROI is shown.
-
-## Continuous Learning
-- [ ] Discrepancies trigger XGBoost retraining.
-
-## Final Workflow
-- [ ] Analyst can actively participate in the decision workflow.
+- [ ] Actual database connectivity is verified when the database is available.

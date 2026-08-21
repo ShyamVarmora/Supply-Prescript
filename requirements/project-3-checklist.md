@@ -77,3 +77,25 @@
 
 - [ ] No fabricated performance numbers are reported.
 - [ ] Requirements are marked PASS only after actual implementation evidence is available.
+      ---
+
+# Week 2
+
+## Mathematical Optimization
+
+- [ ] Business constraints are defined.
+- [ ] SciPy linear-programming solver is implemented.
+- [ ] Three alternative actions are generated.
+
+## Prescriptive UI
+
+- [ ] Three prescription cards are displayed.
+- [ ] Cost is displayed.
+- [ ] Speed/time is displayed.
+- [ ] Cost-vs-speed trade-off is displayed.
+
+## Mid-Project Validation
+
+- [ ] Hard budget constraint is verified.
+- [ ] Execute Decision is tested.
+- [ ] Database INSERT is verified.

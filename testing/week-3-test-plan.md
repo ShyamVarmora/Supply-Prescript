@@ -7,6 +7,7 @@ This document defines the QA checks for the Week 3 closed-loop evaluation and De
 The checks are based directly on the Week 3 project requirements.
 
 No test is marked as PASS until supporting implementation evidence is available.
+
 No fabricated evaluation results or ROI percentages will be reported.
 
 ---
@@ -24,17 +25,15 @@ No fabricated evaluation results or ROI percentages will be reported.
 ### Evaluation Flow
 
 ```text
-Recorded Decision
-       ↓
+Decision
+    ↓
 Predicted Cost
-       ↓
-Actual Historical Outcome
-       ↓
-Predicted vs Actual Comparison
-       ↓
-Difference / Discrepancy
-       ↓
+    ↓
+Actual Cost
+    ↓
 Closed-Loop Evaluation
+```
+
 ## 2. Decision ROI
 
 - [ ] Decision ROI is calculated from real evaluated decisions.
@@ -70,3 +69,47 @@ Closed-Loop Evaluation
 - [ ] Multiple evaluated decisions are counted.
 - [ ] Positive outcomes are counted.
 - [ ] Decision ROI is calculated from real results.
+
+---
+
+## 4. Evidence Rules
+
+A test must not be marked PASS without supporting implementation evidence.
+
+Acceptable evidence may include:
+
+- Evaluation script output
+- Implementation code
+- Pull request
+- API response
+- Database record
+- Analytics UI screenshot
+- Actual historical outcome data
+
+No fabricated cost, outcome, evaluation result, or ROI percentage should be reported.
+
+---
+
+## 5. Current Status
+
+| Requirement | Status |
+|---|---|
+| Recorded decision identification | Pending |
+| Predicted cost availability | Pending |
+| Actual historical outcome | Pending |
+| Predicted vs actual comparison | Pending |
+| Discrepancy calculation | Pending |
+| Evaluation persistence/retrieval | Pending |
+| Decision ROI calculation | Pending |
+| Positive outcomes count | Pending |
+| Total evaluated decisions count | Pending |
+| ROI displayed in analytics UI | Pending |
+| Empty state | Pending |
+
+---
+
+## 6. QA Conclusion
+
+Week 3 validation remains pending until the closed-loop evaluation implementation and Decision ROI UI provide actual supporting evidence.
+
+No unverified test results or fabricated ROI values will be reported.

@@ -138,8 +138,7 @@ button {
   color: #111827;
 }
 
-/* Cost vs Speed */
-
+/* Cost vs speed */
 .tradeoff {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -346,9 +345,7 @@ button {
   line-height: 1.5;
   text-align: center;
 }
-
 /* Backend */
-
 .backend-status {
   display: flex;
   gap: 8px;
@@ -374,7 +371,6 @@ button {
 }
 
 /* Responsive */
-
 @media (max-width: 1000px) {
   .roi-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -418,6 +414,10 @@ button {
   }
 
   .app-header h1 {
+    font-size: 26px;
+  }
+}
+.app-header h1 {
     font-size: 26px;
   }
 }

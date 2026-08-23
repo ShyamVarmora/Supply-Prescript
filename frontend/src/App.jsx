@@ -94,7 +94,7 @@ function App() {
                   <span className="option-label">
                     {recommendation.option}
                   </span>
-
+                  <span className="option-label">{recommendation.option}</span>
                   {selectedRecommendation?.id === recommendation.id && (
                     <span className="selected-badge">Selected</span>
                   )}
@@ -159,6 +159,12 @@ function App() {
                 className="execute-button"
                 disabled
               >
+                <span className="decision-label">Selected Recommendation</span>
+                <h3>{selectedRecommendation.action}</h3>
+                <p>{selectedRecommendation.reason}</p>
+              </div>
+
+              <button type="button" className="execute-button" disabled>
                 Execute Decision
               </button>
 
@@ -252,17 +258,24 @@ function App() {
 
         {/* Backend Connection */}
         <section className="section">
+          <h2>Feedback</h2>
+          <p className="section-description">
+            Feedback capture will be connected to the backend in a later
+            integration stage.
+          </p>
+        </section>
+        <section className="section">
           <h2>Backend Connection</h2>
 
           <div className="backend-status">
             <span>Status</span>
             <strong>{backendStatus}</strong>
           </div>
-
           <button
             type="button"
             onClick={testBackendConnection}
           >
+          <button type="button" onClick={testBackendConnection}>
             Test Backend Connection
           </button>
         </section>

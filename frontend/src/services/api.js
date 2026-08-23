@@ -16,3 +16,10 @@ export async function checkBackendHealth() {
     );
   }
 }
+
+// Pending backend integration.
+// The actual evaluation endpoint will be added
+// once the backend evaluation API is available.
+export async function getDecisionROI() {
+  throw new Error("Decision ROI endpoint is not available yet");
+}

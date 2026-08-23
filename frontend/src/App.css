@@ -138,7 +138,7 @@ button {
   color: #111827;
 }
 
-/* Cost vs speed */
+/* Cost vs Speed */
 
 .tradeoff {
   display: grid;
@@ -267,6 +267,86 @@ button {
   font-size: 13px;
 }
 
+/* Feedback / Decision ROI */
+
+.roi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.roi-card {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.roi-card > span {
+  display: block;
+  margin-bottom: 10px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.roi-card strong {
+  display: block;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.roi-card p {
+  margin: 10px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Evaluation History */
+
+.evaluation-history {
+  margin-top: 24px;
+}
+
+.evaluation-history h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.evaluation-table {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.evaluation-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.evaluation-header {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.evaluation-empty {
+  padding: 24px 16px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 /* Backend */
 
 .backend-status {
@@ -295,6 +375,12 @@ button {
 
 /* Responsive */
 
+@media (max-width: 1000px) {
+  .roi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .recommendation-grid {
     grid-template-columns: 1fr;
@@ -316,6 +402,19 @@ button {
 
   .tradeoff {
     grid-template-columns: 1fr;
+  }
+
+  .roi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evaluation-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .evaluation-header {
+    display: none;
   }
 
   .app-header h1 {

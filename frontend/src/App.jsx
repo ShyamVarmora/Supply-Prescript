@@ -61,6 +61,7 @@ function App() {
       </header>
 
       <main className="app-content">
+        {/* Shipment Risk */}
         <section className="section">
           <h2>Shipment Risk</h2>
           <p className="section-description">
@@ -68,6 +69,7 @@ function App() {
           </p>
         </section>
 
+        {/* Recommendations */}
         <section className="section">
           <div className="section-heading">
             <div>
@@ -89,7 +91,9 @@ function App() {
                 }`}
               >
                 <div className="card-header">
-                  <span className="option-label">{recommendation.option}</span>
+                  <span className="option-label">
+                    {recommendation.option}
+                  </span>
 
                   {selectedRecommendation?.id === recommendation.id && (
                     <span className="selected-badge">Selected</span>
@@ -134,18 +138,27 @@ function App() {
           </p>
         </section>
 
+        {/* Decision */}
         <section className="section">
           <h2>Decision</h2>
 
           {selectedRecommendation ? (
             <div className="decision-panel">
               <div>
-                <span className="decision-label">Selected Recommendation</span>
+                <span className="decision-label">
+                  Selected Recommendation
+                </span>
+
                 <h3>{selectedRecommendation.action}</h3>
+
                 <p>{selectedRecommendation.reason}</p>
               </div>
 
-              <button type="button" className="execute-button" disabled>
+              <button
+                type="button"
+                className="execute-button"
+                disabled
+              >
                 Execute Decision
               </button>
 
@@ -161,14 +174,83 @@ function App() {
           )}
         </section>
 
+        {/* Feedback / Decision ROI */}
         <section className="section">
-          <h2>Feedback</h2>
-          <p className="section-description">
-            Feedback capture will be connected to the backend in a later
-            integration stage.
-          </p>
+          <div className="section-heading">
+            <div>
+              <h2>Feedback / Decision ROI</h2>
+
+              <p className="section-description">
+                Decision performance and outcome analytics will be provided by
+                the backend evaluation data.
+              </p>
+            </div>
+          </div>
+
+          <div className="roi-grid">
+            <article className="roi-card">
+              <span>Decision ROI</span>
+
+              <strong>No evaluation data available yet</strong>
+
+              <p>
+                ROI will be calculated from evaluated decisions.
+              </p>
+            </article>
+
+            <article className="roi-card">
+              <span>Positive Outcomes</span>
+
+              <strong>No evaluation data available yet</strong>
+
+              <p>
+                Outcome results will appear after decisions are evaluated.
+              </p>
+            </article>
+
+            <article className="roi-card">
+              <span>Evaluated Decisions</span>
+
+              <strong>No evaluation data available yet</strong>
+
+              <p>
+                Evaluation counts will be provided by the backend.
+              </p>
+            </article>
+
+            <article className="roi-card">
+              <span>Predicted Cost vs Actual Cost</span>
+
+              <strong>No evaluation data available yet</strong>
+
+              <p>
+                Cost comparison will appear once predicted and actual costs
+                are available.
+              </p>
+            </article>
+          </div>
+
+          {/* Evaluation History */}
+          <div className="evaluation-history">
+            <h3>Evaluation History</h3>
+
+            <div className="evaluation-table">
+              <div className="evaluation-row evaluation-header">
+                <span>Decision</span>
+                <span>Predicted Cost</span>
+                <span>Actual Cost</span>
+                <span>Outcome</span>
+              </div>
+
+              <div className="evaluation-empty">
+                Evaluation results will appear after operational decisions
+                have been recorded and actual outcomes are available.
+              </div>
+            </div>
+          </div>
         </section>
 
+        {/* Backend Connection */}
         <section className="section">
           <h2>Backend Connection</h2>
 
@@ -177,7 +259,10 @@ function App() {
             <strong>{backendStatus}</strong>
           </div>
 
-          <button type="button" onClick={testBackendConnection}>
+          <button
+            type="button"
+            onClick={testBackendConnection}
+          >
             Test Backend Connection
           </button>
         </section>

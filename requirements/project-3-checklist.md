@@ -99,3 +99,18 @@
 - [ ] Hard budget constraint is verified.
 - [ ] Execute Decision is tested.
 - [ ] Database INSERT is verified.
+      
+# Week 3
+
+## Closed Loop
+
+- [ ] Evaluation script implemented.
+- [ ] Predicted cost is compared with actual historical outcome.
+- [ ] Actual outcome is captured.
+- [ ] Discrepancy is calculated.
+
+## Decision ROI
+
+- [ ] Decision ROI is calculated.
+- [ ] Positive business outcomes are tracked.
+- [ ] Decision ROI is displayed in the analytics UI.

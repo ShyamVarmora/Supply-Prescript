@@ -35,3 +35,38 @@ Predicted vs Actual Comparison
 Difference / Discrepancy
        ↓
 Closed-Loop Evaluation
+## 2. Decision ROI
+
+- [ ] Decision ROI is calculated from real evaluated decisions.
+- [ ] Positive business outcomes are tracked.
+- [ ] Total evaluated decisions can be counted.
+- [ ] ROI is displayed in the analytics UI.
+- [ ] No fabricated ROI percentage is displayed.
+- [ ] Empty state is shown when evaluation data is unavailable.
+
+## 3. Evaluation Scenarios
+
+### Scenario 1 — Positive Outcome
+
+- [ ] Recorded decision exists.
+- [ ] Predicted cost exists.
+- [ ] Actual cost exists.
+- [ ] Evaluation identifies the outcome correctly.
+
+### Scenario 2 — Negative Outcome
+
+- [ ] Predicted and actual results differ.
+- [ ] Discrepancy is detected.
+
+### Scenario 3 — Missing Outcome
+
+- [ ] Decision exists.
+- [ ] Actual outcome is unavailable.
+- [ ] Evaluation remains pending.
+- [ ] ROI is not calculated from incomplete data.
+
+### Scenario 4 — Multiple Decisions
+
+- [ ] Multiple evaluated decisions are counted.
+- [ ] Positive outcomes are counted.
+- [ ] Decision ROI is calculated from real results.

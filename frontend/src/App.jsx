@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { checkBackendHealth } from "./services/api";
+import { checkBackendHealth, getDecisionROI } from "./services/api";
 import "./App.css";
 
 const recommendations = [
@@ -32,6 +32,9 @@ const recommendations = [
 function App() {
   const [backendStatus, setBackendStatus] = useState("Not checked");
   const [selectedRecommendation, setSelectedRecommendation] = useState(null);
+  const [roiStatus, setRoiStatus] = useState(
+    "No evaluation data available yet"
+  );
 
   const testBackendConnection = async () => {
     setBackendStatus("Checking...");
@@ -53,6 +56,20 @@ function App() {
     setSelectedRecommendation(recommendation);
   };
 
+  const loadDecisionROI = async () => {
+    try {
+      const result = await getDecisionROI();
+
+      if (result) {
+        setRoiStatus("Evaluation data available");
+      } else {
+        setRoiStatus("No evaluation data available yet");
+      }
+    } catch (error) {
+      setRoiStatus("No evaluation data available yet");
+    }
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -61,7 +78,6 @@ function App() {
       </header>
 
       <main className="app-content">
-        {/* Shipment Risk */}
         <section className="section">
           <h2>Shipment Risk</h2>
           <p className="section-description">
@@ -69,7 +85,6 @@ function App() {
           </p>
         </section>
 
-        {/* Recommendations */}
         <section className="section">
           <div className="section-heading">
             <div>
@@ -94,7 +109,7 @@ function App() {
                   <span className="option-label">
                     {recommendation.option}
                   </span>
-                  <span className="option-label">{recommendation.option}</span>
+
                   {selectedRecommendation?.id === recommendation.id && (
                     <span className="selected-badge">Selected</span>
                   )}
@@ -138,7 +153,6 @@ function App() {
           </p>
         </section>
 
-        {/* Decision */}
         <section className="section">
           <h2>Decision</h2>
 
@@ -159,12 +173,6 @@ function App() {
                 className="execute-button"
                 disabled
               >
-                <span className="decision-label">Selected Recommendation</span>
-                <h3>{selectedRecommendation.action}</h3>
-                <p>{selectedRecommendation.reason}</p>
-              </div>
-
-              <button type="button" className="execute-button" disabled>
                 Execute Decision
               </button>
 
@@ -180,65 +188,43 @@ function App() {
           )}
         </section>
 
-        {/* Feedback / Decision ROI */}
         <section className="section">
-          <div className="section-heading">
-            <div>
-              <h2>Feedback / Decision ROI</h2>
-
-              <p className="section-description">
-                Decision performance and outcome analytics will be provided by
-                the backend evaluation data.
-              </p>
-            </div>
-          </div>
+          <h2>Feedback / Decision ROI</h2>
 
           <div className="roi-grid">
             <article className="roi-card">
               <span>Decision ROI</span>
-
               <strong>No evaluation data available yet</strong>
-
-              <p>
-                ROI will be calculated from evaluated decisions.
-              </p>
             </article>
 
             <article className="roi-card">
               <span>Positive Outcomes</span>
-
               <strong>No evaluation data available yet</strong>
-
-              <p>
-                Outcome results will appear after decisions are evaluated.
-              </p>
             </article>
 
             <article className="roi-card">
               <span>Evaluated Decisions</span>
-
               <strong>No evaluation data available yet</strong>
-
-              <p>
-                Evaluation counts will be provided by the backend.
-              </p>
             </article>
 
             <article className="roi-card">
               <span>Predicted Cost vs Actual Cost</span>
-
               <strong>No evaluation data available yet</strong>
-
-              <p>
-                Cost comparison will appear once predicted and actual costs
-                are available.
-              </p>
             </article>
           </div>
 
-          {/* Evaluation History */}
           <div className="evaluation-history">
-            <h3>Evaluation History</h3>
+            <div className="evaluation-heading">
+              <div>
+                <h3>Evaluation History</h3>
+                <p className="section-description">
+                  Decision evaluation results will appear here when backend
+                  evaluation data becomes available.
+                </p>
+              </div>
+
+              <span className="roi-status">{roiStatus}</span>
+            </div>
 
             <div className="evaluation-table">
               <div className="evaluation-row evaluation-header">
@@ -253,17 +239,17 @@ function App() {
                 have been recorded and actual outcomes are available.
               </div>
             </div>
+
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={loadDecisionROI}
+            >
+              Check Evaluation Data
+            </button>
           </div>
         </section>
 
-        {/* Backend Connection */}
-        <section className="section">
-          <h2>Feedback</h2>
-          <p className="section-description">
-            Feedback capture will be connected to the backend in a later
-            integration stage.
-          </p>
-        </section>
         <section className="section">
           <h2>Backend Connection</h2>
 
@@ -271,11 +257,12 @@ function App() {
             <span>Status</span>
             <strong>{backendStatus}</strong>
           </div>
+
           <button
             type="button"
+            className="backend-button"
             onClick={testBackendConnection}
           >
-          <button type="button" onClick={testBackendConnection}>
             Test Backend Connection
           </button>
         </section>

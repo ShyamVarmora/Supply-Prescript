@@ -138,9 +138,9 @@ A requirement can only move from PENDING/BLOCKED to PASS after the corresponding
 
 ## 6. Duplication and Scope Check
 
-- [ ] Did not duplicate `Test-plan.md`.
-- [ ] Did not duplicate `week-3-test-plan.md`.
-- [ ] Did not modify Yoshita's frontend.
-- [ ] Did not modify Chetan's backend.
-- [ ] Did not invent implementation results.
-- [ ] Did not mark anything PASS.
+- [x] Did not duplicate `Test-plan.md`.
+- [x] Did not duplicate `week-3-test-plan.md`.
+- [x] Did not modify Yoshita's frontend.
+- [x] Did not modify Chetan's backend.
+- [x] Did not invent implementation results.
+- [x] Did not mark anything PASS.

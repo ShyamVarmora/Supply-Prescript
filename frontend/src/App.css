@@ -322,3 +322,106 @@ button {
     font-size: 26px;
   }
 }
+/* Feedback / Decision ROI */
+
+.roi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.roi-card {
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.roi-card-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.roi-card-value {
+  margin: 0;
+  color: #111827;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.roi-empty-state {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.evaluation-history {
+  margin-top: 24px;
+}
+
+.evaluation-history h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.evaluation-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.evaluation-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.evaluation-table th,
+.evaluation-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.evaluation-table th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.evaluation-table td {
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.evaluation-empty-row td {
+  padding: 22px 16px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Responsive ROI layout */
+
+@media (max-width: 900px) {
+  .roi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .roi-grid {
+    grid-template-columns: 1fr;
+  }
+}

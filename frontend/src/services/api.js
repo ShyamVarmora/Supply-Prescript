@@ -11,8 +11,12 @@ export async function checkBackendHealth() {
 
     return await response.json();
   } catch (error) {
-    throw new Error(
-      `Unable to connect to the backend: ${error.message}`
-    );
+    throw new Error(`Unable to connect to the backend: ${error.message}`);
   }
+}
+
+// Pending backend integration.
+// No ROI endpoint is called until the backend contract is agreed.
+export async function getDecisionROI() {
+  return null;
 }

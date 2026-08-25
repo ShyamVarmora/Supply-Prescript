@@ -151,6 +151,7 @@ button {
   padding: 14px;
   background: #f3f4f6;
   border-radius: 8px;
+  min-width: 0;
 }
 
 .tradeoff-item span {
@@ -165,6 +166,7 @@ button {
 .tradeoff-item strong {
   color: #111827;
   font-size: 15px;
+  overflow-wrap: anywhere;
 }
 
 /* Reason */
@@ -194,7 +196,8 @@ button {
 
 .select-button,
 .execute-button,
-.backend-status + button {
+.backend-button,
+.secondary-button {
   border: none;
   border-radius: 8px;
   padding: 11px 16px;
@@ -223,6 +226,7 @@ button {
   background: #fffbeb;
   color: #92400e;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 /* Decision */
@@ -284,12 +288,140 @@ button {
   color: #111827;
 }
 
-.backend-status + button {
+.backend-button {
   background: #2563eb;
   color: white;
 }
 
-.backend-status + button:hover {
+.backend-button:hover {
+  background: #1d4ed8;
+}
+
+/* Feedback / Decision ROI */
+
+.roi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.roi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.roi-card > span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.roi-card > strong {
+  display: block;
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.roi-empty-state {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Evaluation History */
+
+.evaluation-history {
+  margin-top: 24px;
+}
+
+.evaluation-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.evaluation-heading > div {
+  min-width: 0;
+}
+
+.evaluation-history h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.roi-status {
+  flex-shrink: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.evaluation-table {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.evaluation-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 0;
+}
+
+.evaluation-row > span {
+  min-width: 0;
+  padding: 14px 16px;
+  overflow-wrap: anywhere;
+}
+
+.evaluation-header {
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.evaluation-empty {
+  padding: 20px 16px;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.secondary-button {
+  margin-top: 16px;
+  background: #2563eb;
+  color: white;
+}
+
+.secondary-button:hover {
   background: #1d4ed8;
 }
 
@@ -302,6 +434,23 @@ button {
 
   .recommendation-card {
     min-height: auto;
+  }
+
+  .roi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .evaluation-heading {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .evaluation-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .evaluation-header > span {
+    border-bottom: 1px solid #e5e7eb;
   }
 }
 
@@ -321,107 +470,20 @@ button {
   .app-header h1 {
     font-size: 26px;
   }
-}
-/* Feedback / Decision ROI */
 
-.roi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.roi-card {
-  padding: 18px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.roi-card-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.roi-card-value {
-  margin: 0;
-  color: #111827;
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-.roi-empty-state {
-  margin: 20px 0 0;
-  padding: 16px;
-  border: 1px dashed #d1d5db;
-  border-radius: 10px;
-  background: #f9fafb;
-  color: #6b7280;
-  line-height: 1.5;
-}
-
-.evaluation-history {
-  margin-top: 24px;
-}
-
-.evaluation-history h3 {
-  margin: 0 0 14px;
-  font-size: 17px;
-  color: #111827;
-}
-
-.evaluation-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-}
-
-.evaluation-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 650px;
-}
-
-.evaluation-table th,
-.evaluation-table td {
-  padding: 14px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.evaluation-table th {
-  background: #f9fafb;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.evaluation-table td {
-  color: #4b5563;
-  font-size: 14px;
-}
-
-.evaluation-empty-row td {
-  padding: 22px 16px;
-  text-align: center;
-  color: #6b7280;
-}
-
-/* Responsive ROI layout */
-
-@media (max-width: 900px) {
-  .roi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
   .roi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .evaluation-row {
+    grid-template-columns: 1fr;
+  }
+
+  .evaluation-header > span {
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .evaluation-empty {
+    text-align: left;
   }
 }

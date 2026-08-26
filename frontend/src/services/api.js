@@ -15,8 +15,15 @@ export async function checkBackendHealth() {
   }
 }
 
-// Pending backend integration.
-// No ROI endpoint is called until the backend contract is agreed.
+// Prediction/recommendation API placeholder.
+// The real backend prediction and solver contract is still being completed.
+// No fake endpoint or prediction values are used.
+export async function getPredictionRecommendations() {
+  return null;
+}
+
+// Evaluation/ROI API placeholder.
+// Real evaluation data will be connected when the backend endpoint is available.
 export async function getDecisionROI() {
   return null;
 }

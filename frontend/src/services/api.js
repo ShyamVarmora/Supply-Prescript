@@ -15,8 +15,24 @@ export async function checkBackendHealth() {
   }
 }
 
-// Pending backend integration.
-// No ROI endpoint is called until the backend contract is agreed.
+/*
+ * Prediction / recommendation API integration boundary.
+ *
+ * The backend prediction endpoint and response contract
+ * are not available yet, so no endpoint is guessed here.
+ *
+ * Once the backend contract is finalized, this function
+ * will call the real prediction endpoint and return the
+ * recommendation response to the UI.
+ */
+export async function getPredictionRecommendations() {
+  throw new Error("Prediction API is not available yet");
+}
+
+/*
+ * ROI integration is still pending.
+ * No fake evaluation data is returned.
+ */
 export async function getDecisionROI() {
   return null;
 }

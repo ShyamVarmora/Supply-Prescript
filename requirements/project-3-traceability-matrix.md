@@ -20,8 +20,35 @@ A requirement is marked PASS only when the implementation and verification evide
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| XGBoost predictive baseline | | | | Chetan | |
-| Historical mock supply-chain data | | | | Mansi | |
+| XGBoost predictive baseline | Not verified in the repository evidence reviewed | No actual model test evidence | No model demo evidence | Chetan | NOT STARTED |
+| Historical mock supply-chain data | `data/` directory exists; actual dataset implementation not verified | No actual dataset validation evidence | No demo evidence | Mansi | NOT STARTED |
+| Shipment-delay prediction | No verified prediction implementation found in the reviewed repository evidence | No prediction test evidence | No prediction demo evidence | Chetan | NOT STARTED |
+| React application scaffolding | `frontend/` with Vite/React structure; `frontend/src/main.jsx`, `frontend/src/App.jsx`, `frontend/package.json` | No formal Week 1 application test evidence recorded | React application structure exists; no final demo evidence | Yoshita | IN PROGRESS |
+| PostgreSQL / Snowflake connection | `database/` exists but currently only `.gitkeep` was verified; backend currently exposes only `/health` | No actual database connectivity evidence | No database demo evidence | Mansi | BLOCKED |
+
+---
+
+## Week 2 — Optimization & Prescriptive UI
+
+| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
+|---|---|---|---|---|---|
+| Business constraints defined | No verified constraint implementation found in reviewed code | No constraint validation evidence | No demo evidence | Chetan/Mansi | NOT STARTED |
+| SciPy linear-programming solver | No verified SciPy solver implementation found in reviewed code | No solver test evidence | No solver demo evidence | Chetan | NOT STARTED |
+| Three alternative actions | `frontend/src/App.jsx` contains three recommendation definitions: Expedite Shipment, Use Alternate Supplier, Delay Launch | No verified backend-generated alternatives test | Three UI recommendation cards are implemented in `App.jsx` | Chetan | IN PROGRESS |
+| Three prescription cards | `frontend/src/App.jsx` renders three recommendation cards using `recommendations.map(...)` | No completed QA verification evidence | Three recommendation cards are visible in the React implementation | Yoshita | IN PROGRESS |
+| Cost displayed | `frontend/src/App.jsx` displays a Cost field, but value is currently `"Backend value"` placeholder | No evidence that real solver cost is displayed | Cost field exists in recommendation cards | Yoshita | IN PROGRESS |
+| Speed/time displayed | `frontend/src/App.jsx` displays Speed / Time, but value is currently `"Backend value"` placeholder | No evidence that real solver speed/time is displayed | Speed / Time field exists in recommendation cards | Yoshita | IN PROGRESS |
+| Cost vs Speed trade-off | `frontend/src/App.jsx` contains Cost and Speed / Time fields and trade-off wording | No evidence using real optimization results | Trade-off UI structure exists | Yoshita | IN PROGRESS |
+
+---
+
+## Mid-Project Validation
+
+| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
+|---|---|---|---|---|---|
+| Hard budget constraint verified | No verified hard-budget solver implementation found | No hard-budget validation evidence | No demo evidence | Chetan/Prashant | NOT STARTED |
+| Execute Decision button | `frontend/src/App.jsx` contains an Execute Decision button, but it is disabled | No successful execution test evidence | Button exists but is disabled | Yoshita/Chetan | IN PROGRESS |
+| Database INSERT verified | `backend/app/main.py` currently exposes only a| Historical mock supply-chain data | | | | Mansi | |
 | Shipment-delay prediction | | | | Chetan | |
 | React application scaffolding | | | | Yoshita | |
 | PostgreSQL / Snowflake connection | | | | Mansi | |

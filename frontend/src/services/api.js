@@ -15,24 +15,15 @@ export async function checkBackendHealth() {
   }
 }
 
-/*
- * Prediction / recommendation API integration boundary.
- *
- * The backend prediction endpoint and response contract
- * are not available yet, so no endpoint is guessed here.
- *
- * Once the backend contract is finalized, this function
- * will call the real prediction endpoint and return the
- * recommendation response to the UI.
- */
+// Prediction/recommendation API placeholder.
+// The real backend prediction and solver contract is still being completed.
+// No fake endpoint or prediction values are used.
 export async function getPredictionRecommendations() {
-  throw new Error("Prediction API is not available yet");
+  return null;
 }
 
-/*
- * ROI integration is still pending.
- * No fake evaluation data is returned.
- */
+// Evaluation/ROI API placeholder.
+// Real evaluation data will be connected when the backend endpoint is available.
 export async function getDecisionROI() {
   return null;
 }

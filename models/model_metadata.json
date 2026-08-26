@@ -1,0 +1,34 @@
+{
+    "model_name": "Supply Chain Risk Prediction Model",
+    "model_file": "supply_chain_risk_model.pkl",
+    "algorithm": "Random Forest Classifier",
+    "target_variable": "risk_classification",
+    "training_records": 113097,
+    "number_of_features": 10,
+    "input_features": [
+        "warehouse_inventory_level",
+        "handling_equipment_availability",
+        "weather_condition_severity",
+        "shipping_costs",
+        "supplier_reliability_score",
+        "lead_time_days",
+        "historical_demand",
+        "route_risk_level",
+        "customs_clearance_time",
+        "supplier_country"
+    ],
+    "risk_classes": [
+        "High Risk",
+        "Low Risk",
+        "Moderate Risk"
+    ],
+    "validation": {
+        "method": "5-Fold Stratified Cross-Validation",
+        "mean_accuracy": 0.9448,
+        "mean_balanced_accuracy": 0.8517,
+        "mean_macro_f1": 0.9045
+    },
+    "model_type": "Pre-decision predictive model",
+    "created_at": "2026-08-26 21:22:30",
+    "status": "Production Ready"
+}

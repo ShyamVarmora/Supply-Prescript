@@ -26,3 +26,5 @@ Thumbs.db
 
 # Large trained ML model
 models/supply_chain_risk_model.pkl
+
+data/processed/prescriptive_recommendations.csv

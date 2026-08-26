@@ -1,0 +1,489 @@
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f5f7fa;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+}
+
+button {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.app-header {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #111827;
+}
+
+.app-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.app-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  padding: 24px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.section h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #111827;
+}
+
+.section-description {
+  margin: 8px 0 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Recommendation cards */
+
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.recommendation-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 330px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-2px);
+  border-color: #9ca3af;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.recommendation-card.selected {
+  border: 2px solid #2563eb;
+  background: #f8fbff;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.option-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.selected-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.recommendation-card h3 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  color: #111827;
+}
+
+/* Cost vs speed */
+
+.tradeoff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.tradeoff-item {
+  padding: 14px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.tradeoff-item span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tradeoff-item strong {
+  color: #111827;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+/* Reason */
+
+.reason {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.reason > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.reason p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* Buttons */
+
+.select-button,
+.execute-button,
+.backend-button,
+.secondary-button {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.select-button {
+  width: 100%;
+  background: #111827;
+  color: white;
+}
+
+.select-button:hover {
+  background: #374151;
+}
+
+.recommendation-card.selected .select-button {
+  background: #2563eb;
+}
+
+.data-note {
+  margin: 18px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Decision */
+
+.decision-panel {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.decision-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.decision-panel h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.decision-panel p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.execute-button {
+  margin-top: 16px;
+  background: #9ca3af;
+  color: white;
+  cursor: not-allowed;
+}
+
+.decision-note {
+  margin-top: 10px !important;
+  font-size: 13px;
+}
+
+/* Backend */
+
+.backend-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.backend-status span {
+  color: #6b7280;
+}
+
+.backend-status strong {
+  color: #111827;
+}
+
+.backend-button {
+  background: #2563eb;
+  color: white;
+}
+
+.backend-button:hover {
+  background: #1d4ed8;
+}
+
+/* Feedback / Decision ROI */
+
+.roi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.roi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.roi-card > span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.roi-card > strong {
+  display: block;
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.roi-empty-state {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Evaluation History */
+
+.evaluation-history {
+  margin-top: 24px;
+}
+
+.evaluation-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.evaluation-heading > div {
+  min-width: 0;
+}
+
+.evaluation-history h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.roi-status {
+  flex-shrink: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.evaluation-table {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.evaluation-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 0;
+}
+
+.evaluation-row > span {
+  min-width: 0;
+  padding: 14px 16px;
+  overflow-wrap: anywhere;
+}
+
+.evaluation-header {
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.evaluation-empty {
+  padding: 20px 16px;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.secondary-button {
+  margin-top: 16px;
+  background: #2563eb;
+  color: white;
+}
+
+.secondary-button:hover {
+  background: #1d4ed8;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .recommendation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-card {
+    min-height: auto;
+  }
+
+  .roi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .evaluation-heading {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .evaluation-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .evaluation-header > span {
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 20px;
+  }
+
+  .section {
+    padding: 18px;
+  }
+
+  .tradeoff {
+    grid-template-columns: 1fr;
+  }
+
+  .app-header h1 {
+    font-size: 26px;
+  }
+
+  .roi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evaluation-row {
+    grid-template-columns: 1fr;
+  }
+
+  .evaluation-header > span {
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .evaluation-empty {
+    text-align: left;
+  }
+}

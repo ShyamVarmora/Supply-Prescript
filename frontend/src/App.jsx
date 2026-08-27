@@ -1,40 +1,53 @@
-import { useState } from "react";
-import { checkBackendHealth, getDecisionROI } from "./services/api";
+import { useEffect, useState } from "react";
+import {
+  checkBackendHealth,
+  getDecisionROI,
+  getPredictionRecommendations,
+} from "./services/api";
+import RecommendationCard from "./components/RecommendationCard";
 import "./App.css";
-
-const recommendations = [
-  {
-    id: 1,
-    option: "Option 1",
-    action: "Expedite Shipment",
-    cost: "Backend value",
-    speed: "Backend value",
-    reason: "Fastest available response for the shipment risk.",
-  },
-  {
-    id: 2,
-    option: "Option 2",
-    action: "Use Alternate Supplier",
-    cost: "Backend value",
-    speed: "Backend value",
-    reason: "Provides an alternative supply route to reduce disruption.",
-  },
-  {
-    id: 3,
-    option: "Option 3",
-    action: "Delay Launch",
-    cost: "Backend value",
-    speed: "Backend value",
-    reason: "Reduces immediate supply pressure while the situation is resolved.",
-  },
-];
 
 function App() {
   const [backendStatus, setBackendStatus] = useState("Not checked");
-  const [selectedRecommendation, setSelectedRecommendation] = useState(null);
+
+  const [recommendations, setRecommendations] = useState([]);
+  const [recommendationsLoading, setRecommendationsLoading] =
+    useState(true);
+  const [recommendationsError, setRecommendationsError] =
+    useState(false);
+
+  const [selectedRecommendation, setSelectedRecommendation] =
+    useState(null);
+
   const [roiStatus, setRoiStatus] = useState(
     "No evaluation data available yet"
   );
+
+  useEffect(() => {
+    loadRecommendations();
+  }, []);
+
+  const loadRecommendations = async () => {
+    setRecommendationsLoading(true);
+    setRecommendationsError(false);
+
+    try {
+      const result = await getPredictionRecommendations();
+
+      if (Array.isArray(result)) {
+        setRecommendations(result);
+      } else if (result?.recommendations) {
+        setRecommendations(result.recommendations);
+      } else {
+        setRecommendations([]);
+      }
+    } catch (error) {
+      setRecommendations([]);
+      setRecommendationsError(true);
+    } finally {
+      setRecommendationsLoading(false);
+    }
+  };
 
   const testBackendConnection = async () => {
     setBackendStatus("Checking...");
@@ -80,6 +93,7 @@ function App() {
       <main className="app-content">
         <section className="section">
           <h2>Shipment Risk</h2>
+
           <p className="section-description">
             Shipment risk information will be provided by the backend model.
           </p>
@@ -89,68 +103,46 @@ function App() {
           <div className="section-heading">
             <div>
               <h2>Recommendations</h2>
+
               <p className="section-description">
                 Compare available actions by cost and speed.
               </p>
             </div>
           </div>
 
-          <div className="recommendation-grid">
-            {recommendations.map((recommendation) => (
-              <article
-                key={recommendation.id}
-                className={`recommendation-card ${
-                  selectedRecommendation?.id === recommendation.id
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <div className="card-header">
-                  <span className="option-label">
-                    {recommendation.option}
-                  </span>
-
-                  {selectedRecommendation?.id === recommendation.id && (
-                    <span className="selected-badge">Selected</span>
-                  )}
-                </div>
-
-                <h3>{recommendation.action}</h3>
-
-                <div className="tradeoff">
-                  <div className="tradeoff-item">
-                    <span>Cost</span>
-                    <strong>{recommendation.cost}</strong>
-                  </div>
-
-                  <div className="tradeoff-item">
-                    <span>Speed / Time</span>
-                    <strong>{recommendation.speed}</strong>
-                  </div>
-                </div>
-
-                <div className="reason">
-                  <span>Reason / Expected Outcome</span>
-                  <p>{recommendation.reason}</p>
-                </div>
-
-                <button
-                  type="button"
-                  className="select-button"
-                  onClick={() => handleSelect(recommendation)}
-                >
-                  {selectedRecommendation?.id === recommendation.id
-                    ? "Selected"
-                    : "Select Recommendation"}
-                </button>
-              </article>
-            ))}
-          </div>
-
-          <p className="data-note">
-            Cost and speed values are placeholders until the backend solver
-            provides real prescription output.
-          </p>
+          {recommendationsLoading ? (
+            <div className="recommendation-state">
+              Loading recommendations...
+            </div>
+          ) : recommendationsError ? (
+            <div className="recommendation-state error">
+              Unable to load recommendations.
+            </div>
+          ) : recommendations.length === 0 ? (
+            <div className="recommendation-state">
+              No recommendations available yet.
+            </div>
+          ) : (
+            <div className="recommendation-grid">
+              {recommendations.map((recommendation, index) => (
+                <RecommendationCard
+                  key={
+                    recommendation.id ??
+                    recommendation.option ??
+                    index
+                  }
+                  recommendation={recommendation}
+                  selected={
+                    selectedRecommendation?.id ===
+                      recommendation.id ||
+                    selectedRecommendation?.option ===
+                      recommendation.option
+                  }
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="section">
@@ -165,7 +157,21 @@ function App() {
 
                 <h3>{selectedRecommendation.action}</h3>
 
-                <p>{selectedRecommendation.reason}</p>
+                <p>
+                  {selectedRecommendation.reason}
+                </p>
+
+                <div className="decision-details">
+                  <span>
+                    Cost:{" "}
+                    {selectedRecommendation.cost}
+                  </span>
+
+                  <span>
+                    Speed / Time:{" "}
+                    {selectedRecommendation.speed}
+                  </span>
+                </div>
               </div>
 
               <button
@@ -177,8 +183,8 @@ function App() {
               </button>
 
               <p className="decision-note">
-                Decision execution will be enabled when the backend/database
-                write-back endpoint is available.
+                Decision execution will be enabled when the
+                backend/database write-back endpoint is available.
               </p>
             </div>
           ) : (
@@ -194,22 +200,30 @@ function App() {
           <div className="roi-grid">
             <article className="roi-card">
               <span>Decision ROI</span>
-              <strong>No evaluation data available yet</strong>
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
               <span>Positive Outcomes</span>
-              <strong>No evaluation data available yet</strong>
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
               <span>Evaluated Decisions</span>
-              <strong>No evaluation data available yet</strong>
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
               <span>Predicted Cost vs Actual Cost</span>
-              <strong>No evaluation data available yet</strong>
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
           </div>
 
@@ -217,13 +231,16 @@ function App() {
             <div className="evaluation-heading">
               <div>
                 <h3>Evaluation History</h3>
+
                 <p className="section-description">
-                  Decision evaluation results will appear here when backend
-                  evaluation data becomes available.
+                  Decision evaluation results will appear here
+                  when backend evaluation data becomes available.
                 </p>
               </div>
 
-              <span className="roi-status">{roiStatus}</span>
+              <span className="roi-status">
+                {roiStatus}
+              </span>
             </div>
 
             <div className="evaluation-table">
@@ -235,8 +252,9 @@ function App() {
               </div>
 
               <div className="evaluation-empty">
-                Evaluation results will appear after operational decisions
-                have been recorded and actual outcomes are available.
+                Evaluation results will appear after operational
+                decisions have been recorded and actual outcomes
+                are available.
               </div>
             </div>
 

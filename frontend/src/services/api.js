@@ -11,19 +11,26 @@ export async function checkBackendHealth() {
 
     return await response.json();
   } catch (error) {
-    throw new Error(`Unable to connect to the backend: ${error.message}`);
+    throw new Error(
+      `Unable to connect to the backend: ${error.message}`
+    );
   }
 }
 
 // Prediction/recommendation API placeholder.
-// The real backend prediction and solver contract is still being completed.
-// No fake endpoint or prediction values are used.
+// The real backend prediction and optimization solver
+// endpoint is still being completed.
+//
+// Do not invent an endpoint or response structure here.
+// This function will be updated when the backend contract
+// is provided.
 export async function getPredictionRecommendations() {
   return null;
 }
 
 // Evaluation/ROI API placeholder.
-// Real evaluation data will be connected when the backend endpoint is available.
+// Real evaluation data will be connected when the
+// backend evaluation endpoint is available.
 export async function getDecisionROI() {
   return null;
 }

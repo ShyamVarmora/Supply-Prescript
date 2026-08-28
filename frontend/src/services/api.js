@@ -17,20 +17,54 @@ export async function checkBackendHealth() {
   }
 }
 
-// Prediction/recommendation API placeholder.
-// The real backend prediction and optimization solver
-// endpoint is still being completed.
-//
-// Do not invent an endpoint or response structure here.
-// This function will be updated when the backend contract
-// is provided.
-export async function getPredictionRecommendations() {
-  return null;
+export async function getPredictionRecommendations(shipment) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/predict/shipment-delay`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(shipment),
+      }
+    );
+
+    if (!response.ok) {
+      let message = `Backend returned ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+
+        if (errorData?.detail) {
+          message = errorData.detail;
+        }
+      } catch {
+        // Keep the default HTTP error message.
+      }
+
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+
+    if (
+      !data ||
+      data.prediction_target !== "delivery_time_deviation" ||
+      typeof data.predicted_delivery_time_deviation !== "number"
+    ) {
+      throw new Error("Invalid prediction response from backend.");
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(
+      `Unable to load shipment prediction: ${error.message}`
+    );
+  }
 }
 
-// Evaluation/ROI API placeholder.
-// Real evaluation data will be connected when the
-// backend evaluation endpoint is available.
+// Real evaluation/ROI endpoint is not available yet.
 export async function getDecisionROI() {
   return null;
 }

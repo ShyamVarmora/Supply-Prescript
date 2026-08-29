@@ -1,7 +1,7 @@
 """
 Constrained prescriptive optimization solver.
 
-Generates feasible supply-chain response alternatives using SciPy
+Generates supply-chain response alternatives using SciPy
 with explicit Budget, Time, and Capacity constraints.
 
 Business alternatives:
@@ -25,18 +25,17 @@ class OptimizationInput:
     allowed_time: float
     available_capacity: float
 
-    # Predicted delay from the ML model.
+    # Prediction from the ML model.
     predicted_delay: float
 
-    # Shipment/supply-chain quantities used to calculate
-    # alternative requirements.
+    # Shipment/supply-chain scenario values.
     shipment_cost: float
     shipment_time: float
     shipment_capacity: float
 
 
 def validate_input(scenario: OptimizationInput) -> None:
-    """Validate the optimization scenario."""
+    """Validate optimization scenario inputs."""
 
     if scenario.budget < 0:
         raise ValueError("budget must be non-negative")
@@ -64,28 +63,30 @@ def build_alternatives(
     scenario: OptimizationInput,
 ) -> list[dict[str, Any]]:
     """
-    Build business alternatives from scenario inputs.
+    Build business alternatives from the supplied scenario.
 
-    The values are derived from the supplied scenario rather than being
-    fixed demonstration outputs.
+    All numerical values are derived from the scenario input.
     """
 
     delay = scenario.predicted_delay
 
-    # Air freight:
-    # higher cost, lower transportation time, same shipment capacity.
+    # --------------------------------------------------------
+    # 1. Air Freight
+    # --------------------------------------------------------
     air_cost = scenario.shipment_cost * 1.50
     air_time = max(0.0, scenario.shipment_time * 0.55)
     air_capacity = scenario.shipment_capacity
 
-    # Secondary supplier:
-    # additional sourcing cost and setup time, but improved resilience.
+    # --------------------------------------------------------
+    # 2. Secondary Supplier
+    # --------------------------------------------------------
     secondary_cost = scenario.shipment_cost * 1.20
     secondary_time = scenario.shipment_time * 0.80
     secondary_capacity = scenario.shipment_capacity
 
-    # Delay launch:
-    # minimal direct logistics cost, but accepts the predicted delay.
+    # --------------------------------------------------------
+    # 3. Delay Launch
+    # --------------------------------------------------------
     delay_cost = scenario.shipment_cost * 0.10
     delay_time = scenario.shipment_time + delay
     delay_capacity = scenario.shipment_capacity
@@ -128,46 +129,50 @@ def validate_constraints(
     An alternative is feasible only when all three constraints hold.
     """
 
-    return (
-        alternative["cost"] <= scenario.budget
-        and alternative["time"] <= scenario.allowed_time
-        and alternative["capacity"] <= scenario.available_capacity
+    cost_ok = alternative["cost"] <= scenario.budget
+    time_ok = alternative["time"] <= scenario.allowed_time
+    capacity_ok = (
+        alternative["capacity"] <= scenario.available_capacity
     )
+
+    return cost_ok and time_ok and capacity_ok
 
 
 def optimize_alternatives(
     scenario: OptimizationInput,
 ) -> dict[str, Any]:
     """
-    Evaluate the three business alternatives and return feasible options.
+    Evaluate all three business alternatives.
 
-    SciPy's linear-programming solver is used to select the lowest
-    expected-impact feasible alternative.
+    The optimizer:
 
-    The explicit constraints are:
-
-        cost <= budget
-        time <= allowed_time
-        capacity <= available_capacity
+    1. Builds all alternatives from the scenario.
+    2. Applies hard Budget, Time, and Capacity constraints.
+    3. Uses SciPy linear programming on feasible alternatives.
+    4. Selects the alternative from the actual LP solution.
+    5. Minimizes expected delivery-delay impact.
     """
 
     validate_input(scenario)
 
     alternatives = build_alternatives(scenario)
 
-    # Hard constraint validation happens before an alternative can
-    # become a valid recommendation.
+    # --------------------------------------------------------
+    # Evaluate ALL alternatives against hard constraints.
+    # --------------------------------------------------------
+
     feasible = []
 
     for alternative in alternatives:
-        alternative["feasibility"] = (
-            "feasible"
-            if validate_constraints(alternative, scenario)
-            else "infeasible"
-        )
-
-        if alternative["feasibility"] == "feasible":
+        if validate_constraints(alternative, scenario):
+            alternative["feasibility"] = "feasible"
             feasible.append(alternative)
+        else:
+            alternative["feasibility"] = "infeasible"
+
+    # --------------------------------------------------------
+    # No feasible solution.
+    # --------------------------------------------------------
 
     if not feasible:
         return {
@@ -177,23 +182,32 @@ def optimize_alternatives(
                 "allowed_time": scenario.allowed_time,
                 "available_capacity": scenario.available_capacity,
             },
-            "alternatives": [],
+            "alternatives": alternatives,
+            "feasible_alternatives": [],
             "recommended_option": None,
             "objective": None,
         }
 
-    # Objective: minimize expected delivery-delay impact.
-    #
-    # The feasible alternatives are represented as binary decision
-    # variables. Exactly one alternative must be selected.
-    #
-    # Since the variables are binary, the linear program is bounded
-    # between 0 and 1 and the equality constraint forces one selection.
+    # --------------------------------------------------------
+    # Objective:
+    # Minimize expected delivery-delay impact.
+    # --------------------------------------------------------
 
     objective = np.array(
-        [alternative["expected_impact"] for alternative in feasible],
+        [
+            alternative["expected_impact"]
+            for alternative in feasible
+        ],
         dtype=float,
     )
+
+    # --------------------------------------------------------
+    # LP decision variables:
+    #
+    # x[i] = 1 if feasible alternative i is selected.
+    #
+    # Exactly one alternative must be selected.
+    # --------------------------------------------------------
 
     result = linprog(
         c=objective,
@@ -208,13 +222,25 @@ def optimize_alternatives(
             f"SciPy optimization failed: {result.message}"
         )
 
-    selected_index = int(np.argmin(result.fun))
+    # --------------------------------------------------------
+    # IMPORTANT:
+    # Select from the ACTUAL LP solution.
+    #
+    # result.x contains the selected decision-variable values.
+    # --------------------------------------------------------
+
+    selected_index = int(np.argmax(result.x))
 
     recommended = feasible[selected_index].copy()
+
     recommended["feasibility"] = "feasible"
     recommended["objective_value"] = float(
         recommended["expected_impact"]
     )
+
+    # --------------------------------------------------------
+    # Return complete optimization result.
+    # --------------------------------------------------------
 
     return {
         "status": "optimal",
@@ -233,11 +259,12 @@ def optimize_alternatives(
     }
 
 
+# ============================================================
+# MANUAL TEST
+# ============================================================
+
 if __name__ == "__main__":
-    # Manual verification scenario.
-    #
-    # These are configuration/scenario inputs to exercise the solver,
-    # not training-data values or claimed business constants.
+
     scenario = OptimizationInput(
         budget=1000.0,
         allowed_time=10.0,
@@ -260,7 +287,9 @@ if __name__ == "__main__":
     print("\nCONSTRAINTS")
     print(f"Budget <= {scenario.budget}")
     print(f"Time <= {scenario.allowed_time}")
-    print(f"Capacity <= {scenario.available_capacity}")
+    print(
+        f"Capacity <= {scenario.available_capacity}"
+    )
 
     print("\nALTERNATIVES")
 
@@ -269,25 +298,44 @@ if __name__ == "__main__":
             f"\nOption {alternative['option']}: "
             f"{alternative['action']}"
         )
-        print(f"  Cost: {alternative['cost']:.2f}")
-        print(f"  Time: {alternative['time']:.2f}")
-        print(f"  Capacity: {alternative['capacity']:.2f}")
+
+        print(
+            f"  Cost: "
+            f"{alternative['cost']:.2f}"
+        )
+
+        print(
+            f"  Time: "
+            f"{alternative['time']:.2f}"
+        )
+
+        print(
+            f"  Capacity: "
+            f"{alternative['capacity']:.2f}"
+        )
+
         print(
             f"  Expected impact: "
             f"{alternative['expected_impact']:.2f}"
         )
-        print(f"  Feasibility: {alternative['feasibility']}")
+
+        print(
+            f"  Feasibility: "
+            f"{alternative['feasibility']}"
+        )
 
     print("\nOPTIMIZATION RESULT")
 
-    if result["recommended_option"]:
+    if result["recommended_option"] is not None:
         print(
             "Recommended:",
             result["recommended_option"]["action"],
         )
+
         print(
             "Objective value:",
             result["objective"]["value"],
         )
+
     else:
         print("No feasible alternative found.")

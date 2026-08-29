@@ -2,38 +2,71 @@ function RecommendationCard({
   recommendation,
   selected,
   onSelect,
+  optionLabel,
 }) {
   return (
     <article
-      className={`recommendation-card ${selected ? "selected" : ""}`}
+      className={`recommendation-card ${
+        selected ? "selected" : ""
+      }`}
     >
       <div className="card-header">
         <span className="option-label">
-          {recommendation.option}
+          {recommendation.option || optionLabel}
         </span>
 
         {selected && (
-          <span className="selected-badge">Selected</span>
+          <span className="selected-badge">
+            Selected
+          </span>
         )}
       </div>
 
-      <h3>{recommendation.action}</h3>
+      <h3>
+        {recommendation.action || "Solver Recommendation"}
+      </h3>
 
-      <div className="tradeoff">
+      <div className="recommendation-details">
         <div className="tradeoff-item">
           <span>Cost</span>
-          <strong>{recommendation.cost}</strong>
+          <strong>
+            {recommendation.cost || "Not available"}
+          </strong>
         </div>
 
         <div className="tradeoff-item">
-          <span>Speed / Time</span>
-          <strong>{recommendation.speed}</strong>
+          <span>Time</span>
+          <strong>
+            {recommendation.time ||
+              recommendation.speed ||
+              "Not available"}
+          </strong>
+        </div>
+
+        <div className="tradeoff-item">
+          <span>Capacity</span>
+          <strong>
+            {recommendation.capacity || "Not available"}
+          </strong>
+        </div>
+
+        <div className="tradeoff-item">
+          <span>Expected Impact</span>
+          <strong>
+            {recommendation.expected_impact ||
+              recommendation.impact ||
+              "Not available"}
+          </strong>
         </div>
       </div>
 
       <div className="reason">
-        <span>Reason / Expected Outcome</span>
-        <p>{recommendation.reason}</p>
+        <span>Reason</span>
+
+        <p>
+          {recommendation.reason ||
+            "No additional explanation was provided by the solver."}
+        </p>
       </div>
 
       <button
@@ -41,7 +74,7 @@ function RecommendationCard({
         className="select-button"
         onClick={() => onSelect(recommendation)}
       >
-        {selected ? "Selected" : "Select Recommendation"}
+        {selected ? "Selected" : "Select Option"}
       </button>
     </article>
   );

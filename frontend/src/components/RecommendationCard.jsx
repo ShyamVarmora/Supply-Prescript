@@ -1,9 +1,25 @@
+function formatValue(value) {
+  if (value === null || value === undefined) {
+    return "Not available";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
 function RecommendationCard({
   recommendation,
   selected,
   onSelect,
-  optionLabel,
 }) {
+  const recommendationName =
+    recommendation.option ||
+    recommendation.action ||
+    "Recommendation";
+
   return (
     <article
       className={`recommendation-card ${
@@ -12,7 +28,7 @@ function RecommendationCard({
     >
       <div className="card-header">
         <span className="option-label">
-          {recommendation.option || optionLabel}
+          {recommendationName}
         </span>
 
         {selected && (
@@ -23,49 +39,57 @@ function RecommendationCard({
       </div>
 
       <h3>
-        {recommendation.action || "Solver Recommendation"}
+        {recommendation.action || recommendationName}
       </h3>
 
       <div className="recommendation-details">
-        <div className="tradeoff-item">
+        <div className="detail-item">
           <span>Cost</span>
           <strong>
-            {recommendation.cost || "Not available"}
+            {formatValue(
+              recommendation.cost ??
+                recommendation.expected_cost
+            )}
           </strong>
         </div>
 
-        <div className="tradeoff-item">
+        <div className="detail-item">
           <span>Time</span>
           <strong>
-            {recommendation.time ||
-              recommendation.speed ||
-              "Not available"}
+            {formatValue(
+              recommendation.time ??
+                recommendation.expected_time
+            )}
           </strong>
         </div>
 
-        <div className="tradeoff-item">
+        <div className="detail-item">
           <span>Capacity</span>
           <strong>
-            {recommendation.capacity || "Not available"}
+            {formatValue(
+              recommendation.capacity ??
+                recommendation.required_capacity
+            )}
           </strong>
         </div>
 
-        <div className="tradeoff-item">
-          <span>Expected Impact</span>
+        <div className="detail-item">
+          <span>Impact</span>
           <strong>
-            {recommendation.expected_impact ||
-              recommendation.impact ||
-              "Not available"}
+            {formatValue(
+              recommendation.expected_impact ??
+                recommendation.impact
+            )}
           </strong>
         </div>
       </div>
 
       <div className="reason">
-        <span>Reason</span>
+        <span>Feasibility</span>
 
         <p>
-          {recommendation.reason ||
-            "No additional explanation was provided by the solver."}
+          {recommendation.feasibility ||
+            "Backend-generated recommendation"}
         </p>
       </div>
 
@@ -74,7 +98,9 @@ function RecommendationCard({
         className="select-button"
         onClick={() => onSelect(recommendation)}
       >
-        {selected ? "Selected" : "Select Option"}
+        {selected
+          ? "Selected"
+          : "Select Recommendation"}
       </button>
     </article>
   );

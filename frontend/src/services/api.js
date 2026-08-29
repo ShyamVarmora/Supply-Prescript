@@ -1,17 +1,28 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+async function getErrorMessage(response) {
+  try {
+    const errorData = await response.json();
+
+    if (errorData?.detail) {
+      return typeof errorData.detail === "string"
+        ? errorData.detail
+        : JSON.stringify(errorData.detail);
+    }
+  } catch {
+    // Ignore JSON parsing errors.
+  }
+
+  return `Backend returned ${response.status}`;
+}
 
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/health`
-    );
+    const response = await fetch(`${API_BASE_URL}/health`);
 
     if (!response.ok) {
-      throw new Error(
-        `Backend returned ${response.status}`
-      );
+      throw new Error(await getErrorMessage(response));
     }
 
     return await response.json();
@@ -22,9 +33,7 @@ export async function checkBackendHealth() {
   }
 }
 
-export async function getPredictionRecommendations(
-  shipment
-) {
+export async function getPredictionRecommendations(shipment) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/predict/shipment-delay`,
@@ -38,36 +47,10 @@ export async function getPredictionRecommendations(
     );
 
     if (!response.ok) {
-      let message = `Backend returned ${response.status}`;
-
-      try {
-        const errorData = await response.json();
-
-        if (errorData?.detail) {
-          message = errorData.detail;
-        }
-      } catch {
-        // Keep the default HTTP error message.
-      }
-
-      throw new Error(message);
+      throw new Error(await getErrorMessage(response));
     }
 
-    const data = await response.json();
-
-    if (
-      !data ||
-      data.prediction_target !==
-        "delivery_time_deviation" ||
-      typeof data.predicted_delivery_time_deviation !==
-        "number"
-    ) {
-      throw new Error(
-        "Invalid prediction response from backend."
-      );
-    }
-
-    return data;
+    return await response.json();
   } catch (error) {
     throw new Error(
       `Unable to load shipment prediction: ${error.message}`
@@ -75,48 +58,27 @@ export async function getPredictionRecommendations(
   }
 }
 
-/*
- * Recommendation API placeholder.
- *
- * Update RECOMMENDATION_ENDPOINT when Chetan confirms
- * the backend solver contract.
- */
-export async function getRecommendations(shipment) {
-  const RECOMMENDATION_ENDPOINT = null;
-
-  if (!RECOMMENDATION_ENDPOINT) {
-    return [];
-  }
-
+export async function getRecommendations(requestData) {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}${RECOMMENDATION_ENDPOINT}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(shipment),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/recommend`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
 
     if (!response.ok) {
-      throw new Error(
-        `Backend returned ${response.status}`
-      );
+      throw new Error(await getErrorMessage(response));
     }
 
     const data = await response.json();
 
-    if (Array.isArray(data)) {
-      return data;
+    if (!data?.optimization) {
+      throw new Error("Invalid recommendation response from backend.");
     }
 
-    if (Array.isArray(data?.recommendations)) {
-      return data.recommendations;
-    }
-
-    return [];
+    return data;
   } catch (error) {
     throw new Error(
       `Unable to load recommendations: ${error.message}`
@@ -124,9 +86,15 @@ export async function getRecommendations(shipment) {
   }
 }
 
-/*
- * Real evaluation/ROI endpoint is not available yet.
- */
+// Mansi's decision write-back endpoint is not available yet.
+// Do not invent an endpoint.
+export async function executeDecision() {
+  throw new Error(
+    "Decision write-back endpoint is not available yet."
+  );
+}
+
+// Real evaluation/ROI endpoint is not available yet.
 export async function getDecisionROI() {
   return null;
 }

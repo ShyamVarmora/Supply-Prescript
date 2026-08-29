@@ -1,12 +1,71 @@
 import { useState } from "react";
+
+import "./App.css";
+
+import RecommendationCard from "./components/RecommendationCard";
+
 import {
   checkBackendHealth,
+  executeDecision,
+  getDecisionROI,
   getPredictionRecommendations,
   getRecommendations,
-  getDecisionROI,
 } from "./services/api";
-import RecommendationCard from "./components/RecommendationCard";
-import "./App.css";
+
+const shipmentFields = [
+  [
+    "warehouse_inventory_level",
+    "Warehouse Inventory Level",
+  ],
+  [
+    "handling_equipment_availability",
+    "Handling Equipment Availability",
+  ],
+  [
+    "order_fulfillment_status",
+    "Order Fulfillment Status",
+  ],
+  [
+    "weather_condition_severity",
+    "Weather Condition Severity",
+  ],
+  [
+    "shipping_costs",
+    "Shipping Costs",
+  ],
+  [
+    "supplier_reliability_score",
+    "Supplier Reliability Score",
+  ],
+  [
+    "lead_time_days",
+    "Lead Time Days",
+  ],
+  [
+    "historical_demand",
+    "Historical Demand",
+  ],
+  [
+    "cargo_condition_status",
+    "Cargo Condition Status",
+  ],
+  [
+    "route_risk_level",
+    "Route Risk Level",
+  ],
+  [
+    "customs_clearance_time",
+    "Customs Clearance Time",
+  ],
+];
+
+const optimizationFields = [
+  ["budget", "Budget"],
+  ["allowed_time", "Allowed Time"],
+  ["available_capacity", "Available Capacity"],
+  ["shipment_time", "Shipment Time"],
+  ["shipment_capacity", "Shipment Capacity"],
+];
 
 const initialShipment = {
   warehouse_inventory_level: "",
@@ -21,66 +80,116 @@ const initialShipment = {
   route_risk_level: "",
   customs_clearance_time: "",
   supplier_country: "",
+  budget: "",
+  allowed_time: "",
+  available_capacity: "",
+  shipment_time: "",
+  shipment_capacity: "",
 };
 
-const shipmentFields = [
-  ["warehouse_inventory_level", "Warehouse Inventory Level"],
-  ["handling_equipment_availability", "Handling Equipment Availability"],
-  ["order_fulfillment_status", "Order Fulfillment Status"],
-  ["weather_condition_severity", "Weather Condition Severity"],
-  ["shipping_costs", "Shipping Costs"],
-  ["supplier_reliability_score", "Supplier Reliability Score"],
-  ["lead_time_days", "Lead Time Days"],
-  ["historical_demand", "Historical Demand"],
-  ["cargo_condition_status", "Cargo Condition Status"],
-  ["route_risk_level", "Route Risk Level"],
-  ["customs_clearance_time", "Customs Clearance Time"],
-];
-
 function App() {
-  const [backendStatus, setBackendStatus] = useState("Not checked");
+  const [shipment, setShipment] =
+    useState(initialShipment);
 
-  const [shipment, setShipment] = useState(initialShipment);
-
-  const [prediction, setPrediction] = useState(null);
-  const [predictionStatus, setPredictionStatus] = useState("idle");
-  const [predictionError, setPredictionError] = useState("");
-
-  const [recommendations, setRecommendations] = useState([]);
-  const [recommendationStatus, setRecommendationStatus] =
-    useState("idle");
-  const [recommendationError, setRecommendationError] = useState("");
-
-  const [selectedRecommendation, setSelectedRecommendation] =
+  const [prediction, setPrediction] =
     useState(null);
 
-  const [roiStatus, setRoiStatus] = useState(
-    "No evaluation data available yet"
-  );
+  const [predictionStatus, setPredictionStatus] =
+    useState("idle");
 
-  const testBackendConnection = async () => {
-    setBackendStatus("Checking...");
+  const [predictionError, setPredictionError] =
+    useState("");
 
-    try {
-      const result = await checkBackendHealth();
+  const [recommendations, setRecommendations] =
+    useState([]);
 
-      if (result.status === "ok") {
-        setBackendStatus("Backend connected");
-      } else {
-        setBackendStatus("Unexpected backend response");
-      }
-    } catch {
-      setBackendStatus("Backend unavailable");
-    }
-  };
+  const [
+    recommendationStatus,
+    setRecommendationStatus,
+  ] = useState("idle");
+
+  const [
+    recommendationError,
+    setRecommendationError,
+  ] = useState("");
+
+  const [
+    selectedRecommendation,
+    setSelectedRecommendation,
+  ] = useState(null);
+
+  const [backendStatus, setBackendStatus] =
+    useState("");
+
+  const [executionStatus, setExecutionStatus] =
+    useState("idle");
+
+  const [executionMessage, setExecutionMessage] =
+    useState("");
+
+  const [roiStatus, setRoiStatus] =
+    useState("No evaluation data available yet");
 
   const handleShipmentChange = (event) => {
     const { name, value } = event.target;
 
-    setShipment((current) => ({
-      ...current,
+    setShipment((currentShipment) => ({
+      ...currentShipment,
       [name]: value,
     }));
+  };
+
+  const buildRequestData = () => {
+    return {
+      warehouse_inventory_level: Number(
+        shipment.warehouse_inventory_level
+      ),
+      handling_equipment_availability: Number(
+        shipment.handling_equipment_availability
+      ),
+      order_fulfillment_status: Number(
+        shipment.order_fulfillment_status
+      ),
+      weather_condition_severity: Number(
+        shipment.weather_condition_severity
+      ),
+      shipping_costs: Number(
+        shipment.shipping_costs
+      ),
+      supplier_reliability_score: Number(
+        shipment.supplier_reliability_score
+      ),
+      lead_time_days: Number(
+        shipment.lead_time_days
+      ),
+      historical_demand: Number(
+        shipment.historical_demand
+      ),
+      cargo_condition_status: Number(
+        shipment.cargo_condition_status
+      ),
+      route_risk_level: Number(
+        shipment.route_risk_level
+      ),
+      customs_clearance_time: Number(
+        shipment.customs_clearance_time
+      ),
+      supplier_country:
+        shipment.supplier_country,
+      budget: Number(shipment.budget),
+      allowed_time: Number(
+        shipment.allowed_time
+      ),
+      available_capacity: Number(
+        shipment.available_capacity
+      ),
+      shipment_time: Number(
+        shipment.shipment_time
+      ),
+      shipment_capacity: Number(
+        shipment.shipment_capacity
+      ),
+    };
   };
 
   const loadPrediction = async (event) => {
@@ -90,68 +199,172 @@ function App() {
     setPredictionError("");
     setPrediction(null);
 
-    setRecommendations([]);
+    try {
+      const requestData = buildRequestData();
+
+      const predictionData =
+        await getPredictionRecommendations({
+          warehouse_inventory_level:
+            requestData.warehouse_inventory_level,
+          handling_equipment_availability:
+            requestData.handling_equipment_availability,
+          order_fulfillment_status:
+            requestData.order_fulfillment_status,
+          weather_condition_severity:
+            requestData.weather_condition_severity,
+          shipping_costs:
+            requestData.shipping_costs,
+          supplier_reliability_score:
+            requestData.supplier_reliability_score,
+          lead_time_days:
+            requestData.lead_time_days,
+          historical_demand:
+            requestData.historical_demand,
+          cargo_condition_status:
+            requestData.cargo_condition_status,
+          route_risk_level:
+            requestData.route_risk_level,
+          customs_clearance_time:
+            requestData.customs_clearance_time,
+          supplier_country:
+            requestData.supplier_country,
+        });
+
+      setPrediction(predictionData);
+      setPredictionStatus("success");
+    } catch (error) {
+      setPredictionStatus("error");
+      setPredictionError(error.message);
+    }
+  };
+
+  const loadRecommendations = async () => {
     setRecommendationStatus("loading");
     setRecommendationError("");
+    setRecommendations([]);
     setSelectedRecommendation(null);
 
-    const shipmentPayload = Object.fromEntries(
-      Object.entries(shipment).map(([key, value]) => [
-        key,
-        key === "supplier_country" ? value : Number(value),
-      ])
-    );
-
     try {
-      const predictionResult =
-        await getPredictionRecommendations(shipmentPayload);
+      const requestData = buildRequestData();
 
-      setPrediction(predictionResult);
-      setPredictionStatus("success");
+      const response =
+        await getRecommendations(requestData);
 
-      try {
-        const recommendationResult =
-          await getRecommendations(shipmentPayload);
+      const optimization =
+        response.optimization;
 
-        if (
-          Array.isArray(recommendationResult) &&
-          recommendationResult.length > 0
-        ) {
-          setRecommendations(recommendationResult.slice(0, 3));
-          setRecommendationStatus("success");
-        } else {
-          setRecommendations([]);
-          setRecommendationStatus("empty");
-        }
-      } catch (error) {
-        setRecommendations([]);
+      const backendRecommendations =
+        optimization.feasible_alternatives ||
+        optimization.alternatives ||
+        [];
+
+      setRecommendations(
+        backendRecommendations.map(
+          (recommendation, index) => ({
+            ...recommendation,
+            id:
+              recommendation.id ||
+              recommendation.option ||
+              `recommendation-${index}`,
+          })
+        )
+      );
+
+      if (
+        optimization.recommended_option
+      ) {
+        const recommended =
+          optimization.recommended_option;
+
+        setSelectedRecommendation({
+          ...recommended,
+          id:
+            recommended.id ||
+            recommended.option ||
+            "recommended-option",
+        });
+      }
+
+      if (
+        backendRecommendations.length === 0
+      ) {
         setRecommendationStatus("empty");
-        setRecommendationError(error.message);
+      } else {
+        setRecommendationStatus("success");
       }
     } catch (error) {
-      setPredictionError(error.message);
-      setPredictionStatus("error");
-
-      setRecommendations([]);
-      setRecommendationStatus("idle");
+      setRecommendationStatus("error");
+      setRecommendationError(error.message);
     }
   };
 
   const handleSelect = (recommendation) => {
     setSelectedRecommendation(recommendation);
+    setExecutionStatus("idle");
+    setExecutionMessage("");
+  };
+
+  const testBackendConnection = async () => {
+    setBackendStatus("Checking backend...");
+
+    try {
+      const data =
+        await checkBackendHealth();
+
+      setBackendStatus(
+        `Backend connected: ${
+          data.status || "ok"
+        }`
+      );
+    } catch (error) {
+      setBackendStatus(error.message);
+    }
+  };
+
+  const handleExecuteDecision = async () => {
+    if (!selectedRecommendation) {
+      return;
+    }
+
+    setExecutionStatus("loading");
+    setExecutionMessage("");
+
+    try {
+      await executeDecision(
+        selectedRecommendation
+      );
+
+      setExecutionStatus("success");
+
+      setExecutionMessage(
+        "Decision executed successfully."
+      );
+    } catch (error) {
+      setExecutionStatus("error");
+
+      setExecutionMessage(error.message);
+    }
   };
 
   const loadDecisionROI = async () => {
-    try {
-      const result = await getDecisionROI();
+    setRoiStatus("Checking evaluation data...");
 
-      if (result) {
-        setRoiStatus("Evaluation data available");
-      } else {
-        setRoiStatus("No evaluation data available yet");
+    try {
+      const data =
+        await getDecisionROI();
+
+      if (!data) {
+        setRoiStatus(
+          "No evaluation data available yet"
+        );
+        return;
       }
+
+      setRoiStatus("Evaluation data loaded");
     } catch {
-      setRoiStatus("No evaluation data available yet");
+      setRoiStatus(
+        "No evaluation data available yet"
+      );
     }
   };
 
@@ -159,15 +372,21 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>Supply Prescript</h1>
-        <p>Supply chain decision support</p>
+
+        <p>
+          Supply chain decision support
+        </p>
       </header>
 
       <main className="app-content">
+
         <section className="section">
           <h2>Shipment Risk</h2>
 
           <p className="section-description">
-            Enter the shipment values required by the prediction model.
+            Enter shipment and optimization values
+            required by the predictive and
+            prescriptive backend.
           </p>
 
           <form
@@ -175,42 +394,79 @@ function App() {
             onSubmit={loadPrediction}
           >
             <div className="prediction-form-grid">
-              {shipmentFields.map(([name, label]) => (
-                <label
-                  key={name}
-                  className="prediction-field"
-                >
-                  <span>{label}</span>
 
-                  <input
-                    type="number"
-                    name={name}
-                    value={shipment[name]}
-                    onChange={handleShipmentChange}
-                    step="any"
-                    required
-                  />
-                </label>
-              ))}
+              {shipmentFields.map(
+                ([name, label]) => (
+                  <label
+                    key={name}
+                    className="prediction-field"
+                  >
+                    <span>{label}</span>
+
+                    <input
+                      type="number"
+                      name={name}
+                      value={shipment[name]}
+                      onChange={
+                        handleShipmentChange
+                      }
+                      step="any"
+                      required
+                    />
+                  </label>
+                )
+              )}
 
               <label className="prediction-field">
-                <span>Supplier Country</span>
+                <span>
+                  Supplier Country
+                </span>
 
                 <input
                   type="text"
                   name="supplier_country"
-                  value={shipment.supplier_country}
-                  onChange={handleShipmentChange}
+                  value={
+                    shipment.supplier_country
+                  }
+                  onChange={
+                    handleShipmentChange
+                  }
                   required
                 />
               </label>
+
+              {optimizationFields.map(
+                ([name, label]) => (
+                  <label
+                    key={name}
+                    className="prediction-field"
+                  >
+                    <span>{label}</span>
+
+                    <input
+                      type="number"
+                      name={name}
+                      value={shipment[name]}
+                      onChange={
+                        handleShipmentChange
+                      }
+                      step="any"
+                      required
+                    />
+                  </label>
+                )
+              )}
+
             </div>
 
             <div className="prediction-controls">
+
               <button
                 type="submit"
                 className="secondary-button"
-                disabled={predictionStatus === "loading"}
+                disabled={
+                  predictionStatus === "loading"
+                }
               >
                 {predictionStatus === "loading"
                   ? "Generating..."
@@ -220,7 +476,26 @@ function App() {
               <button
                 type="button"
                 className="secondary-button"
-                onClick={testBackendConnection}
+                onClick={
+                  loadRecommendations
+                }
+                disabled={
+                  recommendationStatus ===
+                  "loading"
+                }
+              >
+                {recommendationStatus ===
+                "loading"
+                  ? "Generating..."
+                  : "Generate Recommendations"}
+              </button>
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={
+                  testBackendConnection
+                }
               >
                 Test Backend
               </button>
@@ -228,6 +503,7 @@ function App() {
               <span className="backend-status">
                 {backendStatus}
               </span>
+
             </div>
           </form>
 
@@ -238,82 +514,96 @@ function App() {
             </div>
           )}
 
-          {predictionStatus === "success" && prediction && (
-            <div className="prediction-result">
-              <span>Prediction Target</span>
+          {predictionStatus === "success" &&
+            prediction && (
+              <div className="prediction-result">
 
-              <strong>{prediction.prediction_target}</strong>
+                <span>
+                  Prediction Target
+                </span>
 
-              <span>Predicted Delivery-Time Deviation</span>
+                <strong>
+                  {
+                    prediction.prediction_target
+                  }
+                </strong>
 
-              <strong>
-                {prediction.predicted_delivery_time_deviation}
-              </strong>
-            </div>
-          )}
+                <span>
+                  Predicted Delivery-Time
+                  Deviation
+                </span>
+
+                <strong>
+                  {
+                    prediction.predicted_delivery_time_deviation
+                  }
+                </strong>
+
+              </div>
+            )}
         </section>
 
         <section className="section">
+
           <div className="section-heading">
             <div>
-              <h2>Recommendations</h2>
+              <h2>
+                Recommendations
+              </h2>
 
               <p className="section-description">
-                Solver-generated recommendations will appear here when
-                the prescriptive backend is available.
+                Real backend-generated
+                recommendations based on the
+                optimization API.
               </p>
             </div>
           </div>
 
-          {recommendationStatus === "idle" && (
-            <div className="recommendation-state">
-              Generate a shipment prediction to check for solver
-              recommendations.
-            </div>
-          )}
-
-          {recommendationStatus === "loading" && (
-            <div className="recommendation-state">
-              Checking for solver recommendations...
-            </div>
-          )}
-
-          {recommendationStatus === "error" && (
-            <div className="recommendation-state error">
-              {recommendationError ||
-                "Unable to load recommendations."}
-            </div>
-          )}
-
-          {recommendationStatus === "empty" &&
-            recommendations.length === 0 && (
+          {recommendationStatus ===
+            "loading" && (
               <div className="recommendation-state">
-                No solver recommendations are available yet. The
-                recommendation endpoint has not been confirmed.
+                Loading recommendations...
               </div>
             )}
 
-          {recommendationStatus === "success" &&
-            recommendations.length > 0 && (
-              <div className="recommendation-grid">
-                {recommendations.slice(0, 3).map(
-                  (recommendation, index) => (
-                    <RecommendationCard
-                      key={recommendation.id || index}
-                      recommendation={recommendation}
-                      selected={
-                        selectedRecommendation?.id ===
-                        recommendation.id
-                      }
-                      onSelect={handleSelect}
-                      optionLabel={`Option ${
-                        String.fromCharCode(65 + index)
-                      }`}
-                    />
-                  )
-                )}
+          {recommendationStatus ===
+            "error" && (
+              <div className="recommendation-state error">
+                {recommendationError ||
+                  "Unable to load recommendations."}
               </div>
             )}
+
+          {recommendationStatus ===
+            "empty" && (
+              <div className="recommendation-state">
+                No feasible recommendations were
+                returned by the backend.
+              </div>
+            )}
+
+          {recommendations.length > 0 && (
+            <div className="recommendation-grid">
+
+              {recommendations.map(
+                (recommendation) => (
+                  <RecommendationCard
+                    key={recommendation.id}
+                    recommendation={
+                      recommendation
+                    }
+                    selected={
+                      selectedRecommendation?.id ===
+                      recommendation.id
+                    }
+                    onSelect={handleSelect}
+                  />
+                )
+              )}
+
+            </div>
+          )}
+
         </section>
 
         <section className="section">
@@ -321,6 +611,7 @@ function App() {
 
           {selectedRecommendation ? (
             <div className="decision-panel">
+
               <div>
                 <span className="decision-label">
                   Selected Recommendation
@@ -328,98 +619,132 @@ function App() {
 
                 <h3>
                   {selectedRecommendation.action ||
-                    "Selected Option"}
+                    selectedRecommendation.option ||
+                    "Selected Recommendation"}
                 </h3>
 
                 <p>
-                  {selectedRecommendation.reason ||
-                    selectedRecommendation.expected_impact ||
-                    "This recommendation has been selected for review."}
+                  This recommendation was selected
+                  from the real optimization results.
                 </p>
-
-                <div className="decision-details">
-                  {selectedRecommendation.cost && (
-                    <span>
-                      Cost: {selectedRecommendation.cost}
-                    </span>
-                  )}
-
-                  {selectedRecommendation.time && (
-                    <span>
-                      Time: {selectedRecommendation.time}
-                    </span>
-                  )}
-
-                  {selectedRecommendation.capacity && (
-                    <span>
-                      Capacity: {selectedRecommendation.capacity}
-                    </span>
-                  )}
-                </div>
               </div>
 
               <button
                 type="button"
                 className="execute-button"
-                disabled
+                onClick={
+                  handleExecuteDecision
+                }
+                disabled={
+                  executionStatus === "loading"
+                }
               >
-                Execute Decision
+                {executionStatus === "loading"
+                  ? "Executing..."
+                  : "Execute Decision"}
               </button>
 
+              {executionStatus ===
+                "error" && (
+                  <p className="execution-error">
+                    {executionMessage}
+                  </p>
+                )}
+
+              {executionStatus ===
+                "success" && (
+                  <p className="execution-success">
+                    {executionMessage}
+                  </p>
+                )}
+
               <p className="decision-note">
-                Decision execution will be enabled after the
-                backend/database write-back endpoint is available.
+                The selected recommendation is ready
+                for write-back integration. Mansi's
+                decision endpoint has not been
+                provided yet, so no endpoint has been
+                invented.
               </p>
+
             </div>
           ) : (
             <p className="section-description">
-              Select one recommendation to prepare the decision.
+              Generate recommendations and select
+              one to prepare the decision.
             </p>
           )}
         </section>
 
         <section className="section">
-          <h2>Feedback / Decision ROI</h2>
+          <h2>
+            Feedback / Decision ROI
+          </h2>
 
           <div className="roi-grid">
+
             <article className="roi-card">
               <span>Decision ROI</span>
-              <strong>No evaluation data available yet</strong>
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
-              <span>Positive Outcomes</span>
-              <strong>No evaluation data available yet</strong>
+              <span>
+                Positive Outcomes
+              </span>
+
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
-              <span>Evaluated Decisions</span>
-              <strong>No evaluation data available yet</strong>
+              <span>
+                Evaluated Decisions
+              </span>
+
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
 
             <article className="roi-card">
-              <span>Predicted Cost vs Actual Cost</span>
-              <strong>No evaluation data available yet</strong>
+              <span>
+                Predicted Cost vs Actual Cost
+              </span>
+
+              <strong>
+                No evaluation data available yet
+              </strong>
             </article>
+
           </div>
 
           <div className="evaluation-history">
+
             <div className="evaluation-heading">
+
               <div>
-                <h3>Evaluation History</h3>
+                <h3>
+                  Evaluation History
+                </h3>
 
                 <p className="section-description">
-                  Decision evaluation results will appear here when
-                  backend evaluation data becomes available.
+                  Decision evaluation results will
+                  appear here when backend
+                  evaluation data becomes available.
                 </p>
               </div>
 
               <span className="roi-status">
                 {roiStatus}
               </span>
+
             </div>
 
             <div className="evaluation-table">
+
               <div className="evaluation-row evaluation-header">
                 <span>Decision</span>
                 <span>Predicted Cost</span>
@@ -428,10 +753,12 @@ function App() {
               </div>
 
               <div className="evaluation-empty">
-                Evaluation results will appear after operational
-                decisions have been recorded and actual outcomes are
+                Evaluation results will appear after
+                operational decisions have been
+                recorded and actual outcomes are
                 available.
               </div>
+
             </div>
 
             <button
@@ -441,8 +768,10 @@ function App() {
             >
               Check Evaluation Data
             </button>
+
           </div>
         </section>
+
       </main>
     </div>
   );

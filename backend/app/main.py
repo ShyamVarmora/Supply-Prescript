@@ -1,19 +1,19 @@
-import pandas as pd
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from ml.predict import load_model
+from ml.predict import predict_shipment_delay
+from ml.optimizer import OptimizationInput, optimize_alternatives
 
 
 app = FastAPI(
     title="Supply Prescript API",
-    description="Predictive shipment-delay baseline API",
-    version="1.0.0",
+    description="Predictive and prescriptive supply-chain API",
+    version="1.1.0",
 )
 
 
 # ============================================================
-# INPUT SCHEMA
+# SHIPMENT INPUT
 # ============================================================
 
 class ShipmentPredictionInput(BaseModel):
@@ -32,14 +32,38 @@ class ShipmentPredictionInput(BaseModel):
 
 
 # ============================================================
+# OPTIMIZATION INPUT
+# ============================================================
+
+class OptimizationRequest(BaseModel):
+    warehouse_inventory_level: float
+    handling_equipment_availability: float
+    order_fulfillment_status: float
+    weather_condition_severity: float
+    shipping_costs: float
+    supplier_reliability_score: float
+    lead_time_days: float
+    historical_demand: float
+    cargo_condition_status: float
+    route_risk_level: float
+    customs_clearance_time: float
+    supplier_country: str
+
+    budget: float = Field(..., ge=0)
+    allowed_time: float = Field(..., ge=0)
+    available_capacity: float = Field(..., ge=0)
+
+    shipment_time: float = Field(..., gt=0)
+    shipment_capacity: float = Field(..., gt=0)
+
+
+# ============================================================
 # HEALTH CHECK
 # ============================================================
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}
 
 
 # ============================================================
@@ -47,68 +71,30 @@ def health():
 # ============================================================
 
 @app.post("/predict/shipment-delay")
-def predict_shipment_delay(
+def predict_shipment_delay_endpoint(
     shipment: ShipmentPredictionInput,
 ):
     try:
-        model = load_model()
-
-        input_data = pd.DataFrame(
-            [
-                {
-                    "warehouse_inventory_level":
-                        shipment.warehouse_inventory_level,
-
-                    "handling_equipment_availability":
-                        shipment.handling_equipment_availability,
-
-                    "order_fulfillment_status":
-                        shipment.order_fulfillment_status,
-
-                    "weather_condition_severity":
-                        shipment.weather_condition_severity,
-
-                    "shipping_costs":
-                        shipment.shipping_costs,
-
-                    "supplier_reliability_score":
-                        shipment.supplier_reliability_score,
-
-                    "lead_time_days":
-                        shipment.lead_time_days,
-
-                    "historical_demand":
-                        shipment.historical_demand,
-
-                    "cargo_condition_status":
-                        shipment.cargo_condition_status,
-
-                    "route_risk_level":
-                        shipment.route_risk_level,
-
-                    "customs_clearance_time":
-                        shipment.customs_clearance_time,
-
-                    "supplier_country":
-                        shipment.supplier_country,
-                }
-            ]
+        prediction = predict_shipment_delay(
+            shipment.model_dump()
         )
-
-        prediction = model.predict(input_data)
 
         return {
             "prediction_target": "delivery_time_deviation",
-            "predicted_delivery_time_deviation": float(
-                prediction[0]
-            ),
+            "predicted_delivery_time_deviation": prediction,
         }
 
-    except FileNotFoundError as exc:
+    except FileNotFoundError:
         raise HTTPException(
             status_code=503,
             detail="Shipment-delay model is unavailable.",
-        ) from exc
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        )
 
     except Exception as exc:
         print(
@@ -118,8 +104,106 @@ def predict_shipment_delay(
 
         raise HTTPException(
             status_code=500,
-            detail=(
-                f"Prediction failed: "
-                f"{type(exc).__name__}: {exc}"
-            ),
-        ) from exc
+            detail="Shipment-delay prediction failed.",
+        )
+
+
+# ============================================================
+# PRESCRIPTIVE RECOMMENDATION
+# ============================================================
+
+@app.post("/recommend")
+def recommend_action(
+    request: OptimizationRequest,
+):
+    try:
+        request_data = request.model_dump()
+
+        # ----------------------------------------------------
+        # 1. Prepare shipment features for XGBoost
+        # ----------------------------------------------------
+
+        shipment_data = {
+            key: request_data[key]
+            for key in [
+                "warehouse_inventory_level",
+                "handling_equipment_availability",
+                "order_fulfillment_status",
+                "weather_condition_severity",
+                "shipping_costs",
+                "supplier_reliability_score",
+                "lead_time_days",
+                "historical_demand",
+                "cargo_condition_status",
+                "route_risk_level",
+                "customs_clearance_time",
+                "supplier_country",
+            ]
+        }
+
+        # ----------------------------------------------------
+        # 2. Predict shipment delay
+        # ----------------------------------------------------
+
+        predicted_delay = predict_shipment_delay(
+            shipment_data
+        )
+
+        # ----------------------------------------------------
+        # 3. Build optimization scenario
+        # ----------------------------------------------------
+
+        scenario = OptimizationInput(
+            budget=request_data["budget"],
+            allowed_time=request_data["allowed_time"],
+            available_capacity=request_data[
+                "available_capacity"
+            ],
+            predicted_delay=predicted_delay,
+            shipment_cost=request_data["shipping_costs"],
+            shipment_time=request_data["shipment_time"],
+            shipment_capacity=request_data[
+                "shipment_capacity"
+            ],
+        )
+
+        # ----------------------------------------------------
+        # 4. Run constrained optimization
+        # ----------------------------------------------------
+
+        result = optimize_alternatives(scenario)
+
+        # ----------------------------------------------------
+        # 5. Return prediction + recommendations
+        # ----------------------------------------------------
+
+        return {
+            "prediction": {
+                "target": "delivery_time_deviation",
+                "predicted_delay": predicted_delay,
+            },
+            "optimization": result,
+        }
+
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=503,
+            detail="Shipment-delay model is unavailable.",
+        )
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        )
+
+    except Exception as exc:
+        print(
+            f"OPTIMIZATION ERROR: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Prescriptive optimization failed.",
+        )

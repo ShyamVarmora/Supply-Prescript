@@ -7,8 +7,42 @@ import {
 import RecommendationCard from "./components/RecommendationCard";
 import "./App.css";
 
+const initialShipment = {
+  warehouse_inventory_level: "",
+  handling_equipment_availability: "",
+  order_fulfillment_status: "",
+  weather_condition_severity: "",
+  shipping_costs: "",
+  supplier_reliability_score: "",
+  lead_time_days: "",
+  historical_demand: "",
+  cargo_condition_status: "",
+  route_risk_level: "",
+  customs_clearance_time: "",
+  supplier_country: "",
+};
+
+const shipmentFields = [
+  ["warehouse_inventory_level", "Warehouse Inventory Level"],
+  ["handling_equipment_availability", "Handling Equipment Availability"],
+  ["order_fulfillment_status", "Order Fulfillment Status"],
+  ["weather_condition_severity", "Weather Condition Severity"],
+  ["shipping_costs", "Shipping Costs"],
+  ["supplier_reliability_score", "Supplier Reliability Score"],
+  ["lead_time_days", "Lead Time Days"],
+  ["historical_demand", "Historical Demand"],
+  ["cargo_condition_status", "Cargo Condition Status"],
+  ["route_risk_level", "Route Risk Level"],
+  ["customs_clearance_time", "Customs Clearance Time"],
+];
+
 function App() {
   const [backendStatus, setBackendStatus] = useState("Not checked");
+
+  const [shipment, setShipment] = useState(initialShipment);
+  const [prediction, setPrediction] = useState(null);
+  const [predictionStatus, setPredictionStatus] = useState("idle");
+  const [predictionError, setPredictionError] = useState("");
 
   const [recommendations, setRecommendations] = useState([]);
   const [recommendationStatus, setRecommendationStatus] = useState("idle");
@@ -31,37 +65,47 @@ function App() {
       } else {
         setBackendStatus("Unexpected backend response");
       }
-    } catch (error) {
+    } catch {
       setBackendStatus("Backend unavailable");
     }
   };
 
-  const loadPrediction = async (shipment) => {
-    setRecommendationStatus("loading");
-    setRecommendationError("");
+  const handleShipmentChange = (event) => {
+    const { name, value } = event.target;
+
+    setShipment((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const loadPrediction = async (event) => {
+    event.preventDefault();
+
+    setPredictionStatus("loading");
+    setPredictionError("");
+    setPrediction(null);
+
     setRecommendations([]);
+    setRecommendationStatus("empty");
+    setRecommendationError("");
     setSelectedRecommendation(null);
 
+    const shipmentPayload = Object.fromEntries(
+      Object.entries(shipment).map(([key, value]) => [
+        key,
+        key === "supplier_country" ? value : Number(value),
+      ])
+    );
+
     try {
-      const result = await getPredictionRecommendations(shipment);
+      const result = await getPredictionRecommendations(shipmentPayload);
 
-      if (!result) {
-        setRecommendationStatus("empty");
-        return;
-      }
-
-      /*
-       * The current backend provides a prediction only.
-       * It does not provide solver-generated recommendations.
-       *
-       * Therefore we intentionally do not transform the prediction
-       * into fake Option 1 / Option 2 / Option 3 recommendations.
-       */
-      setRecommendations([]);
-      setRecommendationStatus("empty");
+      setPrediction(result);
+      setPredictionStatus("success");
     } catch (error) {
-      setRecommendationError(error.message);
-      setRecommendationStatus("error");
+      setPredictionError(error.message);
+      setPredictionStatus("error");
     }
   };
 
@@ -78,7 +122,7 @@ function App() {
       } else {
         setRoiStatus("No evaluation data available yet");
       }
-    } catch (error) {
+    } catch {
       setRoiStatus("No evaluation data available yet");
     }
   };
@@ -95,24 +139,77 @@ function App() {
           <h2>Shipment Risk</h2>
 
           <p className="section-description">
-            Shipment risk prediction is provided by the backend model.
+            Enter the shipment values required by the prediction model.
           </p>
 
-          <div className="prediction-controls">
-            <p className="section-description">
-              Prediction input will be connected to the shipment data source
-              when the complete operational input flow is available.
-            </p>
+          <form className="prediction-form" onSubmit={loadPrediction}>
+            <div className="prediction-form-grid">
+              {shipmentFields.map(([name, label]) => (
+                <label key={name} className="prediction-field">
+                  <span>{label}</span>
+                  <input
+                    type="number"
+                    name={name}
+                    value={shipment[name]}
+                    onChange={handleShipmentChange}
+                    step="any"
+                    required
+                  />
+                </label>
+              ))}
 
-            <button
-              type="button"
-              className="secondary-button"
-              disabled
-              title="Waiting for the operational shipment input flow"
-            >
-              Generate Prediction
-            </button>
-          </div>
+              <label className="prediction-field">
+                <span>Supplier Country</span>
+                <input
+                  type="text"
+                  name="supplier_country"
+                  value={shipment.supplier_country}
+                  onChange={handleShipmentChange}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="prediction-controls">
+              <button
+                type="submit"
+                className="secondary-button"
+                disabled={predictionStatus === "loading"}
+              >
+                {predictionStatus === "loading"
+                  ? "Generating..."
+                  : "Generate Prediction"}
+              </button>
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={testBackendConnection}
+              >
+                Test Backend
+              </button>
+
+              <span className="backend-status">{backendStatus}</span>
+            </div>
+          </form>
+
+          {predictionStatus === "error" && (
+            <div className="recommendation-error">
+              {predictionError || "Unable to generate shipment prediction."}
+            </div>
+          )}
+
+          {predictionStatus === "success" && prediction && (
+            <div className="prediction-result">
+              <span>Prediction Target</span>
+              <strong>{prediction.prediction_target}</strong>
+
+              <span>Predicted Delivery-Time Deviation</span>
+              <strong>
+                {prediction.predicted_delivery_time_deviation}
+              </strong>
+            </div>
+          )}
         </section>
 
         <section className="section">
@@ -152,7 +249,9 @@ function App() {
                 <RecommendationCard
                   key={recommendation.id}
                   recommendation={recommendation}
-                  selected={selectedRecommendation?.id === recommendation.id}
+                  selected={
+                    selectedRecommendation?.id === recommendation.id
+                  }
                   onSelect={handleSelect}
                 />
               ))}
@@ -256,23 +355,6 @@ function App() {
               Check Evaluation Data
             </button>
           </div>
-        </section>
-
-        <section className="section">
-          <h2>Backend Connection</h2>
-
-          <div className="backend-status">
-            <span>Status</span>
-            <strong>{backendStatus}</strong>
-          </div>
-
-          <button
-            type="button"
-            className="backend-button"
-            onClick={testBackendConnection}
-          >
-            Test Backend Connection
-          </button>
         </section>
       </main>
     </div>

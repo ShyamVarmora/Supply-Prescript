@@ -5,7 +5,9 @@ function RecommendationCard({
 }) {
   return (
     <article
-      className={`recommendation-card ${selected ? "selected" : ""}`}
+      className={`recommendation-card ${
+        selected ? "selected" : ""
+      }`}
     >
       <div className="card-header">
         <span className="option-label">
@@ -13,26 +15,38 @@ function RecommendationCard({
         </span>
 
         {selected && (
-          <span className="selected-badge">Selected</span>
+          <span className="selected-badge">
+            Selected
+          </span>
         )}
       </div>
 
       <h3>{recommendation.action}</h3>
 
-      <div className="tradeoff">
-        <div className="tradeoff-item">
+      <div className="recommendation-details">
+        <div className="detail-item">
           <span>Cost</span>
           <strong>{recommendation.cost}</strong>
         </div>
 
-        <div className="tradeoff-item">
-          <span>Speed / Time</span>
-          <strong>{recommendation.speed}</strong>
+        <div className="detail-item">
+          <span>Time</span>
+          <strong>{recommendation.time}</strong>
+        </div>
+
+        <div className="detail-item">
+          <span>Capacity</span>
+          <strong>{recommendation.capacity}</strong>
+        </div>
+
+        <div className="detail-item">
+          <span>Impact</span>
+          <strong>{recommendation.impact}</strong>
         </div>
       </div>
 
       <div className="reason">
-        <span>Reason / Expected Outcome</span>
+        <span>Recommendation</span>
         <p>{recommendation.reason}</p>
       </div>
 
@@ -41,7 +55,9 @@ function RecommendationCard({
         className="select-button"
         onClick={() => onSelect(recommendation)}
       >
-        {selected ? "Selected" : "Select Recommendation"}
+        {selected
+          ? "Selected"
+          : "Select Recommendation"}
       </button>
     </article>
   );

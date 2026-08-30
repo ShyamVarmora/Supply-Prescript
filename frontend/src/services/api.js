@@ -1,28 +1,12 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-async function getErrorMessage(response) {
-  try {
-    const errorData = await response.json();
-
-    if (errorData?.detail) {
-      return typeof errorData.detail === "string"
-        ? errorData.detail
-        : JSON.stringify(errorData.detail);
-    }
-  } catch {
-    // Ignore JSON parsing errors.
-  }
-
-  return `Backend returned ${response.status}`;
-}
-
 export async function checkBackendHealth() {
   try {
     const response = await fetch(`${API_BASE_URL}/health`);
 
     if (!response.ok) {
-      throw new Error(await getErrorMessage(response));
+      throw new Error(`Backend returned ${response.status}`);
     }
 
     return await response.json();
@@ -47,10 +31,36 @@ export async function getPredictionRecommendations(shipment) {
     );
 
     if (!response.ok) {
-      throw new Error(await getErrorMessage(response));
+      let message = `Backend returned ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+
+        if (errorData?.detail) {
+          message = errorData.detail;
+        }
+      } catch {
+        // Keep the default HTTP error message.
+      }
+
+      throw new Error(message);
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    if (
+      !data ||
+      data.prediction_target !==
+        "delivery_time_deviation" ||
+      typeof data.predicted_delivery_time_deviation !==
+        "number"
+    ) {
+      throw new Error(
+        "Invalid prediction response from backend."
+      );
+    }
+
+    return data;
   } catch (error) {
     throw new Error(
       `Unable to load shipment prediction: ${error.message}`
@@ -60,25 +70,34 @@ export async function getPredictionRecommendations(shipment) {
 
 export async function getRecommendations(requestData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/recommend`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/recommend`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(await getErrorMessage(response));
+      let message = `Backend returned ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+
+        if (errorData?.detail) {
+          message = errorData.detail;
+        }
+      } catch {
+        // Keep the default HTTP error message.
+      }
+
+      throw new Error(message);
     }
 
-    const data = await response.json();
-
-    if (!data?.optimization) {
-      throw new Error("Invalid recommendation response from backend.");
-    }
-
-    return data;
+    return await response.json();
   } catch (error) {
     throw new Error(
       `Unable to load recommendations: ${error.message}`

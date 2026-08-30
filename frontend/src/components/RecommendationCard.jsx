@@ -1,25 +1,8 @@
-function formatValue(value) {
-  if (value === null || value === undefined) {
-    return "Not available";
-  }
-
-  if (typeof value === "object") {
-    return JSON.stringify(value);
-  }
-
-  return String(value);
-}
-
 function RecommendationCard({
   recommendation,
   selected,
   onSelect,
 }) {
-  const recommendationName =
-    recommendation.option ||
-    recommendation.action ||
-    "Recommendation";
-
   return (
     <article
       className={`recommendation-card ${
@@ -28,7 +11,7 @@ function RecommendationCard({
     >
       <div className="card-header">
         <span className="option-label">
-          {recommendationName}
+          {recommendation.option}
         </span>
 
         {selected && (
@@ -38,59 +21,33 @@ function RecommendationCard({
         )}
       </div>
 
-      <h3>
-        {recommendation.action || recommendationName}
-      </h3>
+      <h3>{recommendation.action}</h3>
 
       <div className="recommendation-details">
         <div className="detail-item">
           <span>Cost</span>
-          <strong>
-            {formatValue(
-              recommendation.cost ??
-                recommendation.expected_cost
-            )}
-          </strong>
+          <strong>{recommendation.cost}</strong>
         </div>
 
         <div className="detail-item">
           <span>Time</span>
-          <strong>
-            {formatValue(
-              recommendation.time ??
-                recommendation.expected_time
-            )}
-          </strong>
+          <strong>{recommendation.time}</strong>
         </div>
 
         <div className="detail-item">
           <span>Capacity</span>
-          <strong>
-            {formatValue(
-              recommendation.capacity ??
-                recommendation.required_capacity
-            )}
-          </strong>
+          <strong>{recommendation.capacity}</strong>
         </div>
 
         <div className="detail-item">
           <span>Impact</span>
-          <strong>
-            {formatValue(
-              recommendation.expected_impact ??
-                recommendation.impact
-            )}
-          </strong>
+          <strong>{recommendation.impact}</strong>
         </div>
       </div>
 
       <div className="reason">
-        <span>Feasibility</span>
-
-        <p>
-          {recommendation.feasibility ||
-            "Backend-generated recommendation"}
-        </p>
+        <span>Recommendation</span>
+        <p>{recommendation.reason}</p>
       </div>
 
       <button

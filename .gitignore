@@ -29,3 +29,5 @@ models/supply_chain_risk_model.pkl
 
 data/processed/prescriptive_recommendations.csv
 __pycache__/
+
+data/processed/predictions.csv

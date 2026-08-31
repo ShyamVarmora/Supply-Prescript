@@ -7,7 +7,6 @@ import RecommendationCard from "./components/RecommendationCard";
 import {
   checkBackendHealth,
   getDecisionROI,
-  getPredictionRecommendations,
   getRecommendations,
 } from "./services/api";
 
@@ -83,9 +82,6 @@ function App() {
   const [shipment, setShipment] =
     useState(initialShipment);
 
-  const [backendStatus, setBackendStatus] =
-    useState("Backend status not checked");
-
   const [prediction, setPrediction] =
     useState(null);
 
@@ -113,8 +109,11 @@ function App() {
     setSelectedRecommendation,
   ] = useState(null);
 
+  const [backendStatus, setBackendStatus] =
+    useState("");
+
   const [roiStatus, setRoiStatus] =
-    useState("No evaluation data checked yet");
+    useState("");
 
   const handleShipmentChange = (event) => {
     const { name, value } = event.target;
@@ -125,37 +124,72 @@ function App() {
     }));
   };
 
-  const buildShipmentPayload = () => {
-    const numericFields = [
-      "warehouse_inventory_level",
-      "handling_equipment_availability",
-      "order_fulfillment_status",
-      "weather_condition_severity",
-      "shipping_costs",
-      "supplier_reliability_score",
-      "lead_time_days",
-      "historical_demand",
-      "cargo_condition_status",
-      "route_risk_level",
-      "customs_clearance_time",
-      "budget",
-      "allowed_time",
-      "available_capacity",
-      "shipment_time",
-      "shipment_capacity",
-    ];
+  const buildShipmentPayload = () => ({
+    warehouse_inventory_level: Number(
+      shipment.warehouse_inventory_level
+    ),
 
-    const payload = {
-      supplier_country:
-        shipment.supplier_country.trim(),
-    };
+    handling_equipment_availability: Number(
+      shipment.handling_equipment_availability
+    ),
 
-    numericFields.forEach((field) => {
-      payload[field] = Number(shipment[field]);
-    });
+    order_fulfillment_status: Number(
+      shipment.order_fulfillment_status
+    ),
 
-    return payload;
-  };
+    weather_condition_severity: Number(
+      shipment.weather_condition_severity
+    ),
+
+    shipping_costs: Number(
+      shipment.shipping_costs
+    ),
+
+    supplier_reliability_score: Number(
+      shipment.supplier_reliability_score
+    ),
+
+    lead_time_days: Number(
+      shipment.lead_time_days
+    ),
+
+    historical_demand: Number(
+      shipment.historical_demand
+    ),
+
+    cargo_condition_status: Number(
+      shipment.cargo_condition_status
+    ),
+
+    route_risk_level: Number(
+      shipment.route_risk_level
+    ),
+
+    customs_clearance_time: Number(
+      shipment.customs_clearance_time
+    ),
+
+    supplier_country:
+      shipment.supplier_country.trim(),
+
+    budget: Number(shipment.budget),
+
+    allowed_time: Number(
+      shipment.allowed_time
+    ),
+
+    available_capacity: Number(
+      shipment.available_capacity
+    ),
+
+    shipment_time: Number(
+      shipment.shipment_time
+    ),
+
+    shipment_capacity: Number(
+      shipment.shipment_capacity
+    ),
+  });
 
   const loadPrediction = async (event) => {
     event.preventDefault();
@@ -170,7 +204,8 @@ function App() {
     setSelectedRecommendation(null);
 
     try {
-      const payload = buildShipmentPayload();
+      const payload =
+        buildShipmentPayload();
 
       /*
        * POST /recommend performs:
@@ -183,6 +218,7 @@ function App() {
        *      ↓
        * recommendation alternatives
        */
+
       const result =
         await getRecommendations(payload);
 
@@ -201,23 +237,24 @@ function App() {
       setPrediction({
         prediction_target:
           backendPrediction.target,
+
         predicted_delivery_time_deviation:
           backendPrediction.predicted_delay,
       });
 
       setPredictionStatus("success");
 
-      const alternatives =
-        optimization?.alternatives || [];
-
       const feasibleAlternatives =
-        optimization?.feasible_alternatives || [];
+        optimization?.feasible_alternatives ||
+        [];
 
       /*
-       * Display feasible alternatives when available.
-       * If backend returns no feasible alternatives,
-       * keep the UI in the empty state.
+       * Display only feasible alternatives.
+       *
+       * The backend evaluates all alternatives and
+       * returns feasible_alternatives separately.
        */
+
       const sourceRecommendations =
         feasibleAlternatives.length > 0
           ? feasibleAlternatives
@@ -273,7 +310,9 @@ function App() {
         normalizedRecommendations
       );
 
-      if (normalizedRecommendations.length > 0) {
+      if (
+        normalizedRecommendations.length > 0
+      ) {
         setRecommendationStatus("success");
       } else if (
         optimization?.status ===
@@ -287,21 +326,6 @@ function App() {
       } else {
         setRecommendationStatus("empty");
       }
-
-      /*
-       * Keep this available for compatibility with
-       * the existing prediction endpoint, but the
-       * recommendation flow above uses POST /recommend.
-       */
-      await getPredictionRecommendations(
-        payload
-      ).catch(() => null);
-
-      /*
-       * Avoid unused optimization data while retaining
-       * the backend response structure for debugging.
-       */
-      void alternatives;
     } catch (error) {
       setPredictionStatus("error");
 
@@ -323,11 +347,15 @@ function App() {
   };
 
   const handleSelect = (recommendation) => {
-    setSelectedRecommendation(recommendation);
+    setSelectedRecommendation(
+      recommendation
+    );
   };
 
   const testBackendConnection = async () => {
-    setBackendStatus("Checking backend...");
+    setBackendStatus(
+      "Checking backend..."
+    );
 
     try {
       const data =
@@ -344,7 +372,9 @@ function App() {
   };
 
   const loadDecisionROI = async () => {
-    setRoiStatus("Checking evaluation data...");
+    setRoiStatus(
+      "Checking evaluation data..."
+    );
 
     try {
       const data =
@@ -358,7 +388,9 @@ function App() {
         return;
       }
 
-      setRoiStatus("Evaluation data loaded");
+      setRoiStatus(
+        "Evaluation data loaded"
+      );
     } catch {
       setRoiStatus(
         "No evaluation data available yet"
@@ -377,15 +409,17 @@ function App() {
       </header>
 
       <main className="app-content">
+
         {/* SHIPMENT RISK */}
 
         <section className="section">
           <h2>Shipment Risk</h2>
 
           <p className="section-description">
-            Enter the shipment values and operational
-            constraints required by the prediction and
-            optimization models.
+            Enter the shipment values and
+            operational constraints required by
+            the prediction and optimization
+            models.
           </p>
 
           <form
@@ -393,6 +427,7 @@ function App() {
             onSubmit={loadPrediction}
           >
             <div className="prediction-form-grid">
+
               {shipmentFields.map(
                 ([name, label]) => (
                   <label
@@ -450,12 +485,16 @@ function App() {
               </label>
 
               <label className="prediction-field">
-                <span>Allowed Time</span>
+                <span>
+                  Allowed Time
+                </span>
 
                 <input
                   type="number"
                   name="allowed_time"
-                  value={shipment.allowed_time}
+                  value={
+                    shipment.allowed_time
+                  }
                   onChange={
                     handleShipmentChange
                   }
@@ -486,12 +525,16 @@ function App() {
               </label>
 
               <label className="prediction-field">
-                <span>Shipment Time</span>
+                <span>
+                  Shipment Time
+                </span>
 
                 <input
                   type="number"
                   name="shipment_time"
-                  value={shipment.shipment_time}
+                  value={
+                    shipment.shipment_time
+                  }
                   onChange={
                     handleShipmentChange
                   }
@@ -520,9 +563,11 @@ function App() {
                   required
                 />
               </label>
+
             </div>
 
             <div className="prediction-controls">
+
               <button
                 type="submit"
                 className="secondary-button"
@@ -548,6 +593,7 @@ function App() {
               <span className="backend-status">
                 {backendStatus}
               </span>
+
             </div>
           </form>
 
@@ -561,16 +607,20 @@ function App() {
           {predictionStatus === "success" &&
             prediction && (
               <div className="prediction-result">
+
                 <span>
                   Prediction Target
                 </span>
 
                 <strong>
-                  {prediction.prediction_target}
+                  {
+                    prediction.prediction_target
+                  }
                 </strong>
 
                 <span>
-                  Predicted Delivery-Time Deviation
+                  Predicted Delivery-Time
+                  Deviation
                 </span>
 
                 <strong>
@@ -578,6 +628,7 @@ function App() {
                     prediction.predicted_delivery_time_deviation
                   }
                 </strong>
+
               </div>
             )}
         </section>
@@ -585,31 +636,37 @@ function App() {
         {/* RECOMMENDATIONS */}
 
         <section className="section">
+
           <div className="section-heading">
             <div>
-              <h2>Recommendations</h2>
+              <h2>
+                Recommendations
+              </h2>
 
               <p className="section-description">
-                Recommendations generated by the backend
-                optimization engine.
+                Recommendations generated by the
+                backend optimization engine.
               </p>
             </div>
           </div>
 
-          {recommendationStatus === "loading" && (
-            <div className="recommendation-state">
-              Loading recommendations...
-            </div>
-          )}
+          {recommendationStatus ===
+            "loading" && (
+              <div className="recommendation-state">
+                Loading recommendations...
+              </div>
+            )}
 
-          {recommendationStatus === "error" && (
-            <div className="recommendation-state error">
-              {recommendationError ||
-                "Unable to load recommendations."}
-            </div>
-          )}
+          {recommendationStatus ===
+            "error" && (
+              <div className="recommendation-state error">
+                {recommendationError ||
+                  "Unable to load recommendations."}
+              </div>
+            )}
 
-          {recommendationStatus === "empty" &&
+          {recommendationStatus ===
+            "empty" &&
             recommendations.length === 0 && (
               <div className="recommendation-state">
                 {recommendationError ||
@@ -619,6 +676,7 @@ function App() {
 
           {recommendations.length > 0 && (
             <div className="recommendation-grid">
+
               {recommendations.map(
                 (recommendation) => (
                   <RecommendationCard
@@ -634,17 +692,21 @@ function App() {
                   />
                 )
               )}
+
             </div>
           )}
+
         </section>
 
         {/* DECISION */}
 
         <section className="section">
+
           <h2>Decision</h2>
 
           {selectedRecommendation ? (
             <div className="decision-panel">
+
               <div>
                 <span className="decision-label">
                   Selected Recommendation
@@ -663,6 +725,7 @@ function App() {
                 </p>
 
                 <div className="decision-details">
+
                   <span>
                     Cost:{" "}
                     {
@@ -690,6 +753,7 @@ function App() {
                       selectedRecommendation.impact
                     }
                   </span>
+
                 </div>
               </div>
 
@@ -697,6 +761,7 @@ function App() {
                 type="button"
                 className="execute-button"
                 disabled
+                title="Decision write-back endpoint is not available yet"
               >
                 Execute Decision
               </button>
@@ -708,23 +773,57 @@ function App() {
                 available yet, so decision execution
                 remains disabled.
               </p>
+
             </div>
           ) : (
             <p className="section-description">
-              Select a recommendation to prepare the
-              decision.
+              Select a recommendation to prepare
+              the decision.
             </p>
           )}
+
         </section>
 
         {/* FEEDBACK / ROI */}
 
         <section className="section">
-          <h2>Feedback / Decision ROI</h2>
+
+          <div className="section-heading">
+
+            <div>
+              <h2>
+                Feedback / Decision ROI
+              </h2>
+
+              <p className="section-description">
+                Evaluation and ROI data will appear
+                after decision write-back and
+                evaluation backend integration.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={loadDecisionROI}
+            >
+              Check Evaluation
+            </button>
+
+          </div>
+
+          {roiStatus && (
+            <p className="section-description">
+              {roiStatus}
+            </p>
+          )}
 
           <div className="roi-grid">
+
             <article className="roi-card">
-              <span>Decision ROI</span>
+              <span>
+                Decision ROI
+              </span>
 
               <strong>
                 No evaluation data available yet
@@ -760,59 +859,43 @@ function App() {
                 No evaluation data available yet
               </strong>
             </article>
+
           </div>
 
+        </section>
+
+        {/* EVALUATION HISTORY */}
+
+        <section className="section">
+
+          <h2>
+            Evaluation History
+          </h2>
+
           <div className="evaluation-history">
-            <div className="evaluation-heading">
-              <div>
-                <h3>
-                  Evaluation History
-                </h3>
-
-                <p className="section-description">
-                  Decision evaluation results will
-                  appear here when backend evaluation
-                  data becomes available.
-                </p>
-              </div>
-
-              <span className="roi-status">
-                {roiStatus}
-              </span>
-            </div>
 
             <div className="evaluation-table">
+
               <div className="evaluation-row evaluation-header">
                 <span>Decision</span>
-
-                <span>
-                  Predicted Cost
-                </span>
-
-                <span>
-                  Actual Cost
-                </span>
-
+                <span>Status</span>
                 <span>Outcome</span>
+                <span>ROI</span>
               </div>
 
               <div className="evaluation-empty">
-                Evaluation results will appear after
-                operational decisions have been
-                recorded and actual outcomes are
-                available.
+                No evaluation history is available
+                yet. Decision write-back and
+                evaluation endpoints are pending
+                backend/database integration.
               </div>
+
             </div>
 
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={loadDecisionROI}
-            >
-              Check Evaluation Data
-            </button>
           </div>
+
         </section>
+
       </main>
     </div>
   );

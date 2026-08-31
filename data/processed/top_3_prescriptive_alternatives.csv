@@ -1,0 +1,4 @@
+recommendation_rank,action,cost,risk_reduction,time_saved_days,capacity_required,operational_impact,optimization_score,budget_valid,time_valid,capacity_valid,all_constraints_satisfied
+1,Expedite Shipping,300,0.25,7,20,100,-0.04,True,True,True,True
+2,Switch Supplier,500,0.4,10,35,200,-0.0142,True,True,True,True
+3,Increase Safety Stock,250,0.2,4,15,80,0.0017,True,True,True,True

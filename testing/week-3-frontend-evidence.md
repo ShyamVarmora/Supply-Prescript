@@ -1,6 +1,6 @@
 # Week 3 Frontend Integration Evidence
 
-**Date:** 31/08/2026
+**Date:** 02/09/2026
 **Branch:** ui
 
 ## Test Results
@@ -10,16 +10,16 @@
 | Frontend build               | `npm run build` completes successfully                   | Vite production build completed successfully | PASS             |
 | Git diff check               | No whitespace errors                                     | `git diff --check` produced no output        | PASS             |
 | Backend health API           | Backend returns a successful response                    | `GET /health` returned `{"status":"ok"}`     | PASS             |
-| Prediction API               | Valid request returns prediction data                    | Pending real browser test                    | NOT YET VERIFIED |
-| Recommendation API           | Valid request returns optimization results               | Pending real browser test                    | NOT YET VERIFIED |
-| Recommendation cards         | Cards display actual backend alternatives                | Pending real browser test                    | NOT YET VERIFIED |
-| Recommendation selection     | Selected card is visibly identified                      | Pending real browser test                    | NOT YET VERIFIED |
-| Decision display             | Selected recommendation updates Decision section         | Pending real browser test                    | NOT YET VERIFIED |
-| Execute Decision             | Button remains disabled until write-back endpoint exists | Pending real browser test                    | NOT YET VERIFIED |
-| Invalid input handling       | Controlled error is displayed                            | Pending test                                 | NOT YET VERIFIED |
-| Backend unavailable handling | Controlled error is displayed                            | Pending test                                 | NOT YET VERIFIED |
-| No feasible solution         | Empty state is displayed without fake data               | Pending test                                 | NOT YET VERIFIED |
-| Responsive layout            | UI remains usable on narrow screens                      | Pending real browser test                    | NOT YET VERIFIED |
+| Prediction API               | Valid request returns prediction data                    | Valid frontend integration flow completed; prediction data displayed from backend | PASS |
+| Recommendation API           | Valid request returns optimization results               | `POST /recommend` completed successfully and actual backend response was rendered | PASS |
+| Recommendation cards         | Cards display actual backend alternatives                | 3 recommendation cards displayed with backend-provided values | PASS |
+| Recommendation selection     | Selected card is visibly identified                      | Recommendation selection completed successfully | PASS |
+| Decision display             | Selected recommendation updates Decision section         | Decision section updated after selecting a recommendation | PASS |
+| Execute Decision             | Button remains disabled until write-back endpoint exists | Button remained disabled; no decision write-back was attempted | PASS |
+| Invalid input handling       | Controlled error is displayed                            | Invalid input produced a controlled error without fake recommendation data | PASS |
+| Backend unavailable handling | Controlled error is displayed                            | Backend-unavailable state produced a controlled load error | PASS |
+| No feasible solution         | Empty state is displayed without fake data               | No-feasible-solution case was handled without fake recommendation data | PASS |
+| Responsive layout            | UI remains usable on narrow screens                      | UI remained usable at narrow/mobile viewport | PASS |
 
 ## Build Evidence
 

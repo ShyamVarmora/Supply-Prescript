@@ -1,12 +1,17 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000";
 
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(
+      `${API_BASE_URL}/health`
+    );
 
     if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`);
+      throw new Error(
+        `Backend returned ${response.status}`
+      );
     }
 
     return await response.json();
@@ -17,30 +22,36 @@ export async function checkBackendHealth() {
   }
 }
 
-export async function getPredictionRecommendations(shipment) {
+export async function getPredictionRecommendations(
+  shipment
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/predict/shipment-delay`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(shipment),
       }
     );
 
     if (!response.ok) {
-      let message = `Backend returned ${response.status}`;
+      let message =
+        `Backend returned ${response.status}`;
 
       try {
-        const errorData = await response.json();
+        const errorData =
+          await response.json();
 
         if (errorData?.detail) {
           message = errorData.detail;
         }
       } catch {
-        // Keep the default HTTP error message.
+        // Keep default HTTP error message.
       }
 
       throw new Error(message);
@@ -68,30 +79,36 @@ export async function getPredictionRecommendations(shipment) {
   }
 }
 
-export async function getRecommendations(requestData) {
+export async function getRecommendations(
+  requestData
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/recommend`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(requestData),
       }
     );
 
     if (!response.ok) {
-      let message = `Backend returned ${response.status}`;
+      let message =
+        `Backend returned ${response.status}`;
 
       try {
-        const errorData = await response.json();
+        const errorData =
+          await response.json();
 
         if (errorData?.detail) {
           message = errorData.detail;
         }
       } catch {
-        // Keep the default HTTP error message.
+        // Keep default HTTP error message.
       }
 
       throw new Error(message);
@@ -105,15 +122,21 @@ export async function getRecommendations(requestData) {
   }
 }
 
-// Mansi's decision write-back endpoint is not available yet.
-// Do not invent an endpoint.
+/*
+ * Mansi's database decision write-back endpoint
+ * is not available yet.
+ *
+ * Do not invent an endpoint.
+ */
 export async function executeDecision() {
   throw new Error(
     "Decision write-back endpoint is not available yet."
   );
 }
 
-// Real evaluation/ROI endpoint is not available yet.
+/*
+ * Real evaluation/ROI endpoint is not available yet.
+ */
 export async function getDecisionROI() {
   return null;
 }

@@ -6,6 +6,7 @@ import RecommendationCard from "./components/RecommendationCard";
 
 import {
   checkBackendHealth,
+  executeDecision,
   getDecisionROI,
   getRecommendations,
 } from "./services/api";
@@ -115,6 +116,12 @@ function App() {
   const [roiStatus, setRoiStatus] =
     useState("");
 
+  const [decisionStatus, setDecisionStatus] =
+    useState("idle");
+
+  const [decisionError, setDecisionError] =
+    useState("");
+
   const handleShipmentChange = (event) => {
     const { name, value } = event.target;
 
@@ -202,6 +209,9 @@ function App() {
     setRecommendationError("");
     setRecommendations([]);
     setSelectedRecommendation(null);
+
+    setDecisionStatus("idle");
+    setDecisionError("");
 
     try {
       const payload =
@@ -343,6 +353,9 @@ function App() {
 
       setRecommendations([]);
       setSelectedRecommendation(null);
+
+      setDecisionStatus("idle");
+      setDecisionError("");
     }
   };
 
@@ -350,6 +363,43 @@ function App() {
     setSelectedRecommendation(
       recommendation
     );
+
+    setDecisionStatus("idle");
+    setDecisionError("");
+  };
+
+  const handleExecuteDecision = async () => {
+    if (
+      !selectedRecommendation ||
+      decisionStatus === "loading"
+    ) {
+      return;
+    }
+
+    setDecisionStatus("loading");
+    setDecisionError("");
+
+    try {
+      const result =
+        await executeDecision(
+          selectedRecommendation
+        );
+
+      if (!result) {
+        throw new Error(
+          "Backend did not confirm decision execution."
+        );
+      }
+
+      setDecisionStatus("success");
+    } catch (error) {
+      setDecisionStatus("error");
+
+      setDecisionError(
+        error.message ||
+          "Unable to execute decision."
+      );
+    }
   };
 
   const testBackendConnection = async () => {
@@ -652,27 +702,27 @@ function App() {
 
           {recommendationStatus ===
             "loading" && (
-              <div className="recommendation-state">
-                Loading recommendations...
-              </div>
-            )}
+            <div className="recommendation-state">
+              Loading recommendations...
+            </div>
+          )}
 
           {recommendationStatus ===
             "error" && (
-              <div className="recommendation-state error">
-                {recommendationError ||
-                  "Unable to load recommendations."}
-              </div>
-            )}
+            <div className="recommendation-state error">
+              {recommendationError ||
+                "Unable to load recommendations."}
+            </div>
+          )}
 
           {recommendationStatus ===
             "empty" &&
             recommendations.length === 0 && (
-              <div className="recommendation-state">
-                {recommendationError ||
-                  "No feasible recommendations are available for the provided constraints."}
-              </div>
-            )}
+            <div className="recommendation-state">
+              {recommendationError ||
+                "No feasible recommendations are available for the provided constraints."}
+            </div>
+          )}
 
           {recommendations.length > 0 && (
             <div className="recommendation-grid">
@@ -760,19 +810,30 @@ function App() {
               <button
                 type="button"
                 className="execute-button"
-                disabled
-                title="Decision write-back endpoint is not available yet"
+                disabled={
+                  !selectedRecommendation ||
+                  decisionStatus === "loading"
+                }
+                onClick={
+                  handleExecuteDecision
+                }
               >
-                Execute Decision
+                {decisionStatus === "loading"
+                  ? "Executing..."
+                  : "Execute Decision"}
               </button>
 
-              <p className="decision-note">
-                The selected recommendation is ready
-                for write-back integration. Mansi's
-                decision write-back endpoint is not
-                available yet, so decision execution
-                remains disabled.
-              </p>
+              {decisionStatus === "success" && (
+                <p className="decision-note">
+                  Decision executed successfully.
+                </p>
+              )}
+
+              {decisionStatus === "error" && (
+                <p className="decision-note">
+                  {decisionError}
+                </p>
+              )}
 
             </div>
           ) : (

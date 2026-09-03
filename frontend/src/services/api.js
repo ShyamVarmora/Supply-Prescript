@@ -123,15 +123,66 @@ export async function getRecommendations(
 }
 
 /*
- * Mansi's database decision write-back endpoint
- * is not available yet.
+ * Execute the selected recommendation through
+ * the backend decision write-back endpoint.
  *
- * Do not invent an endpoint.
+ * The request body currently sends the selected
+ * recommendation object. This must match the final
+ * POST /decisions contract supplied by the backend.
  */
-export async function executeDecision() {
-  throw new Error(
-    "Decision write-back endpoint is not available yet."
-  );
+export async function executeDecision(
+  recommendation
+) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(
+          recommendation
+        ),
+      }
+    );
+
+    if (!response.ok) {
+      let message =
+        `Backend returned ${response.status}`;
+
+      try {
+        const errorData =
+          await response.json();
+
+        if (errorData?.detail) {
+          message = errorData.detail;
+        } else if (errorData?.message) {
+          message = errorData.message;
+        }
+      } catch {
+        // Keep default HTTP error message.
+      }
+
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+
+    if (!data) {
+      throw new Error(
+        "Backend did not confirm decision execution."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(
+      `Unable to execute decision: ${error.message}`
+    );
+  }
 }
 
 /*

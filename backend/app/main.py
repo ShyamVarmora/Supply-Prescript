@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ml.predict import predict_shipment_delay
@@ -9,6 +10,22 @@ app = FastAPI(
     title="Supply Prescript API",
     description="Predictive and prescriptive supply-chain API",
     version="1.1.0",
+)
+
+
+# ============================================================
+# CORS CONFIGURATION
+# ============================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

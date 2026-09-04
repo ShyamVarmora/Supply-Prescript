@@ -30,16 +30,12 @@ Optimization implementation path:
 
 `backend/ml/optimizer.py`
 
-The implementation imports SciPy linear programming:
+The implementation uses:
 
 `from scipy.optimize import linprog`
 
-The optimizer successfully executed through the `/recommend` API and
-returned a valid recommendation together with alternative results.
-
-Actual solver recommendation:
-
-`Air Freight`
+The optimizer successfully executed through the `/recommend` API and returned
+solver-generated alternatives, feasibility results, and a recommendation.
 
 ### Status
 
@@ -56,7 +52,8 @@ Verify that the optimization respects the configured maximum budget.
 ### Checks
 
 - [x] Input a case with a limited budget.
-- [x] Solver generates a valid recommendation within the budget.
+- [x] Solver generates a valid recommendation within the budget when a
+      feasible option exists.
 - [x] Recommended cost is less than or equal to the configured maximum budget.
 - [x] Test an intentionally impossible or over-budget case.
 - [x] Solver does not silently return an invalid recommendation.
@@ -67,7 +64,7 @@ Configured budget:
 
 `700`
 
-Returned alternatives:
+Test result:
 
 | Option | Cost | Feasible |
 |---|---:|---|
@@ -77,9 +74,13 @@ Returned alternatives:
 
 Verification:
 
-- Air Freight: `684.75 <= 700`
-- Secondary Supplier: `547.80 <= 700`
-- Delay Launch: `45.65 <= 700`
+- `684.75 <= 700`
+- `547.80 <= 700`
+- `45.65 <= 700`
+
+Number of feasible alternatives:
+
+`3`
 
 Recommended option:
 
@@ -99,16 +100,20 @@ Returned alternative costs:
 | Secondary Supplier | 547.80 | No |
 | Delay Launch | 45.65 | No |
 
-The lowest available option cost was `45.65`, which exceeds the configured
-budget of `40`.
+The lowest alternative cost was `45.65`, which exceeds the configured budget
+of `40`.
+
+Number of feasible alternatives:
+
+`0`
 
 Actual result:
 
 - `feasible_alternatives = []`
 - `recommended_option = null`
-- solver status = `no_feasible_solution`
+- status = `no_feasible_solution`
 
-Therefore, the solver did not return an invalid recommendation.
+No invalid recommendation was returned.
 
 ### Status
 
@@ -129,31 +134,55 @@ Verify that the optimization considers the required time/speed constraint.
 - [x] Generated recommendation satisfies the required constraint.
 - [x] An invalid time/speed case is handled correctly.
 
-### Test Input
+### Normal Case
 
 Configured maximum allowed time:
 
-`5`
+`10`
 
-### Actual Result
+Actual solver results:
 
 | Option | Time | Feasible |
 |---|---:|---|
 | Air Freight | 4.40 | Yes |
-| Secondary Supplier | 6.40 | No |
-| Delay Launch | 13.91 | No |
+| Secondary Supplier | 6.40 | Yes |
+| Delay Launch | 17.11 | No |
 
-Verification:
+Number of feasible alternatives:
 
-- Air Freight: `4.40 <= 5`
-- Secondary Supplier: `6.40 > 5`
-- Delay Launch: `13.91 > 5`
+`2`
+
+The Delay Launch alternative was rejected because:
+
+`17.11 > 10`
 
 Recommended option:
 
 `Air Freight`
 
-The returned recommendation satisfies the configured maximum time.
+### Restricted Time Case
+
+Configured maximum allowed time:
+
+`5`
+
+Actual solver results:
+
+| Option | Time | Feasible |
+|---|---:|---|
+| Air Freight | 4.40 | Yes |
+| Secondary Supplier | 6.40 | No |
+| Delay Launch | 13.909985542297363 | No |
+
+Number of feasible alternatives:
+
+`1`
+
+Recommended option:
+
+`Air Freight`
+
+The recommendation satisfies the configured maximum time.
 
 ### Status
 
@@ -193,16 +222,17 @@ Shipment capacity:
 | Secondary Supplier | 50 | No |
 | Delay Launch | 50 | No |
 
-Since every alternative requires capacity `50` while only `40` is available,
-none of the alternatives is feasible.
+Number of feasible alternatives:
+
+`0`
 
 Actual result:
 
 - `feasible_alternatives = []`
 - `recommended_option = null`
-- solver status = `no_feasible_solution`
+- status = `no_feasible_solution`
 
-Therefore, no invalid recommendation was returned.
+No invalid recommendation was returned.
 
 ### Status
 
@@ -214,52 +244,56 @@ Therefore, no invalid recommendation was returned.
 
 ### Requirement
 
-Verify that the optimization generates three alternative actions.
+Verify that the optimization generates three solver-generated alternative
+actions.
 
 ### Required Alternatives
 
-- Option 1 — Air Freight
-- Option 2 — Secondary Supplier
-- Option 3 — Delay Launch
+- Air Freight
+- Secondary Supplier
+- Delay Launch
 
-### Checks
+### Validation Rule
 
-- [x] Three alternatives are returned by the solver.
-- [x] Alternatives are generated from the optimization result.
-- [x] Alternatives are not simply three hard-coded UI cards.
-- [x] Each alternative can be traced to solver/backend output.
+The optimizer generates three alternatives.
 
-### Actual API Result
+Feasibility is determined separately by the configured budget, time, and
+capacity constraints.
 
-Three alternatives were returned:
+Therefore, three generated alternatives must not be interpreted as three
+feasible alternatives in every test case.
+
+### Actual Evidence
+
+Three solver-generated alternatives were evaluated:
 
 1. **Air Freight**
-   - Cost: `684.75`
-   - Time: `4.40`
-   - Capacity: `50`
-   - Expected impact: `1.4774963855743408`
-   - Feasible: `true`
-
 2. **Secondary Supplier**
-   - Cost: `547.80`
-   - Time: `6.40`
-   - Capacity: `50`
-   - Expected impact: `2.6594934940338137`
-   - Feasible: `true`
-
 3. **Delay Launch**
-   - Cost: `45.65`
-   - Time: `13.909985542297363`
-   - Capacity: `50`
-   - Expected impact: `5.909985542297363`
-   - Feasible: `true`
 
-The alternatives were returned from the backend optimization flow and are
-therefore traceable to backend/solver output.
+The alternatives are generated by `backend/ml/optimizer.py` and returned in
+the real `/recommend` response.
+
+### Feasibility by Test Case
+
+| Test Case | Air Freight | Secondary Supplier | Delay Launch | Feasible Alternatives |
+|---|---|---|---|---:|
+| Normal case — allowed time 10 | Yes | Yes | No | 2 |
+| Budget = 700, allowed time 20 | Yes | Yes | Yes | 3 |
+| Budget = 40, allowed time 20 | No | No | No | 0 |
+| Allowed time = 5 | Yes | No | No | 1 |
+| Available capacity = 40 | No | No | No | 0 |
 
 ### Status
 
 **PASS**
+
+### Evidence
+
+- Real `/recommend` API response
+- Budget-constrained API responses
+- Time-constrained API response
+- Capacity-constrained API response
 
 ---
 
@@ -268,7 +302,7 @@ therefore traceable to backend/solver output.
 ### Requirement
 
 Verify that every generated alternative contains actual cost and speed/time
-values.
+values in backend/solver output.
 
 ### Checks
 
@@ -279,9 +313,9 @@ values.
 - [x] Option 3 contains an actual cost value.
 - [x] Option 3 contains an actual speed/time value.
 - [x] Values originate from backend/solver output.
-- [x] Placeholder values are not treated as real results.
+- [x] Placeholder values are not treated as real backend-to-frontend values.
 
-### Actual Evidence
+### Actual Backend Evidence
 
 | Option | Cost | Time |
 |---|---:|---:|
@@ -289,8 +323,12 @@ values.
 | Secondary Supplier | 547.80 | 6.40 |
 | Delay Launch | 45.65 | 13.909985542297363 |
 
-All three alternatives returned actual numeric cost and time values through
-the backend optimization response.
+These values were returned by the backend optimization response.
+
+This verifies backend cost/time data.
+
+It does not independently verify that the real backend values are rendered
+in the frontend UI.
 
 ### Status
 
@@ -320,7 +358,7 @@ INSERT.
 
 ### Dependency
 
-Backend write-back endpoint and database implementation.
+Backend write-back workflow and database implementation.
 
 ### Evidence Required
 
@@ -332,7 +370,11 @@ Backend write-back endpoint and database implementation.
 
 ### Validation Rule
 
-Do not mark PASS until actual database evidence exists.
+Do not mark PASS until actual:
+
+`UI → FastAPI → MySQL INSERT → SELECT`
+
+evidence exists.
 
 ---
 
@@ -349,13 +391,13 @@ For the completed Week 2 tests, evidence includes:
 
 - Terminal/test execution output
 - Backend implementation path
-- `/recommend` API response
+- Real `/recommend` API response
 - Actual budget constraint results
 - Actual time constraint results
 - Actual capacity constraint results
-- Actual alternative cost/time values
-- Actual optimization recommendation
-- Actual infeasible-solution responses
+- Actual optimizer alternative values
+- Actual feasibility results
+- Actual recommendation result
 
 ### Status
 
@@ -363,7 +405,7 @@ For the completed Week 2 tests, evidence includes:
 
 ---
 
-# Week 1 Predictive Model Verification
+# Verified Week 1 — XGBoost Model
 
 ## Test W1-01 — XGBoost Model Verification
 
@@ -382,22 +424,13 @@ Model load result:
 
 `Model loaded successfully`
 
-Training/evaluation dataset:
-
-`113097` rows used
-
-Training samples:
-
-`90477`
-
-Testing samples:
-
-`22620`
-
-### Actual Metrics
+### Training/Evaluation Results
 
 | Metric | Actual Result |
 |---|---:|
+| Rows used | 113097 |
+| Training samples | 90477 |
+| Testing samples | 22620 |
 | MAE | 3.4123 |
 | RMSE | 3.8477 |
 | R² | 0.1468 |
@@ -409,8 +442,7 @@ prediction:
 
 `5.909985542297363`
 
-The prediction was then used by the optimization flow to generate the
-recommendation alternatives.
+The prediction was then passed into the optimization flow.
 
 ### Status
 
@@ -418,27 +450,72 @@ recommendation alternatives.
 
 ---
 
-# Week 2 Validation Status Summary
+# `/recommend` Verification
+
+Three solver-generated alternatives were returned and evaluated using the
+configured constraints.
+
+### Air Freight
+
+- Cost: `684.75`
+- Time: `4.40`
+- Capacity: `50`
+- Expected impact: `1.4774963855743408`
+- Feasible in the allowed-time-20 case: `true`
+
+### Secondary Supplier
+
+- Cost: `547.80`
+- Time: `6.40`
+- Capacity: `50`
+- Expected impact: `2.6594934940338137`
+- Feasible in the allowed-time-20 case: `true`
+
+### Delay Launch
+
+- Cost: `45.65`
+- Time: `13.909985542297363`
+- Capacity: `50`
+- Expected impact: `5.909985542297363`
+- Feasible in the allowed-time-20 case: `true`
+
+Recommended option in the allowed-time-20 case:
+
+`Air Freight`
+
+For the normal allowed-time-10 case, Delay Launch was infeasible because its
+time exceeded the configured maximum.
+
+---
+
+# Validation Status Summary
 
 | Test | Requirement | Status |
 |---|---|---|
+| W1-01 | XGBoost model verification | PASS |
 | W2-01 | Optimization exists | PASS |
 | W2-02 | Budget constraint | PASS |
 | W2-03 | Time constraint | PASS |
 | W2-04 | Capacity constraint | PASS |
-| W2-05 | Three alternatives | PASS |
-| W2-06 | Cost vs Speed | PASS |
-| W2-07 | Execute Decision / MySQL write-back | BLOCKED |
+| W2-05 | Three solver-generated alternatives | PASS |
+| W2-06 | Backend cost/time values | PASS |
+| W2-07 | Execute Decision / Database INSERT | BLOCKED |
 | W2-08 | Evidence requirement | PASS |
 
 ---
 
-# Validation Notes
+# Validation Rule
 
-The above PASS statuses are based on actual backend execution and returned
-test results.
+No Week 2 requirement is marked PASS based only on documentation, planned
+tests, frontend placeholders, or expected behavior.
 
-The `Execute Decision` requirement remains **BLOCKED** because UI-to-backend
-write-back and MySQL INSERT/SELECT evidence has not yet been captured.
+A PASS requires:
 
-No database success is claimed without database evidence.
+1. Implementation exists.
+2. The implementation is executed or otherwise verified.
+3. Actual test evidence is available.
+4. The evidence supports the specific requirement.
+
+Three generated alternatives do not imply three feasible alternatives.
+
+No database success is claimed without actual database evidence.

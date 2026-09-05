@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import "./App.css";
 
@@ -7,7 +10,8 @@ import RecommendationCard from "./components/RecommendationCard";
 import {
   checkBackendHealth,
   executeDecision,
-  getDecisionROI,
+  getDecisionEvaluation,
+  getDecisionHistory,
   getRecommendations,
 } from "./services/api";
 
@@ -113,13 +117,45 @@ function App() {
   const [backendStatus, setBackendStatus] =
     useState("");
 
-  const [roiStatus, setRoiStatus] =
-    useState("");
-
   const [decisionStatus, setDecisionStatus] =
     useState("idle");
 
   const [decisionError, setDecisionError] =
+    useState("");
+
+  /*
+   * Week-3 Decision Evaluation state.
+   *
+   * Evaluation data is provided by the future
+   * backend evaluation service. No fake values
+   * are stored in the frontend.
+   */
+  const [evaluation, setEvaluation] =
+    useState(null);
+
+  const [
+    evaluationStatus,
+    setEvaluationStatus,
+  ] = useState("loading");
+
+  const [evaluationError, setEvaluationError] =
+    useState("");
+
+  /*
+   * Week-3 Decision History state.
+   *
+   * History is empty until the backend
+   * history service is available.
+   */
+  const [decisionHistory, setDecisionHistory] =
+    useState([]);
+
+  const [
+    historyStatus,
+    setHistoryStatus,
+  ] = useState("loading");
+
+  const [historyError, setHistoryError] =
     useState("");
 
   const handleShipmentChange = (event) => {
@@ -368,6 +404,13 @@ function App() {
     setDecisionError("");
   };
 
+  /*
+   * Execute Decision remains connected to
+   * the existing decision service.
+   *
+   * This is intentionally separate from the
+   * Week-3 evaluation/history UI.
+   */
   const handleExecuteDecision = async () => {
     if (
       !selectedRecommendation ||
@@ -421,32 +464,84 @@ function App() {
     }
   };
 
-  const loadDecisionROI = async () => {
-    setRoiStatus(
-      "Checking evaluation data..."
-    );
+  /*
+   * Load future evaluation data.
+   *
+   * The service currently returns null because
+   * the backend evaluation endpoint is not
+   * available yet.
+   */
+  const loadEvaluationData = async () => {
+    setEvaluationStatus("loading");
+    setEvaluationError("");
 
     try {
       const data =
-        await getDecisionROI();
+        await getDecisionEvaluation();
 
-      if (!data) {
-        setRoiStatus(
-          "No evaluation data available yet"
-        );
-
-        return;
+      if (data) {
+        setEvaluation(data);
+        setEvaluationStatus("success");
+      } else {
+        setEvaluation(null);
+        setEvaluationStatus("empty");
       }
+    } catch (error) {
+      setEvaluation(null);
+      setEvaluationStatus("error");
 
-      setRoiStatus(
-        "Evaluation data loaded"
-      );
-    } catch {
-      setRoiStatus(
-        "No evaluation data available yet"
+      setEvaluationError(
+        error.message ||
+          "Unable to load decision evaluation."
       );
     }
   };
+
+  /*
+   * Load future decision history.
+   *
+   * The service currently returns an empty
+   * array because the backend history endpoint
+   * is not available yet.
+   */
+  const loadDecisionHistory = async () => {
+    setHistoryStatus("loading");
+    setHistoryError("");
+
+    try {
+      const history =
+        await getDecisionHistory();
+
+      if (
+        Array.isArray(history) &&
+        history.length > 0
+      ) {
+        setDecisionHistory(history);
+        setHistoryStatus("success");
+      } else {
+        setDecisionHistory([]);
+        setHistoryStatus("empty");
+      }
+    } catch (error) {
+      setDecisionHistory([]);
+      setHistoryStatus("error");
+
+      setHistoryError(
+        error.message ||
+          "Unable to load decision history."
+      );
+    }
+  };
+
+  /*
+   * Load evaluation/history when the UI starts.
+   *
+   * No decision write-back is performed here.
+   */
+  useEffect(() => {
+    loadEvaluationData();
+    loadDecisionHistory();
+  }, []);
 
   return (
     <div className="app">
@@ -845,115 +940,291 @@ function App() {
 
         </section>
 
-        {/* FEEDBACK / ROI */}
+        {/* DECISION EVALUATION / FEEDBACK */}
 
         <section className="section">
 
           <div className="section-heading">
-
             <div>
               <h2>
-                Feedback / Decision ROI
+                Decision Evaluation / Feedback
               </h2>
 
               <p className="section-description">
-                Evaluation and ROI data will appear
-                after decision write-back and
-                evaluation backend integration.
+                Compare predicted and actual
+                decision outcomes when evaluation
+                data becomes available.
               </p>
             </div>
 
             <button
               type="button"
               className="secondary-button"
-              onClick={loadDecisionROI}
+              onClick={loadEvaluationData}
+              disabled={
+                evaluationStatus === "loading"
+              }
             >
-              Check Evaluation
+              {evaluationStatus === "loading"
+                ? "Loading..."
+                : "Refresh Evaluation"}
             </button>
-
           </div>
 
-          {roiStatus && (
-            <p className="section-description">
-              {roiStatus}
-            </p>
+          {evaluationStatus === "loading" && (
+            <div className="recommendation-state">
+              Loading evaluation data...
+            </div>
           )}
 
-          <div className="roi-grid">
-
-            <article className="roi-card">
-              <span>
-                Decision ROI
-              </span>
-
+          {evaluationStatus === "empty" && (
+            <div className="recommendation-state">
               <strong>
-                No evaluation data available yet
+                No evaluation data available
               </strong>
-            </article>
 
-            <article className="roi-card">
-              <span>
-                Positive Outcomes
-              </span>
+              <p>
+                Evaluation results will appear
+                here when the evaluation backend
+                becomes available.
+              </p>
+            </div>
+          )}
 
+          {evaluationStatus === "error" && (
+            <div className="recommendation-state error">
               <strong>
-                No evaluation data available yet
+                Unable to load evaluation
               </strong>
-            </article>
 
-            <article className="roi-card">
-              <span>
-                Evaluated Decisions
-              </span>
+              <p>
+                {evaluationError ||
+                  "Unable to load decision evaluation."}
+              </p>
+            </div>
+          )}
 
-              <strong>
-                No evaluation data available yet
-              </strong>
-            </article>
+          {evaluationStatus === "success" &&
+            evaluation && (
+              <div className="evaluation-grid">
 
-            <article className="roi-card">
-              <span>
-                Predicted Cost vs Actual Cost
-              </span>
+                <article className="evaluation-card">
+                  <span>
+                    Decision ID
+                  </span>
 
-              <strong>
-                No evaluation data available yet
-              </strong>
-            </article>
+                  <strong>
+                    {
+                      evaluation.decision_id ??
+                      "—"
+                    }
+                  </strong>
+                </article>
 
-          </div>
+                <article className="evaluation-card">
+                  <span>
+                    Predicted Outcome / Cost
+                  </span>
+
+                  <strong>
+                    {
+                      evaluation.predicted_outcome ??
+                      evaluation.predicted_cost ??
+                      "—"
+                    }
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Actual Outcome / Cost
+                  </span>
+
+                  <strong>
+                    {
+                      evaluation.actual_outcome ??
+                      evaluation.actual_cost ??
+                      "—"
+                    }
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Difference / Discrepancy
+                  </span>
+
+                  <strong>
+                    {
+                      evaluation.discrepancy ??
+                      "—"
+                    }
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Decision ROI
+                  </span>
+
+                  <strong>
+                    {
+                      evaluation.roi ??
+                      "—"
+                    }
+                  </strong>
+                </article>
+
+              </div>
+            )}
 
         </section>
 
-        {/* EVALUATION HISTORY */}
+        {/* DECISION HISTORY */}
 
         <section className="section">
 
-          <h2>
-            Evaluation History
-          </h2>
+          <div className="section-heading">
+            <div>
+              <h2>
+                Decision History
+              </h2>
 
-          <div className="evaluation-history">
+              <p className="section-description">
+                Previous executed decisions and
+                their evaluation results.
+              </p>
+            </div>
 
-            <div className="evaluation-table">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={
+                loadDecisionHistory
+              }
+              disabled={
+                historyStatus === "loading"
+              }
+            >
+              {historyStatus === "loading"
+                ? "Loading..."
+                : "Refresh History"}
+            </button>
+          </div>
 
-              <div className="evaluation-row evaluation-header">
-                <span>Decision</span>
-                <span>Status</span>
-                <span>Outcome</span>
-                <span>ROI</span>
-              </div>
+          {historyStatus === "loading" && (
+            <div className="recommendation-state">
+              Loading decision history...
+            </div>
+          )}
 
-              <div className="evaluation-empty">
-                No evaluation history is available
-                yet. Decision write-back and
-                evaluation endpoints are pending
-                backend/database integration.
+          {historyStatus === "empty" && (
+            <div className="recommendation-state">
+              <strong>
+                No decision history available
+              </strong>
+
+              <p>
+                Previous evaluated decisions will
+                appear here when the history backend
+                becomes available.
+              </p>
+            </div>
+          )}
+
+          {historyStatus === "error" && (
+            <div className="recommendation-state error">
+              <strong>
+                Unable to load decision history
+              </strong>
+
+              <p>
+                {historyError ||
+                  "Unable to load decision history."}
+              </p>
+            </div>
+          )}
+
+          {historyStatus === "success" && (
+            <div className="evaluation-history">
+
+              <div className="evaluation-table">
+
+                <div className="evaluation-row evaluation-header">
+                  <span>
+                    Decision ID
+                  </span>
+
+                  <span>
+                    Predicted
+                  </span>
+
+                  <span>
+                    Actual
+                  </span>
+
+                  <span>
+                    Difference
+                  </span>
+
+                  <span>
+                    ROI
+                  </span>
+                </div>
+
+                {decisionHistory.map(
+                  (decision, index) => (
+                    <div
+                      className="evaluation-row"
+                      key={
+                        decision.decision_id ??
+                        index
+                      }
+                    >
+                      <span>
+                        {
+                          decision.decision_id ??
+                          "—"
+                        }
+                      </span>
+
+                      <span>
+                        {
+                          decision.predicted_outcome ??
+                          decision.predicted_cost ??
+                          "—"
+                        }
+                      </span>
+
+                      <span>
+                        {
+                          decision.actual_outcome ??
+                          decision.actual_cost ??
+                          "—"
+                        }
+                      </span>
+
+                      <span>
+                        {
+                          decision.discrepancy ??
+                          "—"
+                        }
+                      </span>
+
+                      <span>
+                        {
+                          decision.roi ??
+                          "—"
+                        }
+                      </span>
+                    </div>
+                  )
+                )}
+
               </div>
 
             </div>
-
-          </div>
+          )}
 
         </section>
 

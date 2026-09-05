@@ -30,11 +30,9 @@ export async function getPredictionRecommendations(
       `${API_BASE_URL}/predict/shipment-delay`,
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(shipment),
       }
     );
@@ -87,11 +85,9 @@ export async function getRecommendations(
       `${API_BASE_URL}/recommend`,
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(requestData),
       }
     );
@@ -123,12 +119,14 @@ export async function getRecommendations(
 }
 
 /*
- * Execute the selected recommendation through
- * the backend decision write-back endpoint.
+ * Decision write-back endpoint.
  *
- * The request body currently sends the selected
- * recommendation object. This must match the final
- * POST /decisions contract supplied by the backend.
+ * This is kept separate from the Week-3
+ * evaluation/ROI UI.
+ *
+ * Do not invent or modify the request
+ * contract until the backend endpoint
+ * is confirmed.
  */
 export async function executeDecision(
   recommendation
@@ -186,8 +184,27 @@ export async function executeDecision(
 }
 
 /*
- * Real evaluation/ROI endpoint is not available yet.
+ * Week-3 decision evaluation API placeholder.
+ *
+ * The backend evaluation endpoint has not
+ * been defined yet.
+ *
+ * Do not invent an endpoint or return
+ * fake evaluation/ROI data.
  */
-export async function getDecisionROI() {
+export async function getDecisionEvaluation() {
   return null;
+}
+
+/*
+ * Week-3 decision history API placeholder.
+ *
+ * The backend history endpoint has not
+ * been defined yet.
+ *
+ * Do not invent an endpoint or return
+ * fake decision history.
+ */
+export async function getDecisionHistory() {
+  return [];
 }

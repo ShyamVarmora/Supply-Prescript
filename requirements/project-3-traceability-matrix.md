@@ -2,9 +2,13 @@
 
 ## Purpose
 
-This file maps the Project 3 requirements to the code, tests, and evidence we currently have.
+This file maps the Project 3 requirements to the implementation, verification
+tests, and available evidence.
 
-A requirement is marked PASS only when the implementation and verification evidence actually exist.
+A requirement is marked PASS only when the implementation and actual
+verification evidence exist.
+
+---
 
 ## Status Definitions
 
@@ -16,292 +20,334 @@ A requirement is marked PASS only when the implementation and verification evide
 
 ---
 
-## Week 1 — Predictive Baseline
+# Week 1 — Predictive Baseline
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| XGBoost predictive baseline | Not verified in current repository evidence | No test result available | No real model demo available | Chetan | NOT STARTED |
-| Historical mock supply-chain data | Not verified in current repository evidence | No test result available | No dataset demo available | Mansi | BLOCKED |
-| Shipment-delay prediction | Frontend contains a Shipment Risk section, but prediction is expected from the backend model | No prediction test result available | No real prediction result available | Chetan | NOT STARTED |
-| React application scaffolding | `frontend/src/App.jsx` | No PASS evidence yet | Frontend UI is implemented | Yoshita | IN PROGRESS |
-| PostgreSQL / Snowflake connection | Not verified in current repository evidence | No database connection test result available | No database connection demo available | Mansi | NOT STARTED |
+| XGBoost predictive baseline | `backend/ml/train.py`; trained model saved as `backend/models/shipment_delay_model.joblib` | `testing/week-2-validation.md` records actual model load and metrics: MAE 3.4123, RMSE 3.8477, R² 0.1468 | Real prediction generated through `/recommend` | Chetan | PASS |
+| Historical mock supply-chain data | `backend/data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv` is used by the training workflow | Actual training run used 113097 rows, with 90477 training samples and 22620 testing samples | Dataset is used by the real model-training workflow | Mansi | PASS |
+| Shipment-delay prediction | `backend/ml/predict.py`; `/predict/shipment-delay` and `/recommend` in `backend/app/main.py` | Real `/recommend` execution returned prediction `5.909985542297363` | Real backend prediction result captured | Chetan | PASS |
+| React application scaffolding | `frontend/src/App.jsx` | Frontend implementation exists; frontend prediction integration is not separately verified | Frontend UI is implemented | Yoshita | IN PROGRESS |
+| PostgreSQL / Snowflake connection | No verified operational database connection | No actual database connection verification | No database connection demo | Mansi | NOT STARTED |
 
 ---
 
-## Week 2 — Optimization & Prescriptive UI
+# Week 2 — Optimization & Prescriptive UI
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Business constraints defined | No verified backend constraint implementation | `testing/week-2-test-plan.md` contains the required QA check | No verified solver demo | Chetan/Mansi | NOT STARTED |
-| SciPy linear-programming solver | No verified SciPy LP implementation | `testing/week-2-test-plan.md` contains the solver QA check | No verified solver output | Chetan | NOT STARTED |
-| Three alternative actions | `frontend/src/App.jsx` contains three recommendation objects | `testing/week-2-test-plan.md` contains the three-action check | Three recommendation cards are rendered | Chetan | IN PROGRESS |
-| Three prescription cards | `frontend/src/App.jsx` renders three recommendation cards | `testing/week-2-test-plan.md` contains prescription-card check | Three cards are visible in the UI | Yoshita | IN PROGRESS |
-| Cost displayed | `frontend/src/App.jsx` displays Cost; current value is `Backend value` | `testing/week-2-test-plan.md` contains cost check | Cost field is visible, but real backend value is not verified | Yoshita | IN PROGRESS |
-| Speed/time displayed | `frontend/src/App.jsx` displays Speed / Time; current value is `Backend value` | `testing/week-2-test-plan.md` contains speed/time check | Speed / Time field is visible, but real backend value is not verified | Yoshita | IN PROGRESS |
-| Cost vs Speed trade-off | `frontend/src/App.jsx` displays Cost and Speed / Time together | `testing/week-2-test-plan.md` contains trade-off check | Both fields are shown on recommendation cards | Yoshita | IN PROGRESS |
+| Business constraints defined | `backend/ml/optimizer.py`; `OptimizationInput` contains budget, allowed time, and available capacity | Budget, time, and capacity tests recorded in `testing/week-2-validation.md` | Real `/recommend` responses show constraint handling | Chetan/Mansi | PASS |
+| SciPy linear-programming solver | `backend/ml/optimizer.py` uses `scipy.optimize.linprog` | Solver executed successfully through `/recommend` and returned a valid optimization result | Real solver recommendation returned by backend | Chetan | PASS |
+| Three alternative actions | `backend/ml/optimizer.py` generates Air Freight, Secondary Supplier, and Delay Launch alternatives | PASS — three alternatives are generated by the optimizer and returned in the real `/recommend` response | Feasibility is determined separately by the configured constraints; not all three are necessarily feasible in every test case | Chetan | PASS |
+| Three prescription cards | `frontend/src/App.jsx` renders recommendation cards | Backend alternatives are verified, but frontend end-to-end card integration is not separately verified | Three recommendation cards are present in frontend | Yoshita | IN PROGRESS |
+| Cost displayed | `frontend/src/App.jsx` displays Cost for each recommendation, but real backend-to-frontend display is not verified | Backend API returned actual cost values: 684.75, 547.80, and 45.65 | Cost field exists in frontend, but verified real backend value display is not available | Yoshita | IN PROGRESS |
+| Speed/time displayed | `frontend/src/App.jsx` displays Speed / Time for each recommendation, but real backend-to-frontend display is not verified | Backend API returned actual time values: 4.40, 6.40, and 13.909985542297363 | Speed / Time field exists in frontend, but verified real backend value display is not available | Yoshita | IN PROGRESS |
+| Cost vs Speed trade-off | `frontend/src/App.jsx` contains Cost and Speed / Time fields for each recommendation | Backend API returned actual cost/time pairs for all three alternatives | Frontend comparison layout exists, but real backend values are not verified in the UI | Yoshita | IN PROGRESS |
 
 ---
 
-## Mid-Project Validation
+# Mid-Project Validation
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Hard budget constraint verified | No verified hard-budget implementation | `testing/optimization-audit.md` defines the required audit; no passing result available | No verified budget validation demo | Chetan/Prashant | NOT STARTED |
-| Execute Decision button | `frontend/src/App.jsx` contains Execute Decision button; it is disabled | Week 2 QA plan contains Execute Decision check | Button is visible but cannot execute a decision | Yoshita/Chetan | IN PROGRESS |
-| Database INSERT verified | No verified operational database INSERT implementation | No INSERT verification result available | No database write-back demo available | Chetan/Mansi | BLOCKED |
+| Hard budget constraint verified | `backend/ml/optimizer.py` validates `alternative["cost"] <= budget` | Feasible budget 700 verified; impossible budget 40 returned no feasible solution and no recommendation | Real API constraint responses captured | Chetan/Prashant | PASS |
+| Execute Decision button | `frontend/src/App.jsx` contains Execute Decision button, currently disabled | Write-back workflow has not yet been executed | Button is visible but not executable | Yoshita/Chetan | IN PROGRESS |
+| Database INSERT verified | No verified operational database INSERT evidence | No MySQL INSERT/SELECT verification completed | No database write-back demo | Chetan/Mansi | BLOCKED |
 
 ---
 
-## Week 3 — Closed Loop
+# Week 3 — Closed Loop
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Evaluation script | No verified evaluation implementation | `testing/week-3-test-plan.md` defines evaluation checks; no passing result | No real evaluation result | Chetan/Prashant | NOT STARTED |
-| Predicted cost comparison | `frontend/src/App.jsx` contains Predicted Cost vs Actual Cost UI | Week 3 QA plan contains comparison check | UI shows an empty state; no real comparison result | Chetan | NOT STARTED |
-| Actual historical outcome | No verified actual historical outcome integration | No passing test result | No actual outcome displayed | Mansi | NOT STARTED |
-| Discrepancy calculation | No verified discrepancy calculation | Week 3 QA plan requires discrepancy calculation | No real discrepancy result displayed | Chetan | NOT STARTED |
-| Decision ROI | `frontend/src/App.jsx` contains Decision ROI UI and calls `getDecisionROI()` | Week 3 QA plan contains ROI checks; no passing result | ROI section is visible with no evaluation data | Chetan/Prashant | IN PROGRESS |
-| Positive business outcomes | `frontend/src/App.jsx` contains Positive Outcomes UI field | Week 3 QA plan contains positive-outcome checks | Empty state is shown; no real outcomes available | Chetan/Mansi | NOT STARTED |
-| ROI analytics UI | `frontend/src/App.jsx` contains Feedback / Decision ROI and evaluation history | Week 3 QA plan contains ROI UI checks | ROI analytics section is visible | Yoshita | IN PROGRESS |
+| Evaluation script | No complete Week 3 end-to-end integration verified | Independent evaluation-module work does not prove the closed-loop system | No complete closed-loop evaluation demo | Chetan/Prashant | NOT STARTED |
+| Predicted cost comparison | `frontend/src/App.jsx` contains Predicted Cost vs Actual Cost UI | No real operational comparison workflow verified | UI empty state only | Chetan | NOT STARTED |
+| Actual historical outcome | No verified operational historical outcome integration | No DB-backed historical outcome verification | No actual outcome displayed | Mansi | NOT STARTED |
+| Discrepancy calculation | No complete end-to-end discrepancy workflow verified | Standalone evaluation logic does not prove operational closed-loop integration | No end-to-end discrepancy demo | Chetan | NOT STARTED |
+| Decision ROI | `frontend/src/App.jsx` contains Decision ROI UI | No real ROI workflow verified | ROI section exists with no verified real outcome data | Chetan/Prashant | IN PROGRESS |
+| Positive business outcomes | `frontend/src/App.jsx` contains Positive Outcomes UI | No real evaluated outcomes verified | Empty state only | Chetan/Mansi | NOT STARTED |
+| ROI analytics UI | `frontend/src/App.jsx` contains Feedback / Decision ROI and evaluation history | UI implementation exists; no end-to-end ROI verification | ROI analytics section is visible | Yoshita | IN PROGRESS |
 
 ---
 
-## Week 4 — Continuous Learning & Polish
+# Week 4 — Continuous Learning & Polish
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Prediction discrepancy detection | Not verified in current repository evidence | No test result available | No demo available | Chetan | NOT STARTED |
-| Retraining trigger | Not verified in current repository evidence | No test result available | No demo available | Chetan | NOT STARTED |
-| XGBoost retraining workflow | Not verified in current repository evidence | No test result available | No demo available | Chetan | NOT STARTED |
-| Final analyst workflow polish | `frontend/src/App.jsx` contains Shipment Risk, Recommendations, Decision, Feedback / ROI and Backend Connection sections | No final end-to-end PASS evidence | Frontend workflow structure is visible | Yoshita | IN PROGRESS |
+| Prediction discrepancy detection | No verified operational implementation | No end-to-end verification | No demo evidence | Chetan | NOT STARTED |
+| Retraining trigger | No verified operational implementation | No actual verification evidence | No demo evidence | Chetan | NOT STARTED |
+| XGBoost retraining workflow | `backend/ml/train.py` provides training workflow, but an automatic continuous-learning trigger is not verified | No continuous retraining verification | No continuous retraining demo | Chetan | IN PROGRESS |
+| Final analyst workflow polish | `frontend/src/App.jsx` contains Shipment Risk, Recommendations, Decision, Feedback / ROI and Backend Connection sections | No final end-to-end PASS evidence | Frontend workflow structure is present | Yoshita | IN PROGRESS |
 
 ---
 
-## Final Workflow
+# Final Workflow
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Analyst reviews prediction | `frontend/src/App.jsx` contains Shipment Risk section; real prediction is not verified | IN PROGRESS |
-| Analyst reviews recommendations | `frontend/src/App.jsx` renders three recommendation cards | IN PROGRESS |
-| Analyst compares Cost vs Speed | `frontend/src/App.jsx` displays Cost and Speed / Time together | IN PROGRESS |
-| Analyst participates in decision | Recommendation selection is implemented in `frontend/src/App.jsx` | IN PROGRESS |
+| Analyst reviews prediction | Real backend prediction generated through `/recommend`; frontend end-to-end display not separately verified | IN PROGRESS |
+| Analyst reviews recommendations | Backend returns three verified alternatives; frontend end-to-end integration not separately verified | IN PROGRESS |
+| Analyst compares Cost vs Speed | Backend returned verified cost/time values, but frontend end-to-end display is not separately verified | IN PROGRESS |
+| Analyst participates in decision | Recommendation selection exists in `frontend/src/App.jsx` | IN PROGRESS |
 | Analyst executes decision | Execute Decision button exists but is disabled | IN PROGRESS |
 | Decision written to database | No verified database write-back evidence | BLOCKED |
-| Actual outcome used for evaluation | No verified historical outcome integration | NOT STARTED |
-| Evaluation feeds back into learning | No verified retraining/continuous-learning implementation | NOT STARTED |
+| Actual outcome used for evaluation | No verified operational historical outcome integration | NOT STARTED |
+| Evaluation feeds back into learning | No verified continuous-learning workflow | NOT STARTED |
 
 ---
 
-## QA Tests for Upcoming Implementation
+# Verified Week 1 / Week 2 Evidence Summary
 
-These are acceptance checks for the next implementation work.
+## XGBoost Model
 
-No test below is marked PASS until it has actually been executed and evidence is available.
+Model path:
 
-### XGBoost Model
+`backend/models/shipment_delay_model.joblib`
 
-- [ ] XGBoost model loads successfully.
-- [ ] Model loading failure is handled correctly.
-- [ ] Loaded model exposes the expected prediction interface.
+Actual model load:
 
-### Prediction Endpoint
+`Model loaded successfully`
 
-- [ ] Prediction endpoint is available.
-- [ ] Valid prediction input returns a valid response.
-- [ ] Response contains the expected prediction value/fields.
-- [ ] Invalid prediction input is rejected.
-- [ ] Missing required prediction fields are rejected.
-- [ ] Prediction endpoint does not return fabricated values.
+### Training/Evaluation Results
 
-### Dataset
+| Metric | Result |
+|---|---:|
+| Rows used | 113097 |
+| Training samples | 90477 |
+| Testing samples | 22620 |
+| MAE | 3.4123 |
+| RMSE | 3.8477 |
+| R² | 0.1468 |
 
-- [ ] Clean historical dataset can be loaded.
-- [ ] Dataset contains the fields required by the prediction workflow.
-- [ ] Invalid or incomplete dataset input is rejected.
-- [ ] Dataset loading does not silently substitute fabricated records.
+Actual prediction generated through `/recommend`:
 
-### Database
-
-- [ ] Database schema can be initialized.
-- [ ] Required tables can be created successfully.
-- [ ] Database connection succeeds with valid configuration.
-- [ ] Database initialization failure is reported clearly.
-
-### Frontend Prediction Integration
-
-- [ ] Frontend can call the prediction endpoint.
-- [ ] Valid prediction response is displayed correctly.
-- [ ] Prediction loading state is displayed.
-- [ ] Prediction error state is displayed.
-- [ ] Frontend does not display fabricated prediction results.
+`5.909985542297363`
 
 ---
 
-## Current Evidence Notes
+## Three Solver-Generated Alternatives
 
-The current frontend evidence confirms that:
+The optimizer generates three alternatives:
 
-- React application scaffolding exists at `frontend/src/App.jsx`.
-- Three recommendation objects are defined.
-- Three recommendation cards are rendered.
-- Cost is displayed on each recommendation card.
-- Speed / Time is displayed on each recommendation card.
-- Current Cost and Speed / Time values are placeholders represented by `Backend value`.
-- Recommendations can be selected.
-- Execute Decision exists but is disabled.
-- Feedback / Decision ROI UI exists.
-- Positive Outcomes and Evaluated Decisions fields exist.
-- Predicted Cost vs Actual Cost is represented in the UI.
-- The UI provides an empty state when evaluation data is unavailable.
-- Backend health and Decision ROI API functions are called from the frontend.
+1. Air Freight
+2. Secondary Supplier
+3. Delay Launch
 
-These UI elements do not prove that the backend model, solver, database write-back, historical outcomes, closed-loop evaluation, ROI calculation, or retraining workflow are implemented.
+These are solver-generated alternatives.
+
+They are not automatically three feasible alternatives.
+
+Feasibility is determined by the configured budget, time, and capacity
+constraints.
 
 ---
 
-## Evidence Rule
+## Normal `/recommend` Case
 
-Documentation, planned tests, UI placeholders, and empty states must not be treated as proof that backend functionality exists.
+Configured maximum allowed time:
 
-A requirement can move to PASS only after:
+`10`
+
+Actual normal-case feasibility:
+
+| Option | Cost | Time | Feasible |
+|---|---:|---:|---|
+| Air Freight | 684.76 | 4.40 | Yes |
+| Secondary Supplier | 547.80 | 6.40 | Yes |
+| Delay Launch | 45.65 | 17.11 | No |
+
+Number of feasible alternatives:
+
+`2`
+
+Reason Delay Launch is infeasible:
+
+`17.11 > 10`
+
+Recommended option:
+
+`Air Freight`
+
+---
+
+## `/recommend` Allowed-Time-20 Case
+
+Actual prediction:
+
+`5.909985542297363`
+
+| Option | Cost | Time | Capacity | Feasible |
+|---|---:|---:|---:|---|
+| Air Freight | 684.75 | 4.40 | 50 | Yes |
+| Secondary Supplier | 547.80 | 6.40 | 50 | Yes |
+| Delay Launch | 45.65 | 13.909985542297363 | 50 | Yes |
+
+Number of feasible alternatives:
+
+`3`
+
+Recommended option:
+
+`Air Freight`
+
+---
+
+## Budget Verification
+
+### Budget = 700
+
+| Option | Cost | Feasible |
+|---|---:|---|
+| Air Freight | 684.75 | Yes |
+| Secondary Supplier | 547.80 | Yes |
+| Delay Launch | 45.65 | Yes |
+
+Number of feasible alternatives:
+
+`3`
+
+All returned costs satisfy the configured budget.
+
+Recommendation:
+
+`Air Freight`
+
+### Budget = 40
+
+| Option | Cost | Feasible |
+|---|---:|---|
+| Air Freight | 684.75 | No |
+| Secondary Supplier | 547.80 | No |
+| Delay Launch | 45.65 | No |
+
+Number of feasible alternatives:
+
+`0`
+
+Result:
+
+- `feasible_alternatives = []`
+- `recommended_option = null`
+- status = `no_feasible_solution`
+
+No invalid recommendation was returned.
+
+---
+
+## Time Constraint Verification
+
+### Allowed Time = 5
+
+| Option | Time | Feasible |
+|---|---:|---|
+| Air Freight | 4.40 | Yes |
+| Secondary Supplier | 6.40 | No |
+| Delay Launch | 13.909985542297363 | No |
+
+Number of feasible alternatives:
+
+`1`
+
+Recommendation:
+
+`Air Freight`
+
+---
+
+## Capacity Constraint Verification
+
+Configured available capacity:
+
+`40`
+
+Shipment capacity:
+
+`50`
+
+| Option | Capacity | Feasible |
+|---|---:|---|
+| Air Freight | 50 | No |
+| Secondary Supplier | 50 | No |
+| Delay Launch | 50 | No |
+
+Number of feasible alternatives:
+
+`0`
+
+Result:
+
+- `feasible_alternatives = []`
+- `recommended_option = null`
+- status = `no_feasible_solution`
+
+No invalid recommendation was returned.
+
+---
+
+# Validation Status Summary
+
+| Area | Status |
+|---|---|
+| XGBoost predictive baseline | PASS |
+| Historical supply-chain dataset used by training | PASS |
+| Shipment-delay prediction | PASS |
+| SciPy optimization | PASS |
+| Three solver-generated alternatives | PASS |
+| Budget constraint | PASS |
+| Time constraint | PASS |
+| Capacity constraint | PASS |
+| Backend cost values | PASS |
+| Backend speed/time values | PASS |
+| Three prescription cards | IN PROGRESS |
+| Frontend cost display | IN PROGRESS |
+| Frontend speed/time display | IN PROGRESS |
+| Cost vs Speed frontend integration | IN PROGRESS |
+| Execute Decision | IN PROGRESS |
+| Database INSERT / write-back | BLOCKED |
+| Evaluation script / Week 3 closed-loop | NOT STARTED |
+| Actual historical outcome | NOT STARTED |
+| Decision ROI | IN PROGRESS |
+| Continuous learning / retraining | IN PROGRESS |
+
+---
+
+# Evidence Rule
+
+No requirement is marked PASS based only on documentation, planned tests,
+frontend placeholders, or expected behavior.
+
+A PASS requires:
 
 1. Implementation exists.
 2. The implementation is executed or otherwise verified.
-3. Test evidence is recorded.
-4. Required demo/API/database evidence is available.
+3. Actual test evidence is available.
+4. The evidence supports the specific requirement.
 
-No fabricated values or fabricated PASS results should be added.
+Three solver-generated alternatives do not imply three feasible alternatives.
+
+No database success is claimed without actual:
+
+`UI → FastAPI → MySQL INSERT → SELECT`
+
+evidence.
+
+No Week 3 closed-loop completion is claimed from the existence of a standalone
+evaluation module.
+
+No Decision ROI PASS is claimed without verified ROI implementation and actual
+outcome data.
 
 ---
 
-## Current Critical Gaps
+# Current Remaining Critical Gaps
 
-1. XGBoost predictive model
-2. Historical supply-chain dataset
-3. Prediction endpoint
-4. Prescriptive optimization
-5. Hard budget constraint validation
-6. Operational database write-back
-7. Closed-loop evaluation
+1. PostgreSQL / Snowflake operational connection
+2. Frontend end-to-end prediction/recommendation integration
+3. Frontend backend-value display verification
+4. Execute Decision backend write-back
+5. MySQL INSERT and SELECT verification
+6. Week 3 closed-loop integration
+7. Actual historical outcome integration
 8. Decision ROI from actual outcomes
-9. XGBoost retraining
-10. Final end-to-end workflow verification| Shipment-delay prediction | Frontend states that shipment risk information will be provided by the backend model; no predictive model implementation verified | No actual evidence | No real prediction demo | Chetan | NOT STARTED |
-| React application scaffolding | `frontend/src/App.jsx` | No dedicated QA evidence yet | React UI implementation present | Yoshita | IN PROGRESS |
-| PostgreSQL / Snowflake connection | No database connection implementation verified in reviewed evidence | No actual evidence | No database connection demo | Mansi | NOT STARTED |
-
----
-
-## Week 2 — Optimization & Prescriptive UI
-
-| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
-|---|---|---|---|---|---|
-| Business constraints defined | No verified backend constraint implementation in reviewed evidence | `testing/week-2-test-plan.md` contains required checks only | No verified solver demo | Chetan/Mansi | NOT STARTED |
-| SciPy linear-programming solver | No verified SciPy LP implementation in reviewed evidence | `testing/week-2-test-plan.md` contains solver check only | No solver output demo | Chetan | NOT STARTED |
-| Three alternative actions | `frontend/src/App.jsx` defines three recommendation objects: Option 1, Option 2, Option 3; values are currently placeholders | `testing/week-2-test-plan.md` contains the three-action requirement | Three recommendation cards are rendered in the frontend | Chetan | IN PROGRESS |
-| Three prescription cards | `frontend/src/App.jsx` renders the three recommendations as recommendation cards | `testing/week-2-test-plan.md` contains prescription-card check | Three recommendation cards are visible in the UI | Yoshita | IN PROGRESS |
-| Cost displayed | `frontend/src/App.jsx` displays Cost for each recommendation, but current value is `"Backend value"` | `testing/week-2-test-plan.md` contains cost-display check | Cost field is visible in each recommendation card | Yoshita | IN PROGRESS |
-| Speed/time displayed | `frontend/src/App.jsx` displays Speed / Time for each recommendation, but current value is `"Backend value"` | `testing/week-2-test-plan.md` contains speed/time check | Speed / Time field is visible in each recommendation card | Yoshita | IN PROGRESS |
-| Cost vs Speed trade-off | `frontend/src/App.jsx` contains Cost and Speed / Time fields for each recommendation | `testing/week-2-test-plan.md` contains trade-off check | Cost and Speed / Time are shown together on recommendation cards | Yoshita | IN PROGRESS |
-
----
-
-## Mid-Project Validation
-
-| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
-|---|---|---|---|---|---|
-| Hard budget constraint verified | No verified hard-budget solver validation in reviewed repository evidence | `testing/optimization-audit.md` defines the required audit but does not prove implementation | No verified budget-constraint demo | Chetan/Prashant | NOT STARTED |
-| Execute Decision button | `frontend/src/App.jsx` contains an Execute Decision button, but it is disabled because backend/database write-back is unavailable | Week 2 QA plan contains Execute Decision check | Button is visible but not executable | Yoshita/Chetan | IN PROGRESS |
-| Database INSERT verified | No verified operational database INSERT implementation in reviewed evidence | No actual INSERT verification evidence | No database write-back demo | Chetan/Mansi | BLOCKED |
-
----
-
-## Week 3 — Closed Loop
-
-| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
-|---|---|---|---|---|---|
-| Evaluation script | No verified closed-loop evaluation implementation in reviewed evidence | `testing/week-3-test-plan.md` defines the required checks | No real evaluation result demo | Chetan/Prashant | NOT STARTED |
-| Predicted cost comparison | Frontend displays a Predicted Cost vs Actual Cost section, but real evaluation data is not available | `testing/week-3-test-plan.md` contains predicted-vs-actual check | UI placeholder/empty state only | Chetan | NOT STARTED |
-| Actual historical outcome | No verified actual historical outcome retrieval in reviewed evidence | `testing/week-3-test-plan.md` requires actual historical outcome | No actual outcome displayed | Mansi | NOT STARTED |
-| Discrepancy calculation | No verified discrepancy calculation implementation | `testing/week-3-test-plan.md` requires discrepancy calculation | No real discrepancy result displayed | Chetan | NOT STARTED |
-| Decision ROI | `frontend/src/App.jsx` contains a Decision ROI section and calls `getDecisionROI()`, but no real ROI result is demonstrated | `testing/week-3-test-plan.md` contains Decision ROI checks | ROI section is visible with an empty-state message | Chetan/Prashant | IN PROGRESS |
-| Positive business outcomes | Frontend contains a Positive Outcomes field, but no real evaluated outcomes are available | `testing/week-3-test-plan.md` contains positive-outcome checks | UI shows an empty state rather than fabricated results | Chetan/Mansi | NOT STARTED |
-| ROI analytics UI | `frontend/src/App.jsx` contains Feedback / Decision ROI, ROI cards, evaluation history and Check Evaluation Data control | `testing/week-3-test-plan.md` contains ROI UI checks | ROI analytics section is visible in the UI | Yoshita | IN PROGRESS |
-
----
-
-## Week 4 — Continuous Learning & Polish
-
-| PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
-|---|---|---|---|---|---|
-| Prediction discrepancy detection | No verified implementation in reviewed repository evidence | No actual evidence | No demo evidence | Chetan | NOT STARTED |
-| Retraining trigger | No verified implementation in reviewed repository evidence | No actual evidence | No demo evidence | Chetan | NOT STARTED |
-| XGBoost retraining workflow | No verified implementation in reviewed repository evidence | No actual evidence | No demo evidence | Chetan | NOT STARTED |
-| Final analyst workflow polish | `frontend/src/App.jsx` contains prediction area, recommendation cards, decision section, feedback/ROI section and backend connection section | No final end-to-end QA evidence | Frontend workflow structure is present | Yoshita | IN PROGRESS |
-
----
-
-## Final Workflow
-
-| Requirement | Evidence | Status |
-|---|---|---|
-| Analyst reviews prediction | `frontend/src/App.jsx` contains a Shipment Risk section; real backend prediction is not verified | IN PROGRESS |
-| Analyst reviews recommendations | `frontend/src/App.jsx` renders three recommendation cards | IN PROGRESS |
-| Analyst compares Cost vs Speed | `frontend/src/App.jsx` displays Cost and Speed / Time together on recommendation cards | IN PROGRESS |
-| Analyst participates in decision | `frontend/src/App.jsx` allows a recommendation to be selected | IN PROGRESS |
-| Analyst executes decision | Execute Decision button exists but is disabled until backend/database write-back is available | IN PROGRESS |
-| Decision written to database | No verified database write-back evidence | BLOCKED |
-| Actual outcome used for evaluation | No verified actual historical outcome integration | NOT STARTED |
-| Evaluation feeds back into learning | No verified closed-loop retraining workflow | NOT STARTED |
-
----
-
-## Final Review Checklist
-
-- [ ] Every PDF requirement has an owner.
-- [x] Every requirement has an implementation location or an explicit statement that it was not verified.
-- [ ] Every completed requirement has actual test evidence.
-- [ ] Every demo requirement has a demonstrable UI/API workflow.
-- [x] No fabricated results are used.
-- [x] No placeholder is marked PASS.
-- [x] No requirement is silently omitted.
-
----
-
-## Current Critical Gaps
-
-The following requirements cannot be marked complete until actual implementation and verification evidence exists:
-
-1. Predictive model
-2. Historical supply-chain dataset
-3. Prescriptive optimization
-4. Hard constraint validation
-5. Operational database write-back
-6. Closed-loop evaluation
-7. Decision ROI from actual outcomes
-8. Continuous learning / XGBoost retraining
-9. Final end-to-end workflow verification
-
-Documentation alone is not treated as implementation evidence.
-
----
-
-## Evidence Notes
-
-The current frontend evidence shows the following:
-
-- Three recommendation cards are implemented.
-- Each recommendation has an identifiable action.
-- Cost is displayed.
-- Speed / Time is displayed.
-- Cost and Speed / Time are presented together for comparison.
-- A recommendation can be selected.
-- An Execute Decision button exists, but it is currently disabled.
-- The Feedback / Decision ROI section exists.
-- Positive Outcomes and Evaluated Decisions are represented in the UI.
-- Predicted Cost vs Actual Cost is represented in the UI.
-- The UI explicitly shows an empty state when real evaluation data is unavailable.
-- The frontend calls backend API functions for backend health and Decision ROI.
-
-These frontend elements do not by themselves prove that the backend solver, database write-back, historical outcomes, closed-loop evaluation, ROI calculation, or XGBoost retraining are implemented.
-
-No PASS status is assigned without actual implementation and verification evidence.
+9. Continuous-learning trigger and workflow
+10. Final end-to-end workflow verification

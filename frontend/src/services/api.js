@@ -1,12 +1,17 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000";
 
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(
+      `${API_BASE_URL}/health`
+    );
 
     if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`);
+      throw new Error(
+        `Backend returned ${response.status}`
+      );
     }
 
     return await response.json();
@@ -17,7 +22,9 @@ export async function checkBackendHealth() {
   }
 }
 
-export async function getPredictionRecommendations(shipment) {
+export async function getPredictionRecommendations(
+  shipment
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/predict/shipment-delay`,
@@ -31,16 +38,18 @@ export async function getPredictionRecommendations(shipment) {
     );
 
     if (!response.ok) {
-      let message = `Backend returned ${response.status}`;
+      let message =
+        `Backend returned ${response.status}`;
 
       try {
-        const errorData = await response.json();
+        const errorData =
+          await response.json();
 
         if (errorData?.detail) {
           message = errorData.detail;
         }
       } catch {
-        // Keep the default HTTP error message.
+        // Keep default HTTP error message.
       }
 
       throw new Error(message);
@@ -68,7 +77,9 @@ export async function getPredictionRecommendations(shipment) {
   }
 }
 
-export async function getRecommendations(requestData) {
+export async function getRecommendations(
+  requestData
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/recommend`,
@@ -82,16 +93,18 @@ export async function getRecommendations(requestData) {
     );
 
     if (!response.ok) {
-      let message = `Backend returned ${response.status}`;
+      let message =
+        `Backend returned ${response.status}`;
 
       try {
-        const errorData = await response.json();
+        const errorData =
+          await response.json();
 
         if (errorData?.detail) {
           message = errorData.detail;
         }
       } catch {
-        // Keep the default HTTP error message.
+        // Keep default HTTP error message.
       }
 
       throw new Error(message);
@@ -105,15 +118,93 @@ export async function getRecommendations(requestData) {
   }
 }
 
-// Mansi's decision write-back endpoint is not available yet.
-// Do not invent an endpoint.
-export async function executeDecision() {
-  throw new Error(
-    "Decision write-back endpoint is not available yet."
-  );
+/*
+ * Decision write-back endpoint.
+ *
+ * This is kept separate from the Week-3
+ * evaluation/ROI UI.
+ *
+ * Do not invent or modify the request
+ * contract until the backend endpoint
+ * is confirmed.
+ */
+export async function executeDecision(
+  recommendation
+) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(
+          recommendation
+        ),
+      }
+    );
+
+    if (!response.ok) {
+      let message =
+        `Backend returned ${response.status}`;
+
+      try {
+        const errorData =
+          await response.json();
+
+        if (errorData?.detail) {
+          message = errorData.detail;
+        } else if (errorData?.message) {
+          message = errorData.message;
+        }
+      } catch {
+        // Keep default HTTP error message.
+      }
+
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+
+    if (!data) {
+      throw new Error(
+        "Backend did not confirm decision execution."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(
+      `Unable to execute decision: ${error.message}`
+    );
+  }
 }
 
-// Real evaluation/ROI endpoint is not available yet.
-export async function getDecisionROI() {
+/*
+ * Week-3 decision evaluation API placeholder.
+ *
+ * The backend evaluation endpoint has not
+ * been defined yet.
+ *
+ * Do not invent an endpoint or return
+ * fake evaluation/ROI data.
+ */
+export async function getDecisionEvaluation() {
   return null;
+}
+
+/*
+ * Week-3 decision history API placeholder.
+ *
+ * The backend history endpoint has not
+ * been defined yet.
+ *
+ * Do not invent an endpoint or return
+ * fake decision history.
+ */
+export async function getDecisionHistory() {
+  return [];
 }

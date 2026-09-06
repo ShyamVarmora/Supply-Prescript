@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Literal
 
 import mysql.connector
 from fastapi import FastAPI, HTTPException
@@ -117,11 +117,7 @@ class DecisionRequest(BaseModel):
     recommendation_id: int = Field(..., gt=0)
     selected_action: str = Field(..., min_length=1, max_length=100)
 
-    decision_status: str = Field(
-        default="SELECTED",
-        min_length=1,
-        max_length=50,
-    )
+    decision_status: Literal["SELECTED"] = "SELECTED"
 
 
 # ============================================================
@@ -339,16 +335,13 @@ def recommend_action(
                         alternative["capacity"],
                         alternative["expected_impact"],
                         alternative["expected_impact"],
-                        alternative["cost"]
-                        <= request_data["budget"],
-                        alternative["time"]
-                        <= request_data["allowed_time"],
-                        alternative["capacity"]
-                        <= request_data["available_capacity"],
-                        alternative["feasibility"]
-                        == "feasible",
+                        alternative["budget_valid"],
+                        alternative["time_valid"],
+                        alternative["capacity_valid"],
+                        alternative["all_constraints_satisfied"],
                     ),
                 )
+                alternative["recommendation_id"] = cursor.lastrowid
 
             connection.commit()
 
@@ -512,7 +505,11 @@ def create_decision(
                 action,
                 action_cost,
                 risk_reduction,
-                time_saved_days
+                time_saved_days,
+                budget_valid,
+                time_valid,
+                capacity_valid,
+                all_constraints_satisfied
             FROM prescriptive_recommendations
             WHERE recommendation_id = %s
               AND record_id = %s
@@ -545,6 +542,28 @@ def create_decision(
                 detail=(
                     "selected_action does not match "
                     "the stored recommendation."
+                ),
+            )
+
+        if not recommendation["all_constraints_satisfied"]:
+            raise HTTPException(
+                status_code=422,
+                detail="The selected recommendation is infeasible.",
+            )
+
+        if not all(
+            recommendation[field]
+            for field in (
+                "budget_valid",
+                "time_valid",
+                "capacity_valid",
+            )
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "The selected recommendation does not satisfy "
+                    "Budget, Time, and Capacity constraints."
                 ),
             )
 

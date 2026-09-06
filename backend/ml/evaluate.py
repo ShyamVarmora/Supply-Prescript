@@ -1,12 +1,12 @@
-"""
-Week 3 decision evaluation logic.
-
-This module compares a recorded prediction with an actual outcome.
-It does not connect to the database, frontend, ROI UI, or retraining workflow.
-"""
+"""Decision evaluation and discrepancy-triggered model retraining."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
+
+import joblib
+
+from ml.train import load_dataset, prepare_data, train_model
 
 
 @dataclass
@@ -16,6 +16,8 @@ class EvaluationRecord:
     decision_id: str
     predicted_cost: float
     actual_cost: Optional[float] = None
+    record_id: Optional[int] = None
+    recommendation_id: Optional[int] = None
 
     predicted_time: Optional[float] = None
     actual_time: Optional[float] = None
@@ -97,4 +99,48 @@ def evaluate_decision(
         "absolute_difference": absolute_difference,
         "percentage_difference": percentage_difference,
         "threshold_percent": discrepancy_threshold_percent,
+    }
+
+
+def retrain_model(model_path: Optional[Path] = None) -> dict:
+    """Train and persist a new XGBoost model using the project dataset."""
+
+    data = load_dataset()
+    features, target = prepare_data(data)
+    pipeline, mae, rmse, r2 = train_model(features, target)
+
+    output_path = model_path or (
+        Path(__file__).resolve().parents[2]
+        / "models"
+        / "shipment_delay_model.joblib"
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(pipeline, output_path)
+
+    return {
+        "model_path": str(output_path),
+        "prediction_target": "delivery_time_deviation",
+        "mae": float(mae),
+        "rmse": float(rmse),
+        "r2": float(r2),
+    }
+
+
+def trigger_retraining_if_needed(
+    evaluation: dict,
+    model_path: Optional[Path] = None,
+) -> dict:
+    """Retrain automatically only when evaluation detects a discrepancy."""
+
+    if evaluation.get("status") != "discrepancy_detected":
+        return {
+            "triggered": False,
+            "evaluation_status": evaluation.get("status"),
+            "training": None,
+        }
+
+    return {
+        "triggered": True,
+        "evaluation_status": evaluation["status"],
+        "training": retrain_model(model_path),
     }

@@ -1,13 +1,19 @@
 import os
 from typing import Any, Literal
 
-import mysql.connector
+import psycopg
+from psycopg.rows import dict_row
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ml.predict import predict_shipment_delay
 from ml.optimizer import OptimizationInput, optimize_alternatives
+from ml.evaluate import (
+    EvaluationRecord,
+    evaluate_decision,
+    trigger_retraining_if_needed,
+)
 
 
 app = FastAPI(
@@ -38,21 +44,19 @@ app.add_middleware(
 # ============================================================
 
 def get_db_connection():
-    """Create a MySQL database connection."""
+    """Create a PostgreSQL database connection from environment settings."""
 
     try:
-        return mysql.connector.connect(
+        return psycopg.connect(
             host=os.getenv("DB_HOST", "localhost"),
-            port=int(os.getenv("DB_PORT", "3306")),
-            user=os.getenv("DB_USER", "root"),
-            password=os.getenv("DB_PASSWORD", "root123"),
-            database=os.getenv(
-                "DB_NAME",
-                "supply_prescript_db",
-            ),
+            port=int(os.getenv("DB_PORT", "5432")),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD"),
+            dbname=os.getenv("DB_NAME", "supply_prescript_db"),
+            row_factory=dict_row,
         )
 
-    except mysql.connector.Error as exc:
+    except psycopg.Error as exc:
         raise RuntimeError(
             f"Database connection failed: {exc}"
         ) from exc
@@ -102,10 +106,7 @@ class OptimizationRequest(BaseModel):
     shipment_time: float = Field(..., gt=0)
     shipment_capacity: float = Field(..., gt=0)
 
-    # Optional so the existing /recommend request
-    # remains compatible while DB-backed recommendations
-    # can use a real supply-chain record.
-    record_id: int | None = Field(default=None, gt=0)
+    record_id: int = Field(..., gt=0)
 
 
 # ============================================================
@@ -186,51 +187,52 @@ def recommend_action(
         request_data = request.model_dump()
 
         # ----------------------------------------------------
-        # 1. Validate record_id when DB-backed write-back
-        #    is requested.
+        # 1. Validate the real record before prediction and persistence.
         # ----------------------------------------------------
 
-        if request.record_id is not None:
-            try:
-                connection = get_db_connection()
-                cursor = connection.cursor(dictionary=True)
+        connection = get_db_connection()
+        cursor = connection.cursor()
 
-                cursor.execute(
-                    """
-                    SELECT record_id
-                    FROM supply_chain_data
-                    WHERE record_id = %s
-                    """,
-                    (request.record_id,),
-                )
+        cursor.execute(
+            """
+                SELECT
+                    record_id,
+                    warehouse_inventory_level,
+                    handling_equipment_availability,
+                    order_fulfillment_status,
+                    weather_condition_severity,
+                    shipping_costs,
+                    supplier_reliability_score,
+                    lead_time_days,
+                    historical_demand,
+                    cargo_condition_status,
+                    route_risk_level,
+                    customs_clearance_time,
+                    supplier_country
+            FROM supply_chain_data
+            WHERE record_id = %s
+            """,
+            (request.record_id,),
+        )
 
-                record = cursor.fetchone()
+        record = cursor.fetchone()
 
-                if record is None:
-                    raise HTTPException(
-                        status_code=404,
-                        detail=(
-                            f"Supply-chain record "
-                            f"{request.record_id} was not found."
-                        ),
-                    )
-
-            except HTTPException:
-                raise
-
-            except RuntimeError as exc:
-                raise HTTPException(
-                    status_code=503,
-                    detail=str(exc),
-                )
+        if record is None:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"Supply-chain record "
+                    f"{request.record_id} was not found."
+                ),
+            )
 
         # ----------------------------------------------------
         # 2. Prepare shipment features for XGBoost
         # ----------------------------------------------------
 
         shipment_data = {
-            key: request_data[key]
-            for key in [
+            key: record[key]
+            for key in (
                 "warehouse_inventory_level",
                 "handling_equipment_availability",
                 "order_fulfillment_status",
@@ -243,7 +245,7 @@ def recommend_action(
                 "route_risk_level",
                 "customs_clearance_time",
                 "supplier_country",
-            ]
+            )
         }
 
         # ----------------------------------------------------
@@ -283,73 +285,14 @@ def recommend_action(
         #    supply-chain record was supplied.
         # ----------------------------------------------------
 
-        if request.record_id is not None:
-            if connection is None:
-                raise HTTPException(
-                    status_code=503,
-                    detail="Database connection is unavailable.",
-                )
+        alternatives = result.get("alternatives", [])
+        stored_recommendations = []
 
-            if cursor is None:
-                cursor = connection.cursor(dictionary=True)
-
-            alternatives = result.get("alternatives", [])
-
-            for alternative in alternatives:
-                cursor.execute(
-                    """
-                    INSERT INTO prescriptive_recommendations (
-                        record_id,
-                        recommendation_rank,
-                        action,
-                        action_cost,
-                        risk_reduction,
-                        time_saved_days,
-                        capacity_required,
-                        operational_impact,
-                        optimization_score,
-                        budget_valid,
-                        time_valid,
-                        capacity_valid,
-                        all_constraints_satisfied
-                    )
-                    VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s
-                    )
-                    """,
-                    (
-                        request.record_id,
-                        alternative["option"],
-                        alternative["action"],
-                        alternative["cost"],
-
-                        # No defined source/formula currently exists
-                        # for risk_reduction.
-                        None,
-
-                        # No defined source/formula currently exists
-                        # for time_saved_days.
-                        None,
-
-                        alternative["capacity"],
-                        alternative["expected_impact"],
-                        alternative["expected_impact"],
-                        alternative["budget_valid"],
-                        alternative["time_valid"],
-                        alternative["capacity_valid"],
-                        alternative["all_constraints_satisfied"],
-                    ),
-                )
-                alternative["recommendation_id"] = cursor.lastrowid
-
-            connection.commit()
-
-            # Retrieve the real auto-generated IDs.
+        for alternative in alternatives:
             cursor.execute(
                 """
-                SELECT
-                    recommendation_id,
+                INSERT INTO prescriptive_recommendations (
+                    record_id,
                     recommendation_rank,
                     action,
                     action_cost,
@@ -358,37 +301,60 @@ def recommend_action(
                     capacity_required,
                     operational_impact,
                     optimization_score,
+                    budget_valid,
+                    time_valid,
+                    capacity_valid,
                     all_constraints_satisfied
-                FROM prescriptive_recommendations
-                WHERE record_id = %s
-                ORDER BY recommendation_id DESC
-                LIMIT %s
+                )
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s
+                )
+                RETURNING recommendation_id
                 """,
                 (
                     request.record_id,
-                    len(alternatives),
+                    alternative["option"],
+                    alternative["action"],
+                    alternative["cost"],
+                    None,
+                    None,
+                    alternative["capacity"],
+                    alternative["expected_impact"],
+                    alternative["expected_impact"],
+                    alternative["budget_valid"],
+                    alternative["time_valid"],
+                    alternative["capacity_valid"],
+                    alternative["all_constraints_satisfied"],
                 ),
             )
-
-            stored_recommendations = cursor.fetchall()
-
-            recommendation_ids_by_rank = {
-                stored["recommendation_rank"]: stored[
-                    "recommendation_id"
-                ]
-                for stored in stored_recommendations
-            }
-
-            for alternative in alternatives:
-                alternative["recommendation_id"] = (
-                    recommendation_ids_by_rank.get(
-                        alternative["option"]
-                    )
-                )
-
-            result["stored_recommendations"] = (
-                list(reversed(stored_recommendations))
+            recommendation_id = cursor.fetchone()["recommendation_id"]
+            alternative["record_id"] = request.record_id
+            alternative["recommendation_id"] = recommendation_id
+            stored_recommendations.append(
+                {
+                    "record_id": request.record_id,
+                    "recommendation_id": recommendation_id,
+                    "option": alternative["option"],
+                    "action": alternative["action"],
+                    "cost": alternative["cost"],
+                    "time": alternative["time"],
+                    "capacity": alternative["capacity"],
+                    "expected_impact": alternative["expected_impact"],
+                    "risk_reduction": None,
+                    "time_saved_days": None,
+                    "budget_valid": alternative["budget_valid"],
+                    "time_valid": alternative["time_valid"],
+                    "capacity_valid": alternative["capacity_valid"],
+                    "all_constraints_satisfied": alternative[
+                        "all_constraints_satisfied"
+                    ],
+                    "feasibility": alternative["feasibility"],
+                }
             )
+
+        connection.commit()
+        result["stored_recommendations"] = stored_recommendations
 
         # ----------------------------------------------------
         # 7. Return prediction + recommendations
@@ -418,7 +384,10 @@ def recommend_action(
             detail=str(exc),
         )
 
-    except mysql.connector.Error as exc:
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    except psycopg.Error as exc:
         if connection is not None:
             connection.rollback()
 
@@ -450,7 +419,7 @@ def recommend_action(
         if cursor is not None:
             cursor.close()
 
-        if connection is not None and connection.is_connected():
+        if connection is not None and not connection.closed:
             connection.close()
 
 
@@ -467,7 +436,7 @@ def create_decision(
 
     try:
         connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor()
 
         # ----------------------------------------------------
         # 1. Validate record_id
@@ -583,6 +552,7 @@ def create_decision(
                 decision_status
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING decision_id
             """,
             (
                 decision.record_id,
@@ -595,9 +565,8 @@ def create_decision(
             ),
         )
 
+        decision_id = cursor.fetchone()["decision_id"]
         connection.commit()
-
-        decision_id = cursor.lastrowid
 
         return {
             "status": "success",
@@ -611,7 +580,7 @@ def create_decision(
     except HTTPException:
         raise
 
-    except mysql.connector.Error as exc:
+    except psycopg.Error as exc:
         if connection is not None:
             connection.rollback()
 
@@ -649,5 +618,131 @@ def create_decision(
         if cursor is not None:
             cursor.close()
 
-        if connection is not None and connection.is_connected():
+        if connection is not None and not connection.closed:
+            connection.close()
+
+
+# ============================================================
+# DECISION HISTORY AND EVALUATION
+# ============================================================
+
+def evaluation_threshold_percent() -> float:
+    return float(os.getenv("EVALUATION_THRESHOLD_PERCENT", "10.0"))
+
+
+@app.get("/decisions/history")
+def decision_history():
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT
+                decision_id,
+                record_id,
+                recommendation_id,
+                selected_action,
+                expected_cost,
+                expected_risk_reduction,
+                expected_time_saved_days,
+                decision_status,
+                selected_at
+            FROM decision_log
+            ORDER BY selected_at DESC, decision_id DESC
+            """
+        )
+        return {"decisions": cursor.fetchall()}
+
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    except psycopg.Error as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database operation failed: {exc}",
+        )
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None and not connection.closed:
+            connection.close()
+
+
+@app.get("/decisions/{decision_id}/evaluation")
+def decision_evaluation(decision_id: int):
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT
+                d.decision_id,
+                d.record_id,
+                d.recommendation_id,
+                d.expected_cost AS predicted_cost,
+                o.actual_cost,
+                o.actual_delay_days,
+                o.outcome_status
+            FROM decision_log d
+            LEFT JOIN actual_outcomes o
+                ON o.decision_id = d.decision_id
+            WHERE d.decision_id = %s
+            ORDER BY o.evaluated_at DESC NULLS LAST
+            LIMIT 1
+            """,
+            (decision_id,),
+        )
+        row = cursor.fetchone()
+
+        if row is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Decision {decision_id} was not found.",
+            )
+
+        evaluation = evaluate_decision(
+            EvaluationRecord(
+                decision_id=str(row["decision_id"]),
+                record_id=row["record_id"],
+                recommendation_id=row["recommendation_id"],
+                predicted_cost=float(row["predicted_cost"]),
+                actual_cost=(
+                    float(row["actual_cost"])
+                    if row["actual_cost"] is not None
+                    else None
+                ),
+            ),
+            discrepancy_threshold_percent=evaluation_threshold_percent(),
+        )
+        evaluation["record_id"] = row["record_id"]
+        evaluation["recommendation_id"] = row["recommendation_id"]
+        evaluation["actual_delay_days"] = row["actual_delay_days"]
+        evaluation["outcome_status"] = row["outcome_status"]
+
+        retraining = trigger_retraining_if_needed(evaluation)
+        return {"evaluation": evaluation, "retraining": retraining}
+
+    except HTTPException:
+        raise
+
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    except psycopg.Error as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database operation failed: {exc}",
+        )
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None and not connection.closed:
             connection.close()

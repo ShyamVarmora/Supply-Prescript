@@ -17,7 +17,8 @@ export async function checkBackendHealth() {
     return await response.json();
   } catch (error) {
     throw new Error(
-      `Unable to connect to the backend: ${error.message}`
+      `Unable to connect to the backend: ${error.message}`,
+      { cause: error }
     );
   }
 }
@@ -72,7 +73,8 @@ export async function getPredictionRecommendations(
     return data;
   } catch (error) {
     throw new Error(
-      `Unable to load shipment prediction: ${error.message}`
+      `Unable to load shipment prediction: ${error.message}`,
+      { cause: error }
     );
   }
 }
@@ -113,7 +115,8 @@ export async function getRecommendations(
     return await response.json();
   } catch (error) {
     throw new Error(
-      `Unable to load recommendations: ${error.message}`
+      `Unable to load recommendations: ${error.message}`,
+      { cause: error }
     );
   }
 }
@@ -178,7 +181,8 @@ export async function executeDecision(
     return data;
   } catch (error) {
     throw new Error(
-      `Unable to execute decision: ${error.message}`
+      `Unable to execute decision: ${error.message}`,
+      { cause: error }
     );
   }
 }

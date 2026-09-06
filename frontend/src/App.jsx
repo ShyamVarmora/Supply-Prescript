@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 
 import "./App.css";
 
@@ -75,7 +72,6 @@ const initialShipment = {
   route_risk_level: "",
   customs_clearance_time: "",
   supplier_country: "",
-
   budget: "",
   allowed_time: "",
   available_capacity: "",
@@ -126,9 +122,7 @@ function App() {
   /*
    * Week-3 Decision Evaluation state.
    *
-   * Evaluation data is provided by the future
-   * backend evaluation service. No fake values
-   * are stored in the frontend.
+   * No fake evaluation data is stored here.
    */
   const [evaluation, setEvaluation] =
     useState(null);
@@ -136,7 +130,7 @@ function App() {
   const [
     evaluationStatus,
     setEvaluationStatus,
-  ] = useState("loading");
+  ] = useState("empty");
 
   const [evaluationError, setEvaluationError] =
     useState("");
@@ -144,8 +138,7 @@ function App() {
   /*
    * Week-3 Decision History state.
    *
-   * History is empty until the backend
-   * history service is available.
+   * No fake history data is stored here.
    */
   const [decisionHistory, setDecisionHistory] =
     useState([]);
@@ -153,7 +146,7 @@ function App() {
   const [
     historyStatus,
     setHistoryStatus,
-  ] = useState("loading");
+  ] = useState("empty");
 
   const [historyError, setHistoryError] =
     useState("");
@@ -253,18 +246,6 @@ function App() {
       const payload =
         buildShipmentPayload();
 
-      /*
-       * POST /recommend performs:
-       *
-       * shipment input
-       *      ↓
-       * delay prediction
-       *      ↓
-       * constrained optimization
-       *      ↓
-       * recommendation alternatives
-       */
-
       const result =
         await getRecommendations(payload);
 
@@ -294,62 +275,61 @@ function App() {
         optimization?.feasible_alternatives ||
         [];
 
-      /*
-       * Display only feasible alternatives.
-       *
-       * The backend evaluates all alternatives and
-       * returns feasible_alternatives separately.
-       */
-
       const sourceRecommendations =
         feasibleAlternatives.length > 0
           ? feasibleAlternatives
           : [];
 
+      /*
+       * Normalize backend recommendation
+       * values without using template literals.
+       */
       const normalizedRecommendations =
         sourceRecommendations.map(
-          (recommendation, index) => ({
-            ...recommendation,
+          (item, index) => {
+            return {
+              ...item,
 
-            id:
-              recommendation.id ??
-              recommendation.option ??
-              `recommendation-${index}`,
+              id:
+                item.id ??
+                item.option ??
+                "recommendation-" + index,
 
-            option:
-              recommendation.option ??
-              `Option ${index + 1}`,
+              option:
+                item.option ??
+                "Option " + (index + 1),
 
-            action:
-              recommendation.action ??
-              recommendation.name ??
-              "Recommended Action",
+              action:
+                item.action ??
+                item.name ??
+                "Recommended Action",
 
-            cost:
-              recommendation.cost ??
-              recommendation.expected_cost ??
-              "Not available",
+              cost:
+                item.cost ??
+                item.expected_cost ??
+                "Not available",
 
-            time:
-              recommendation.time ??
-              recommendation.expected_time ??
-              "Not available",
+              time:
+                item.time ??
+                item.expected_time ??
+                "Not available",
 
-            capacity:
-              recommendation.capacity ??
-              recommendation.required_capacity ??
-              "Not available",
+              capacity:
+                item.capacity ??
+                item.required_capacity ??
+                "Not available",
 
-            impact:
-              recommendation.expected_impact ??
-              recommendation.impact ??
-              "Not available",
+              impact:
+                item.expected_impact ??
+                item.impact ??
+                "Not available",
 
-            reason:
-              recommendation.reason ??
-              recommendation.description ??
-              "Backend optimization result.",
-          })
+              reason:
+                item.reason ??
+                item.description ??
+                "Backend optimization result.",
+            };
+          }
         );
 
       setRecommendations(
@@ -405,11 +385,8 @@ function App() {
   };
 
   /*
-   * Execute Decision remains connected to
-   * the existing decision service.
-   *
-   * This is intentionally separate from the
-   * Week-3 evaluation/history UI.
+   * Execute Decision remains separate from
+   * the evaluation/history workflow.
    */
   const handleExecuteDecision = async () => {
     if (
@@ -465,7 +442,7 @@ function App() {
   };
 
   /*
-   * Load future evaluation data.
+   * Future evaluation API.
    *
    * The service currently returns null because
    * the backend evaluation endpoint is not
@@ -498,7 +475,7 @@ function App() {
   };
 
   /*
-   * Load future decision history.
+   * Future decision history API.
    *
    * The service currently returns an empty
    * array because the backend history endpoint
@@ -532,16 +509,6 @@ function App() {
       );
     }
   };
-
-  /*
-   * Load evaluation/history when the UI starts.
-   *
-   * No decision write-back is performed here.
-   */
-  useEffect(() => {
-    loadEvaluationData();
-    loadDecisionHistory();
-  }, []);
 
   return (
     <div className="app">
@@ -945,6 +912,7 @@ function App() {
         <section className="section">
 
           <div className="section-heading">
+
             <div>
               <h2>
                 Decision Evaluation / Feedback
@@ -969,6 +937,7 @@ function App() {
                 ? "Loading..."
                 : "Refresh Evaluation"}
             </button>
+
           </div>
 
           {evaluationStatus === "loading" && (
@@ -1085,6 +1054,7 @@ function App() {
         <section className="section">
 
           <div className="section-heading">
+
             <div>
               <h2>
                 Decision History
@@ -1110,6 +1080,7 @@ function App() {
                 ? "Loading..."
                 : "Refresh History"}
             </button>
+
           </div>
 
           {historyStatus === "loading" && (

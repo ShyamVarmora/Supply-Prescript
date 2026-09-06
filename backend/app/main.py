@@ -379,6 +379,20 @@ def recommend_action(
 
             stored_recommendations = cursor.fetchall()
 
+            recommendation_ids_by_rank = {
+                stored["recommendation_rank"]: stored[
+                    "recommendation_id"
+                ]
+                for stored in stored_recommendations
+            }
+
+            for alternative in alternatives:
+                alternative["recommendation_id"] = (
+                    recommendation_ids_by_rank.get(
+                        alternative["option"]
+                    )
+                )
+
             result["stored_recommendations"] = (
                 list(reversed(stored_recommendations))
             )

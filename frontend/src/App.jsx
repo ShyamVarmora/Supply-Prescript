@@ -60,6 +60,7 @@ const shipmentFields = [
 ];
 
 const initialShipment = {
+  record_id: "",
   warehouse_inventory_level: "",
   handling_equipment_availability: "",
   order_fulfillment_status: "",
@@ -119,11 +120,6 @@ function App() {
   const [decisionError, setDecisionError] =
     useState("");
 
-  /*
-   * Week-3 Decision Evaluation state.
-   *
-   * No fake evaluation data is stored here.
-   */
   const [evaluation, setEvaluation] =
     useState(null);
 
@@ -135,11 +131,6 @@ function App() {
   const [evaluationError, setEvaluationError] =
     useState("");
 
-  /*
-   * Week-3 Decision History state.
-   *
-   * No fake history data is stored here.
-   */
   const [decisionHistory, setDecisionHistory] =
     useState([]);
 
@@ -161,6 +152,8 @@ function App() {
   };
 
   const buildShipmentPayload = () => ({
+    record_id: Number(shipment.record_id),
+
     warehouse_inventory_level: Number(
       shipment.warehouse_inventory_level
     ),
@@ -242,6 +235,37 @@ function App() {
     setDecisionStatus("idle");
     setDecisionError("");
 
+    const trimmedRecordId =
+      shipment.record_id.trim();
+
+    if (!trimmedRecordId) {
+      setPredictionStatus("error");
+      setPredictionError(
+        "Record ID is required."
+      );
+
+      setRecommendationStatus("error");
+      setRecommendationError(
+        "Enter a valid record ID before generating recommendations."
+      );
+
+      return;
+    }
+
+    if (!/^\d+$/.test(trimmedRecordId)) {
+      setPredictionStatus("error");
+      setPredictionError(
+        "Record ID must be a valid database record ID."
+      );
+
+      setRecommendationStatus("error");
+      setRecommendationError(
+        "Record ID must contain only numeric characters."
+      );
+
+      return;
+    }
+
     try {
       const payload =
         buildShipmentPayload();
@@ -271,65 +295,70 @@ function App() {
 
       setPredictionStatus("success");
 
-      const feasibleAlternatives =
-        optimization?.feasible_alternatives ||
-        [];
-
+      /*
+       * Display every solver-generated alternative.
+       *
+       * Do not use feasible_alternatives here because
+       * the UI must show infeasible alternatives too.
+       */
       const sourceRecommendations =
-        feasibleAlternatives.length > 0
-          ? feasibleAlternatives
+        Array.isArray(
+          optimization?.alternatives
+        )
+          ? optimization.alternatives
           : [];
 
       /*
-       * Normalize backend recommendation
-       * values without using template literals.
+       * Preserve real backend values.
+       *
+       * recommendation_id is intentionally NOT
+       * fabricated from option numbers.
        */
       const normalizedRecommendations =
         sourceRecommendations.map(
-          (item, index) => {
-            return {
-              ...item,
+          (item, index) => ({
+            ...item,
 
-              id:
-                item.id ??
-                item.option ??
-                "recommendation-" + index,
+            id:
+              item.recommendation_id ??
+              "solver-option-" +
+                (item.option ?? index + 1),
 
-              option:
-                item.option ??
-                "Option " + (index + 1),
+            recommendation_id:
+              item.recommendation_id ?? null,
 
-              action:
-                item.action ??
-                item.name ??
-                "Recommended Action",
+            record_id:
+              item.record_id ??
+              Number(trimmedRecordId),
 
-              cost:
-                item.cost ??
-                item.expected_cost ??
-                "Not available",
+            option:
+              item.option ??
+              index + 1,
 
-              time:
-                item.time ??
-                item.expected_time ??
-                "Not available",
+            action:
+              item.action ??
+              "Unknown action",
 
-              capacity:
-                item.capacity ??
-                item.required_capacity ??
-                "Not available",
+            cost:
+              item.cost,
 
-              impact:
-                item.expected_impact ??
-                item.impact ??
-                "Not available",
+            time:
+              item.time,
 
-              reason:
-                item.reason ??
-                item.description ??
-                "Backend optimization result.",
-            };
-          }
+            capacity:
+              item.capacity,
+
+            expected_impact:
+              item.expected_impact,
+
+            feasibility:
+              item.feasibility,
+
+            reason:
+              item.reason ??
+              item.description ??
+              "Backend optimization result.",
+          })
         );
 
       setRecommendations(
@@ -347,10 +376,14 @@ function App() {
         setRecommendationStatus("empty");
 
         setRecommendationError(
-          "No feasible recommendations were found for the provided constraints."
+          "No solver alternatives were returned for the provided constraints."
         );
       } else {
         setRecommendationStatus("empty");
+
+        setRecommendationError(
+          "No recommendations were returned by the backend."
+        );
       }
     } catch (error) {
       setPredictionStatus("error");
@@ -376,6 +409,13 @@ function App() {
   };
 
   const handleSelect = (recommendation) => {
+    if (
+      recommendation.feasibility !==
+      "feasible"
+    ) {
+      return;
+    }
+
     setSelectedRecommendation(
       recommendation
     );
@@ -384,10 +424,6 @@ function App() {
     setDecisionError("");
   };
 
-  /*
-   * Execute Decision remains separate from
-   * the evaluation/history workflow.
-   */
   const handleExecuteDecision = async () => {
     if (
       !selectedRecommendation ||
@@ -396,13 +432,55 @@ function App() {
       return;
     }
 
+    const recordId =
+      selectedRecommendation.record_id ??
+      shipment.record_id;
+
+    const recommendationId =
+      selectedRecommendation.recommendation_id;
+
+    if (!recordId) {
+      setDecisionStatus("error");
+      setDecisionError(
+        "A valid record ID is required."
+      );
+      return;
+    }
+
+    if (!recommendationId) {
+      setDecisionStatus("error");
+      setDecisionError(
+        "The backend did not return a recommendation ID. Decision execution is not available yet."
+      );
+      return;
+    }
+
+    if (
+      selectedRecommendation.feasibility !==
+      "feasible"
+    ) {
+      setDecisionStatus("error");
+      setDecisionError(
+        "An infeasible recommendation cannot be executed."
+      );
+      return;
+    }
+
     setDecisionStatus("loading");
     setDecisionError("");
 
     try {
+      const decisionPayload = {
+        record_id: Number(recordId),
+        recommendation_id:
+          recommendationId,
+        selected_action:
+          selectedRecommendation.action,
+      };
+
       const result =
         await executeDecision(
-          selectedRecommendation
+          decisionPayload
         );
 
       if (!result) {
@@ -441,13 +519,6 @@ function App() {
     }
   };
 
-  /*
-   * Future evaluation API.
-   *
-   * The service currently returns null because
-   * the backend evaluation endpoint is not
-   * available yet.
-   */
   const loadEvaluationData = async () => {
     setEvaluationStatus("loading");
     setEvaluationError("");
@@ -474,13 +545,6 @@ function App() {
     }
   };
 
-  /*
-   * Future decision history API.
-   *
-   * The service currently returns an empty
-   * array because the backend history endpoint
-   * is not available yet.
-   */
   const loadDecisionHistory = async () => {
     setHistoryStatus("loading");
     setHistoryError("");
@@ -528,10 +592,10 @@ function App() {
           <h2>Shipment Risk</h2>
 
           <p className="section-description">
-            Enter the shipment values and
-            operational constraints required by
-            the prediction and optimization
-            models.
+            Enter the database record ID,
+            shipment values and operational
+            constraints required by the prediction
+            and optimization models.
           </p>
 
           <form
@@ -539,6 +603,25 @@ function App() {
             onSubmit={loadPrediction}
           >
             <div className="prediction-form-grid">
+
+              <label className="prediction-field">
+                <span>
+                  Database Record ID
+                </span>
+
+                <input
+                  type="number"
+                  name="record_id"
+                  value={shipment.record_id}
+                  onChange={
+                    handleShipmentChange
+                  }
+                  min="1"
+                  step="1"
+                  required
+                  placeholder="Enter real record ID"
+                />
+              </label>
 
               {shipmentFields.map(
                 ([name, label]) => (
@@ -756,8 +839,10 @@ function App() {
               </h2>
 
               <p className="section-description">
-                Recommendations generated by the
+                All alternatives generated by the
                 backend optimization engine.
+                Infeasible alternatives are shown
+                but cannot be selected.
               </p>
             </div>
           </div>
@@ -782,7 +867,7 @@ function App() {
             recommendations.length === 0 && (
             <div className="recommendation-state">
               {recommendationError ||
-                "No feasible recommendations are available for the provided constraints."}
+                "No recommendations are available for the provided constraints."}
             </div>
           )}
 
@@ -839,30 +924,58 @@ function App() {
                 <div className="decision-details">
 
                   <span>
+                    Record ID:{" "}
+                    {
+                      selectedRecommendation.record_id ??
+                      shipment.record_id
+                    }
+                  </span>
+
+                  <span>
+                    Recommendation ID:{" "}
+                    {
+                      selectedRecommendation.recommendation_id ??
+                      "Not available"
+                    }
+                  </span>
+
+                  <span>
                     Cost:{" "}
                     {
-                      selectedRecommendation.cost
+                      selectedRecommendation.cost ??
+                      "Not available"
                     }
                   </span>
 
                   <span>
                     Time:{" "}
                     {
-                      selectedRecommendation.time
+                      selectedRecommendation.time ??
+                      "Not available"
                     }
                   </span>
 
                   <span>
                     Capacity:{" "}
                     {
-                      selectedRecommendation.capacity
+                      selectedRecommendation.capacity ??
+                      "Not available"
                     }
                   </span>
 
                   <span>
-                    Impact:{" "}
+                    Expected Impact:{" "}
                     {
-                      selectedRecommendation.impact
+                      selectedRecommendation.expected_impact ??
+                      "Not available"
+                    }
+                  </span>
+
+                  <span>
+                    Feasibility:{" "}
+                    {
+                      selectedRecommendation.feasibility ??
+                      "Not available"
                     }
                   </span>
 
@@ -874,6 +987,10 @@ function App() {
                 className="execute-button"
                 disabled={
                   !selectedRecommendation ||
+                  !selectedRecommendation.record_id ||
+                  !selectedRecommendation.recommendation_id ||
+                  selectedRecommendation.feasibility !==
+                    "feasible" ||
                   decisionStatus === "loading"
                 }
                 onClick={
@@ -884,6 +1001,14 @@ function App() {
                   ? "Executing..."
                   : "Execute Decision"}
               </button>
+
+              {!selectedRecommendation.recommendation_id && (
+                <p className="decision-note">
+                  Execute Decision is unavailable
+                  until the backend provides a real
+                  recommendation ID.
+                </p>
+              )}
 
               {decisionStatus === "success" && (
                 <p className="decision-note">
@@ -900,8 +1025,8 @@ function App() {
             </div>
           ) : (
             <p className="section-description">
-              Select a recommendation to prepare
-              the decision.
+              Select a feasible recommendation to
+              prepare the decision.
             </p>
           )}
 

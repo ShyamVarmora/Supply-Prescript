@@ -67,17 +67,17 @@ def get_db_connection():
 # ============================================================
 
 class ShipmentPredictionInput(BaseModel):
-    warehouse_inventory_level: float
-    handling_equipment_availability: float
-    order_fulfillment_status: float
-    weather_condition_severity: float
-    shipping_costs: float
-    supplier_reliability_score: float
-    lead_time_days: float
-    historical_demand: float
-    cargo_condition_status: float
-    route_risk_level: float
-    customs_clearance_time: float
+    warehouse_inventory_level: float = Field(..., allow_inf_nan=False)
+    handling_equipment_availability: float = Field(..., allow_inf_nan=False)
+    order_fulfillment_status: float = Field(..., allow_inf_nan=False)
+    weather_condition_severity: float = Field(..., allow_inf_nan=False)
+    shipping_costs: float = Field(..., allow_inf_nan=False)
+    supplier_reliability_score: float = Field(..., allow_inf_nan=False)
+    lead_time_days: float = Field(..., allow_inf_nan=False)
+    historical_demand: float = Field(..., allow_inf_nan=False)
+    cargo_condition_status: float = Field(..., allow_inf_nan=False)
+    route_risk_level: float = Field(..., allow_inf_nan=False)
+    customs_clearance_time: float = Field(..., allow_inf_nan=False)
     supplier_country: str
 
 
@@ -86,25 +86,25 @@ class ShipmentPredictionInput(BaseModel):
 # ============================================================
 
 class OptimizationRequest(BaseModel):
-    warehouse_inventory_level: float
-    handling_equipment_availability: float
-    order_fulfillment_status: float
-    weather_condition_severity: float
-    shipping_costs: float
-    supplier_reliability_score: float
-    lead_time_days: float
-    historical_demand: float
-    cargo_condition_status: float
-    route_risk_level: float
-    customs_clearance_time: float
+    warehouse_inventory_level: float = Field(..., allow_inf_nan=False)
+    handling_equipment_availability: float = Field(..., allow_inf_nan=False)
+    order_fulfillment_status: float = Field(..., allow_inf_nan=False)
+    weather_condition_severity: float = Field(..., allow_inf_nan=False)
+    shipping_costs: float = Field(..., allow_inf_nan=False)
+    supplier_reliability_score: float = Field(..., allow_inf_nan=False)
+    lead_time_days: float = Field(..., allow_inf_nan=False)
+    historical_demand: float = Field(..., allow_inf_nan=False)
+    cargo_condition_status: float = Field(..., allow_inf_nan=False)
+    route_risk_level: float = Field(..., allow_inf_nan=False)
+    customs_clearance_time: float = Field(..., allow_inf_nan=False)
     supplier_country: str
 
-    budget: float = Field(..., ge=0)
-    allowed_time: float = Field(..., ge=0)
-    available_capacity: float = Field(..., ge=0)
+    budget: float = Field(..., ge=0, allow_inf_nan=False)
+    allowed_time: float = Field(..., ge=0, allow_inf_nan=False)
+    available_capacity: float = Field(..., ge=0, allow_inf_nan=False)
 
-    shipment_time: float = Field(..., gt=0)
-    shipment_capacity: float = Field(..., gt=0)
+    shipment_time: float = Field(..., gt=0, allow_inf_nan=False)
+    shipment_capacity: float = Field(..., gt=0, allow_inf_nan=False)
 
     record_id: int = Field(..., gt=0)
 
@@ -119,6 +119,12 @@ class DecisionRequest(BaseModel):
     selected_action: str = Field(..., min_length=1, max_length=100)
 
     decision_status: Literal["SELECTED"] = "SELECTED"
+
+
+class OutcomeRequest(BaseModel):
+    actual_cost: float | None = Field(None, ge=0)
+    actual_delay_days: float | None = Field(None, ge=0)
+    outcome_status: str | None = Field(None, min_length=1, max_length=50)
 
 
 # ============================================================
@@ -641,20 +647,52 @@ def decision_history():
         cursor.execute(
             """
             SELECT
-                decision_id,
-                record_id,
-                recommendation_id,
-                selected_action,
-                expected_cost,
-                expected_risk_reduction,
-                expected_time_saved_days,
-                decision_status,
-                selected_at
-            FROM decision_log
-            ORDER BY selected_at DESC, decision_id DESC
+                d.decision_id,
+                d.record_id,
+                d.recommendation_id,
+                d.selected_action,
+                d.expected_cost,
+                d.expected_risk_reduction,
+                d.expected_time_saved_days,
+                d.decision_status,
+                d.selected_at,
+                o.actual_cost,
+                o.actual_delay_days,
+                o.outcome_status,
+                o.evaluated_at
+            FROM decision_log d
+            LEFT JOIN LATERAL (
+                SELECT actual_cost, actual_delay_days,
+                       outcome_status, evaluated_at
+                FROM actual_outcomes
+                WHERE decision_id = d.decision_id
+                ORDER BY evaluated_at DESC, outcome_id DESC
+                LIMIT 1
+            ) o ON TRUE
+            ORDER BY d.selected_at DESC, d.decision_id DESC
             """
         )
-        return {"decisions": cursor.fetchall()}
+        decisions = []
+        for row in cursor.fetchall():
+            evaluation = evaluate_decision(
+                EvaluationRecord(
+                    decision_id=str(row["decision_id"]),
+                    record_id=row["record_id"],
+                    recommendation_id=row["recommendation_id"],
+                    predicted_cost=float(row["expected_cost"]),
+                    actual_cost=(
+                        float(row["actual_cost"])
+                        if row["actual_cost"] is not None
+                        else None
+                    ),
+                ),
+                discrepancy_threshold_percent=evaluation_threshold_percent(),
+            )
+            decision = dict(row)
+            decision["evaluation"] = evaluation
+            decisions.append(decision)
+
+        return {"decisions": decisions}
 
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
@@ -725,6 +763,7 @@ def decision_evaluation(decision_id: int):
         evaluation["recommendation_id"] = row["recommendation_id"]
         evaluation["actual_delay_days"] = row["actual_delay_days"]
         evaluation["outcome_status"] = row["outcome_status"]
+        evaluation["roi"] = evaluation["roi_percent"]
 
         retraining = trigger_retraining_if_needed(evaluation)
         return {"evaluation": evaluation, "retraining": retraining}
@@ -739,6 +778,87 @@ def decision_evaluation(decision_id: int):
         raise HTTPException(
             status_code=503,
             detail=f"Database operation failed: {exc}",
+        )
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None and not connection.closed:
+            connection.close()
+
+
+# ============================================================
+# ACTUAL OUTCOME CAPTURE
+# ============================================================
+
+@app.post("/decisions/{decision_id}/outcome")
+def create_actual_outcome(
+    decision_id: int,
+    outcome: OutcomeRequest,
+):
+    if (
+        outcome.actual_cost is None
+        and outcome.actual_delay_days is None
+        and outcome.outcome_status is None
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="At least one actual outcome value is required.",
+        )
+
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT decision_id FROM decision_log WHERE decision_id = %s",
+            (decision_id,),
+        )
+        if cursor.fetchone() is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Decision {decision_id} was not found.",
+            )
+
+        cursor.execute(
+            """
+            INSERT INTO actual_outcomes (
+                decision_id,
+                actual_cost,
+                actual_delay_days,
+                outcome_status
+            )
+            VALUES (%s, %s, %s, %s)
+            RETURNING outcome_id, decision_id, actual_cost,
+                      actual_delay_days, outcome_status, evaluated_at
+            """,
+            (
+                decision_id,
+                outcome.actual_cost,
+                outcome.actual_delay_days,
+                outcome.outcome_status,
+            ),
+        )
+        stored_outcome = cursor.fetchone()
+        connection.commit()
+
+        return {"status": "success", "outcome": stored_outcome}
+
+    except HTTPException:
+        raise
+
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    except psycopg.Error as exc:
+        if connection is not None:
+            connection.rollback()
+        print(f"DATABASE ERROR: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=503,
+            detail="Database operation failed.",
         )
 
     finally:

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from ml.evaluate import (
     EvaluationRecord,
     evaluate_decision,
@@ -28,6 +30,11 @@ def test_optimizer_exposes_constraint_results_for_all_alternatives():
     )
 
     assert len(result["alternatives"]) == 3
+    assert [alternative["action"] for alternative in result["alternatives"]] == [
+        "Air Freight",
+        "Secondary Supplier",
+        "Delay Launch",
+    ]
     for alternative in result["alternatives"]:
         assert alternative["budget_valid"] == (
             alternative["cost"] <= 200.0
@@ -69,6 +76,17 @@ def test_optimizer_marks_budget_time_and_capacity_failures():
         )
 
 
+def test_optimizer_rejects_non_finite_inputs():
+    with pytest.raises(ValueError, match="budget must be finite"):
+        optimize_alternatives(
+            make_scenario(
+                budget=float("nan"),
+                allowed_time=10.0,
+                available_capacity=100.0,
+            )
+        )
+
+
 def test_evaluation_calculates_absolute_and_percentage_difference():
     result = evaluate_decision(
         EvaluationRecord(
@@ -83,7 +101,20 @@ def test_evaluation_calculates_absolute_and_percentage_difference():
 
     assert result["absolute_difference"] == 20.0
     assert result["percentage_difference"] == 20.0
+    assert result["roi_percent"] == pytest.approx(16.6666667)
     assert result["status"] == "discrepancy_detected"
+
+
+def test_evaluation_returns_pending_roi_until_actual_cost_exists():
+    result = evaluate_decision(
+        EvaluationRecord(
+            decision_id="decision-2",
+            predicted_cost=120.0,
+        )
+    )
+
+    assert result["status"] == "pending"
+    assert result["roi_percent"] is None
 
 
 def test_retraining_is_triggered_only_for_discrepancy(monkeypatch, tmp_path):

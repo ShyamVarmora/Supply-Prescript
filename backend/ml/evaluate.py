@@ -65,6 +65,7 @@ def evaluate_decision(
             "actual_cost": None,
             "absolute_difference": None,
             "percentage_difference": None,
+            "roi_percent": None,
             "threshold_percent": discrepancy_threshold_percent,
         }
 
@@ -91,6 +92,13 @@ def evaluate_decision(
         else:
             status = "discrepancy_detected"
 
+    roi_percent = None
+    if record.predicted_cost > 0:
+        roi_percent = (
+            (record.predicted_cost - record.actual_cost)
+            / record.predicted_cost
+        ) * 100.0
+
     return {
         "decision_id": record.decision_id,
         "status": status,
@@ -98,6 +106,7 @@ def evaluate_decision(
         "actual_cost": record.actual_cost,
         "absolute_difference": absolute_difference,
         "percentage_difference": percentage_difference,
+        "roi_percent": roi_percent,
         "threshold_percent": discrepancy_threshold_percent,
     }
 

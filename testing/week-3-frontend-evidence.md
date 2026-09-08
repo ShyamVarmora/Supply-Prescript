@@ -10,11 +10,11 @@
 | Frontend build               | `npm run build` completes successfully                   | Vite production build completed successfully | PASS             |
 | Git diff check               | No whitespace errors                                     | `git diff --check` produced no output        | PASS             |
 | Backend health API           | Backend returns a successful response                    | `GET /health` returned `{"status":"ok"}`     | PASS             |
-| Prediction API               | Valid request returns prediction data                    | Valid frontend integration flow completed; prediction data displayed from backend | PASS |
-| Recommendation API           | Valid request returns optimization results               | `POST /recommend` completed successfully and actual backend response was rendered | PASS |
-| Recommendation cards         | Cards display actual backend alternatives                | 3 recommendation cards displayed with backend-provided values | PASS |
-| Recommendation selection     | Selected card is visibly identified                      | Recommendation selection completed successfully | PASS |
-| Decision display             | Selected recommendation updates Decision section         | Decision section updated after selecting a recommendation | PASS |
+| Prediction API | Valid request returns prediction data | Direct backend prediction was verified; browser frontend request was blocked by CORS during live integration | IN PROGRESS |
+| Recommendation API | Valid request returns optimization results | Direct backend /recommend execution was verified; browser frontend request was blocked by CORS during live integration | IN PROGRESS |
+| Recommendation cards | Cards display actual backend alternatives | RecommendationCard UI structure exists, but live backend-backed card rendering was not verified because browser request was blocked by CORS | IN PROGRESS |
+| Recommendation selection | Selected card is visibly identified | Frontend selection logic exists, but live backend-backed selection flow was not verified | IN PROGRESS |
+| Decision display | Selected recommendation updates Decision section | Frontend decision-display logic exists, but live backend-backed update was not verified | IN PROGRESS |
 | Execute Decision             | Button remains disabled until write-back endpoint exists | Button remained disabled; no decision write-back was attempted | PASS |
 | Invalid input handling       | Controlled error is displayed                            | Invalid input produced a controlled error without fake recommendation data | PASS |
 | Backend unavailable handling | Controlled error is displayed                            | Backend-unavailable state produced a controlled load error | PASS |
@@ -29,7 +29,7 @@ Command:
 
 Result:
 
-`✓ built successfully`
+`built successfully`
 
 ## Git Diff Check
 
@@ -56,4 +56,3 @@ Result:
 The decision write-back endpoint is not available yet. Therefore, Execute Decision remains disabled and no fake execution success is displayed.
 
 Backend files used for local integration testing must not be included in the frontend UI commit.
-

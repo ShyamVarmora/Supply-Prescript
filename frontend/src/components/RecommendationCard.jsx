@@ -4,17 +4,12 @@ function RecommendationCard({
   onSelect,
 }) {
   const isFeasible =
-    recommendation.feasibility ===
-    "feasible";
+    recommendation.feasibility === "feasible";
 
   return (
     <article
       className={`recommendation-card ${
         selected ? "selected" : ""
-      } ${
-        !isFeasible
-          ? "recommendation-infeasible"
-          : ""
       }`}
     >
       <div className="card-header">
@@ -29,9 +24,7 @@ function RecommendationCard({
               : "feasibility-badge infeasible"
           }
         >
-          {isFeasible
-            ? "FEASIBLE"
-            : "INFEASIBLE"}
+          {isFeasible ? "FEASIBLE" : "INFEASIBLE"}
         </span>
 
         {selected && (
@@ -41,14 +34,11 @@ function RecommendationCard({
         )}
       </div>
 
-      <h3>
-        {recommendation.action}
-      </h3>
+      <h3>{recommendation.action}</h3>
 
       <div className="recommendation-details">
         <div className="detail-item">
           <span>Cost</span>
-
           <strong>
             {recommendation.cost ??
               "Not available"}
@@ -57,7 +47,6 @@ function RecommendationCard({
 
         <div className="detail-item">
           <span>Time / Speed</span>
-
           <strong>
             {recommendation.time ??
               "Not available"}
@@ -66,7 +55,6 @@ function RecommendationCard({
 
         <div className="detail-item">
           <span>Capacity</span>
-
           <strong>
             {recommendation.capacity ??
               "Not available"}
@@ -75,7 +63,6 @@ function RecommendationCard({
 
         <div className="detail-item">
           <span>Expected Impact</span>
-
           <strong>
             {recommendation.expected_impact ??
               "Not available"}
@@ -84,32 +71,19 @@ function RecommendationCard({
       </div>
 
       <div className="reason">
-        <span>
-          Why this recommendation
-        </span>
+        <span>Recommendation</span>
 
         <p>
-          {recommendation.reason ||
+          {recommendation.reason ??
             "Backend optimization result."}
         </p>
       </div>
 
-      {!isFeasible && (
-        <p className="decision-note">
-          This alternative does not satisfy
-          all backend constraints and cannot
-          be selected.
-        </p>
-      )}
-
       <button
         type="button"
         className="select-button"
-        onClick={() =>
-          onSelect(recommendation)
-        }
+        onClick={() => onSelect(recommendation)}
         disabled={!isFeasible}
-        aria-disabled={!isFeasible}
       >
         {!isFeasible
           ? "Unavailable / Infeasible"

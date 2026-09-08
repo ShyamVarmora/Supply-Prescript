@@ -2,48 +2,56 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
-async function getErrorMessage(response) {
-  let message = `Backend returned ${response.status}`;
+async function parseResponse(response) {
+  const data = await response.json().catch(() => ({}));
 
-  try {
-    const errorData = await response.json();
-
-    if (errorData?.detail) {
-      message = errorData.detail;
-    } else if (errorData?.message) {
-      message = errorData.message;
-    }
-  } catch {
-    // Keep the default HTTP error message.
+  if (!response.ok) {
+    throw new Error(
+      data.detail ||
+        data.message ||
+        `Request failed with status ${response.status}.`
+    );
   }
 
-  return message;
+  return data;
 }
 
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/health`
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    return await response.json();
+    const response = await fetch(`${API_BASE_URL}/health`);
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to connect to the backend: ${error.message}`,
+      error?.message || "Unable to connect to the backend.",
       { cause: error }
     );
   }
 }
 
-export async function getRecommendations(
-  requestData
-) {
+export async function getPredictionRecommendations(shipment) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/predict/shipment-delay`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(shipment),
+      }
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to generate shipment prediction.",
+      { cause: error }
+    );
+  }
+}
+
+export async function getRecommendations(requestData) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/recommend`,
@@ -56,24 +64,17 @@ export async function getRecommendations(
       }
     );
 
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to load recommendations: ${error.message}`,
+      error?.message ||
+        "Unable to load recommendations.",
       { cause: error }
     );
   }
 }
 
-export async function executeDecision(
-  decision
-) {
+export async function executeDecision(decision) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/decisions`,
@@ -86,28 +87,11 @@ export async function executeDecision(
       }
     );
 
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    const data = await response.json();
-
-    if (
-      !data ||
-      data.status !== "success" ||
-      data.decision_id == null
-    ) {
-      throw new Error(
-        "Backend did not return a valid decision ID."
-      );
-    }
-
-    return data;
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to execute decision: ${error.message}`,
+      error?.message ||
+        "Unable to execute decision.",
       { cause: error }
     );
   }
@@ -129,47 +113,27 @@ export async function recordDecisionOutcome(
       }
     );
 
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to record decision outcome: ${error.message}`,
+      error?.message ||
+        "Unable to record decision outcome.",
       { cause: error }
     );
   }
 }
 
-export async function getDecisionEvaluation(
-  decisionId
-) {
+export async function getDecisionEvaluation(decisionId) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/decisions/${decisionId}/evaluation`
     );
 
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    const data = await response.json();
-
-    if (!data?.evaluation) {
-      throw new Error(
-        "Backend did not return evaluation data."
-      );
-    }
-
-    return data.evaluation;
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to load decision evaluation: ${error.message}`,
+      error?.message ||
+        "Unable to load decision evaluation.",
       { cause: error }
     );
   }
@@ -181,20 +145,11 @@ export async function getDecisionHistory() {
       `${API_BASE_URL}/decisions/history`
     );
 
-    if (!response.ok) {
-      throw new Error(
-        await getErrorMessage(response)
-      );
-    }
-
-    const data = await response.json();
-
-    return Array.isArray(data?.decisions)
-      ? data.decisions
-      : [];
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to load decision history: ${error.message}`,
+      error?.message ||
+        "Unable to load decision history.",
       { cause: error }
     );
   }

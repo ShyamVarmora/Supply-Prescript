@@ -15,11 +15,9 @@ import {
 
 const initialShipment = {
   record_id: "",
-
   budget: "",
   allowed_time: "",
   available_capacity: "",
-
   shipment_time: "",
   shipment_capacity: "",
 };
@@ -123,9 +121,7 @@ function App() {
   };
 
   const buildRecommendationPayload = () => ({
-    record_id: Number(
-      shipment.record_id
-    ),
+    record_id: Number(shipment.record_id),
 
     budget: Number(shipment.budget),
 
@@ -154,11 +150,13 @@ function App() {
 
     if (!recordId) {
       setPredictionStatus("error");
+
       setPredictionError(
         "Record ID is required."
       );
 
       setRecommendationStatus("error");
+
       setRecommendationError(
         "Enter a valid database record ID before generating recommendations."
       );
@@ -168,13 +166,37 @@ function App() {
 
     if (!/^\d+$/.test(recordId)) {
       setPredictionStatus("error");
+
       setPredictionError(
         "Record ID must be a valid database record ID."
       );
 
       setRecommendationStatus("error");
+
       setRecommendationError(
         "Record ID must contain only numeric characters."
+      );
+
+      return;
+    }
+
+    if (
+      shipment.budget === "" ||
+      shipment.allowed_time === "" ||
+      shipment.available_capacity === "" ||
+      shipment.shipment_time === "" ||
+      shipment.shipment_capacity === ""
+    ) {
+      setPredictionStatus("error");
+
+      setPredictionError(
+        "Complete all required operational constraint fields."
+      );
+
+      setRecommendationStatus("error");
+
+      setRecommendationError(
+        "Budget, allowed time, available capacity, shipment time, and shipment capacity are required by the current backend."
       );
 
       return;
@@ -233,19 +255,22 @@ function App() {
       setPredictionStatus("success");
 
       /*
-       * IMPORTANT:
-       * Use all backend alternatives.
+       * Current backend returns recommendations
+       * inside optimization.stored_recommendations.
        *
-       * Do not use only feasible_alternatives
-       * because the UI must show the tradeoffs
-       * and explain infeasible alternatives.
+       * The alternatives fallback is retained
+       * for compatibility with an older response.
        */
       const sourceRecommendations =
         Array.isArray(
-          optimization?.alternatives
+          optimization?.stored_recommendations
         )
-          ? optimization.alternatives
-          : [];
+          ? optimization.stored_recommendations
+          : Array.isArray(
+                optimization?.alternatives
+              )
+            ? optimization.alternatives
+            : [];
 
       const normalizedRecommendations =
         sourceRecommendations.map(
@@ -254,7 +279,9 @@ function App() {
 
             id:
               item.recommendation_id ??
-              `solver-option-${item.option ?? index + 1}`,
+              `solver-option-${
+                item.option ?? index + 1
+              }`,
 
             recommendation_id:
               item.recommendation_id ??
@@ -315,6 +342,10 @@ function App() {
         );
       } else {
         setRecommendationStatus("empty");
+
+        setRecommendationError(
+          "No recommendation alternatives were returned by the backend."
+        );
       }
     } catch (error) {
       setPredictionStatus("error");
@@ -337,6 +368,14 @@ function App() {
       setDecisionId(null);
       setDecisionStatus("idle");
       setDecisionError("");
+
+      setOutcome(initialOutcome);
+      setOutcomeStatus("idle");
+      setOutcomeError("");
+
+      setEvaluation(null);
+      setEvaluationStatus("empty");
+      setEvaluationError("");
     }
   };
 
@@ -380,6 +419,47 @@ function App() {
     setEvaluationError("");
   };
 
+  const loadDecisionHistory =
+    async () => {
+      setHistoryStatus("loading");
+      setHistoryError("");
+
+      try {
+        const result =
+          await getDecisionHistory();
+
+        const history =
+          Array.isArray(result)
+            ? result
+            : Array.isArray(
+                  result?.decisions
+                )
+              ? result.decisions
+              : [];
+
+        if (history.length > 0) {
+          setDecisionHistory(history);
+
+          setHistoryStatus(
+            "success"
+          );
+        } else {
+          setDecisionHistory([]);
+
+          setHistoryStatus("empty");
+        }
+      } catch (error) {
+        setDecisionHistory([]);
+
+        setHistoryStatus("error");
+
+        setHistoryError(
+          error.message ||
+            "Unable to load decision history."
+        );
+      }
+    };
+
   const handleExecuteDecision =
     async () => {
       if (
@@ -408,15 +488,13 @@ function App() {
 
       try {
         const decisionPayload = {
-          record_id:
-            Number(
-              selectedRecommendation.record_id
-            ),
+          record_id: Number(
+            selectedRecommendation.record_id
+          ),
 
-          recommendation_id:
-            Number(
-              selectedRecommendation.recommendation_id
-            ),
+          recommendation_id: Number(
+            selectedRecommendation.recommendation_id
+          ),
 
           selected_action:
             selectedRecommendation.action,
@@ -429,26 +507,23 @@ function App() {
             decisionPayload
           );
 
-        if (
-          !result?.decision_id
-        ) {
+        const returnedDecisionId =
+          result?.decision_id;
+
+        if (!returnedDecisionId) {
           throw new Error(
             "Backend did not return a decision ID."
           );
         }
 
         setDecisionId(
-          result.decision_id
+          returnedDecisionId
         );
 
         setDecisionStatus(
           "success"
         );
 
-        /*
-         * Refresh history after a successful
-         * write-back.
-         */
         await loadDecisionHistory();
       } catch (error) {
         setDecisionStatus("error");
@@ -492,6 +567,34 @@ function App() {
 
         setOutcomeError(
           "Enter at least one actual outcome value."
+        );
+
+        return;
+      }
+
+      if (
+        hasActualCost &&
+        Number(outcome.actual_cost) < 0
+      ) {
+        setOutcomeStatus("error");
+
+        setOutcomeError(
+          "Actual cost cannot be negative."
+        );
+
+        return;
+      }
+
+      if (
+        hasActualDelay &&
+        Number(
+          outcome.actual_delay_days
+        ) < 0
+      ) {
+        setOutcomeStatus("error");
+
+        setOutcomeError(
+          "Actual delay days cannot be negative."
         );
 
         return;
@@ -547,10 +650,14 @@ function App() {
     };
 
   const loadEvaluationData =
-    async (requestedDecisionId = decisionId) => {
+    async (
+      requestedDecisionId = decisionId
+    ) => {
       if (!requestedDecisionId) {
         setEvaluation(null);
+
         setEvaluationStatus("empty");
+
         setEvaluationError("");
 
         return;
@@ -560,61 +667,39 @@ function App() {
       setEvaluationError("");
 
       try {
-        const data =
+        const result =
           await getDecisionEvaluation(
             requestedDecisionId
           );
 
-        if (data) {
-          setEvaluation(data);
-          setEvaluationStatus("success");
+        const evaluationData =
+          result?.evaluation ??
+          result ??
+          null;
+
+        if (evaluationData) {
+          setEvaluation(
+            evaluationData
+          );
+
+          setEvaluationStatus(
+            "success"
+          );
         } else {
           setEvaluation(null);
-          setEvaluationStatus("empty");
+
+          setEvaluationStatus(
+            "empty"
+          );
         }
       } catch (error) {
         setEvaluation(null);
+
         setEvaluationStatus("error");
 
         setEvaluationError(
           error.message ||
             "Unable to load decision evaluation."
-        );
-      }
-    };
-
-  const loadDecisionHistory =
-    async () => {
-      setHistoryStatus("loading");
-      setHistoryError("");
-
-      try {
-        const history =
-          await getDecisionHistory();
-
-        if (
-          Array.isArray(history) &&
-          history.length > 0
-        ) {
-          setDecisionHistory(
-            history
-          );
-
-          setHistoryStatus(
-            "success"
-          );
-        } else {
-          setDecisionHistory([]);
-          setHistoryStatus("empty");
-        }
-      } catch (error) {
-        setDecisionHistory([]);
-
-        setHistoryStatus("error");
-
-        setHistoryError(
-          error.message ||
-            "Unable to load decision history."
         );
       }
     };
@@ -636,10 +721,32 @@ function App() {
         );
       } catch (error) {
         setBackendStatus(
-          error.message
+          error.message ||
+            "Backend connection failed."
         );
       }
     };
+
+  const formatPercentage = (
+    value
+  ) => {
+    if (value == null) {
+      return "—";
+    }
+
+    const numericValue =
+      Number(value);
+
+    if (
+      Number.isNaN(numericValue)
+    ) {
+      return "—";
+    }
+
+    return `${numericValue.toFixed(
+      2
+    )}%`;
+  };
 
   return (
     <div className="app">
@@ -662,11 +769,9 @@ function App() {
           </h2>
 
           <p className="section-description">
-            Enter a real database record ID
+            Enter the database record ID
             and the operational constraints
-            for this shipment. Shipment
-            prediction features are retrieved
-            by the backend from the database.
+            required by the current backend.
           </p>
 
           <form
@@ -712,6 +817,7 @@ function App() {
                   step="any"
                   min="0"
                   required
+                  placeholder="Enter budget"
                 />
               </label>
 
@@ -732,6 +838,7 @@ function App() {
                   step="any"
                   min="0"
                   required
+                  placeholder="Enter allowed time"
                 />
               </label>
 
@@ -752,6 +859,7 @@ function App() {
                   step="any"
                   min="0"
                   required
+                  placeholder="Enter capacity"
                 />
               </label>
 
@@ -772,6 +880,7 @@ function App() {
                   step="any"
                   min="0.0001"
                   required
+                  placeholder="Shipment time"
                 />
               </label>
 
@@ -792,6 +901,7 @@ function App() {
                   step="any"
                   min="0.0001"
                   required
+                  placeholder="Shipment capacity"
                 />
               </label>
             </div>
@@ -879,9 +989,10 @@ function App() {
           </h2>
 
           <p className="section-description">
-            Backend-generated alternatives
-            are shown with their tradeoffs and
-            feasibility status.
+            All backend-generated alternatives
+            are shown with cost, time,
+            capacity, expected impact, and
+            feasibility.
           </p>
 
           {recommendationStatus ===
@@ -908,7 +1019,8 @@ function App() {
             "empty" && (
             <div className="recommendation-state">
               <strong>
-                No feasible recommendations
+                No recommendation alternatives
+                yet.
               </strong>
 
               <p>
@@ -919,8 +1031,8 @@ function App() {
           )}
 
           {recommendationStatus ===
-            "success" && (
-            <>
+            "success" &&
+            recommendations.length > 0 && (
               <div className="recommendation-grid">
                 {recommendations.map(
                   (recommendation) => (
@@ -942,8 +1054,7 @@ function App() {
                   )
                 )}
               </div>
-            </>
-          )}
+            )}
         </section>
 
         {/* DECISION */}
@@ -1059,6 +1170,7 @@ function App() {
                     Decision executed
                     successfully.
                     <br />
+
                     <strong>
                       Decision ID:{" "}
                       {decisionId}
@@ -1081,7 +1193,7 @@ function App() {
           )}
         </section>
 
-        {/* OUTCOME */}
+        {/* ACTUAL OUTCOME */}
 
         <section className="section">
           <h2>
@@ -1225,8 +1337,8 @@ function App() {
 
               <p className="section-description">
                 Compare predicted and actual
-                decision outcomes using backend
-                evaluation data.
+                decision outcomes using real
+                backend evaluation data.
               </p>
             </div>
 
@@ -1261,7 +1373,7 @@ function App() {
               "empty" && (
               <div className="recommendation-state">
                 <strong>
-                  No evaluation data yet.
+                  No evaluated decision yet.
                 </strong>
 
                 <p>
@@ -1302,7 +1414,8 @@ function App() {
 
                   <strong>
                     {
-                      evaluation.decision_id
+                      evaluation.decision_id ??
+                      decisionId
                     }
                   </strong>
                 </article>
@@ -1352,12 +1465,9 @@ function App() {
                   </span>
 
                   <strong>
-                    {evaluation.percentage_difference !=
-                    null
-                      ? `${evaluation.percentage_difference.toFixed(
-                          2
-                        )}%`
-                      : "—"}
+                    {formatPercentage(
+                      evaluation.percentage_difference
+                    )}
                   </strong>
                 </article>
 
@@ -1376,16 +1486,13 @@ function App() {
 
                 <article className="evaluation-card">
                   <span>
-                    ROI
+                    Decision ROI
                   </span>
 
                   <strong>
-                    {evaluation.roi_percent !=
-                    null
-                      ? `${evaluation.roi_percent.toFixed(
-                          2
-                        )}%`
-                      : "—"}
+                    {formatPercentage(
+                      evaluation.roi_percent
+                    )}
                   </strong>
                 </article>
               </div>
@@ -1403,7 +1510,8 @@ function App() {
 
               <p className="section-description">
                 Previously stored decisions and
-                their backend evaluation results.
+                their real backend evaluation
+                results.
               </p>
             </div>
 
@@ -1426,13 +1534,6 @@ function App() {
           </div>
 
           {historyStatus ===
-            "loading" && (
-            <div className="recommendation-state">
-              Loading decision history...
-            </div>
-          )}
-
-          {historyStatus ===
             "empty" && (
             <div className="recommendation-state">
               <strong>
@@ -1444,6 +1545,13 @@ function App() {
                 here after a decision is
                 executed.
               </p>
+            </div>
+          )}
+
+          {historyStatus ===
+            "loading" && (
+            <div className="recommendation-state">
+              Loading decision history...
             </div>
           )}
 
@@ -1492,7 +1600,8 @@ function App() {
                     index
                   ) => {
                     const decisionEvaluation =
-                      decision.evaluation;
+                      decision.evaluation ??
+                      {};
 
                     return (
                       <div
@@ -1504,38 +1613,35 @@ function App() {
                       >
                         <span>
                           {
-                            decision.decision_id
+                            decision.decision_id ??
+                            "—"
                           }
                         </span>
 
                         <span>
                           {decisionEvaluation
-                            ?.predicted_cost ??
+                            .predicted_cost ??
                             decision.expected_cost ??
                             "—"}
                         </span>
 
                         <span>
                           {decisionEvaluation
-                            ?.actual_cost ??
+                            .actual_cost ??
                             decision.actual_cost ??
                             "—"}
                         </span>
 
                         <span>
                           {decisionEvaluation
-                            ?.absolute_difference ??
+                            .absolute_difference ??
                             "—"}
                         </span>
 
                         <span>
-                          {decisionEvaluation
-                            ?.roi_percent !=
-                          null
-                            ? `${decisionEvaluation.roi_percent.toFixed(
-                                2
-                              )}%`
-                            : "—"}
+                          {formatPercentage(
+                            decisionEvaluation.roi_percent
+                          )}
                         </span>
                       </div>
                     );
@@ -1544,6 +1650,38 @@ function App() {
               </div>
             </div>
           )}
+        </section>
+
+        {/* ROI ANALYTICS */}
+
+        <section className="section">
+          <div className="section-heading">
+            <div>
+              <h2>
+                ROI Analytics
+              </h2>
+
+              <p className="section-description">
+                ROI analytics will use
+                backend-derived evaluation
+                results only.
+              </p>
+            </div>
+          </div>
+
+          <div className="recommendation-state">
+            <strong>
+              ROI analytics data is not
+              available yet.
+            </strong>
+
+            <p>
+              No ROI values are fabricated in
+              the frontend. The dashboard will
+              display analytics when the backend
+              analytics contract is available.
+            </p>
+          </div>
         </section>
       </main>
     </div>

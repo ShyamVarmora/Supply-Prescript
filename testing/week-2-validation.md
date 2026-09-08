@@ -1,4 +1,4 @@
-# Supply Prescript — Week 2 Validation
+# Supply Prescript ??? Week 2 Validation
 
 ## Purpose
 
@@ -11,7 +11,7 @@ evidence was collected.
 
 ---
 
-## Test W2-01 — Optimization Exists
+## Test W2-01 ??? Optimization Exists
 
 ### Requirement
 
@@ -43,7 +43,7 @@ solver-generated alternatives, feasibility results, and a recommendation.
 
 ---
 
-## Test W2-02 — Budget Constraint
+## Test W2-02 ??? Budget Constraint
 
 ### Requirement
 
@@ -58,7 +58,7 @@ Verify that the optimization respects the configured maximum budget.
 - [x] Test an intentionally impossible or over-budget case.
 - [x] Solver does not silently return an invalid recommendation.
 
-### Test Case A — Feasible Budget
+### Test Case A ??? Feasible Budget
 
 Configured budget:
 
@@ -86,7 +86,7 @@ Recommended option:
 
 `Air Freight`
 
-### Test Case B — Impossible Budget
+### Test Case B ??? Impossible Budget
 
 Configured budget:
 
@@ -121,7 +121,7 @@ No invalid recommendation was returned.
 
 ---
 
-## Test W2-03 — Time Constraint
+## Test W2-03 ??? Time Constraint
 
 ### Requirement
 
@@ -172,7 +172,7 @@ Actual solver results:
 |---|---:|---|
 | Air Freight | 4.40 | Yes |
 | Secondary Supplier | 6.40 | No |
-| Delay Launch | 13.909985542297363 | No |
+| Delay Launch | 13.330718994140625 | No |
 
 Number of feasible alternatives:
 
@@ -190,7 +190,7 @@ The recommendation satisfies the configured maximum time.
 
 ---
 
-## Test W2-04 — Capacity Constraint
+## Test W2-04 ??? Capacity Constraint
 
 ### Requirement
 
@@ -240,7 +240,7 @@ No invalid recommendation was returned.
 
 ---
 
-## Test W2-05 — Three Alternatives
+## Test W2-05 ??? Three Alternatives
 
 ### Requirement
 
@@ -278,7 +278,7 @@ the real `/recommend` response.
 
 | Test Case | Air Freight | Secondary Supplier | Delay Launch | Feasible Alternatives |
 |---|---|---|---|---:|
-| Normal case — allowed time 10 | Yes | Yes | No | 2 |
+| Normal case ??? allowed time 10 | Yes | Yes | No | 2 |
 | Budget = 700, allowed time 20 | Yes | Yes | Yes | 3 |
 | Budget = 40, allowed time 20 | No | No | No | 0 |
 | Allowed time = 5 | Yes | No | No | 1 |
@@ -297,7 +297,7 @@ the real `/recommend` response.
 
 ---
 
-## Test W2-06 — Cost vs Speed
+## Test W2-06 ??? Cost vs Speed
 
 ### Requirement
 
@@ -321,7 +321,7 @@ values in backend/solver output.
 |---|---:|---:|
 | Air Freight | 684.75 | 4.40 |
 | Secondary Supplier | 547.80 | 6.40 |
-| Delay Launch | 45.65 | 13.909985542297363 |
+| Delay Launch | 45.65 | 13.330718994140625 |
 
 These values were returned by the backend optimization response.
 
@@ -336,7 +336,7 @@ in the frontend UI.
 
 ---
 
-## Test W2-07 — Execute Decision
+## Test W2-07 ??? Execute Decision
 
 ### Requirement
 
@@ -365,20 +365,20 @@ Backend write-back workflow and database implementation.
 - UI screenshot
 - API request/response
 - Backend log or test output
-- MySQL INSERT result
+- database INSERT result
 - SELECT query showing the inserted row
 
 ### Validation Rule
 
 Do not mark PASS until actual:
 
-`UI → FastAPI → MySQL INSERT → SELECT`
+`UI -> FastAPI -> database INSERT -> SELECT`
 
 evidence exists.
 
 ---
 
-## Test W2-08 — Evidence Requirement
+## Test W2-08 ??? Evidence Requirement
 
 ### Requirement
 
@@ -405,9 +405,9 @@ For the completed Week 2 tests, evidence includes:
 
 ---
 
-# Verified Week 1 — XGBoost Model
+# Verified Week 1 ??? XGBoost Model
 
-## Test W1-01 — XGBoost Model Verification
+## Test W1-01 ??? XGBoost Model Verification
 
 ### Requirement
 
@@ -418,7 +418,7 @@ and reports actual evaluation metrics.
 
 Model path:
 
-`backend/models/shipment_delay_model.joblib`
+`models/shipment_delay_model.joblib`
 
 Model load result:
 
@@ -431,16 +431,16 @@ Model load result:
 | Rows used | 113097 |
 | Training samples | 90477 |
 | Testing samples | 22620 |
-| MAE | 3.4123 |
-| RMSE | 3.8477 |
-| R² | 0.1468 |
+| MAE | 3.420092708832049 |
+| RMSE | 3.8571221151353994 |
+| R?? | 0.14264861146107266 |
 
 ### Prediction Evidence
 
 A real `/recommend` request successfully generated the shipment-delay
 prediction:
 
-`5.909985542297363`
+`5.330718994140625`
 
 The prediction was then passed into the optimization flow.
 
@@ -474,9 +474,9 @@ configured constraints.
 ### Delay Launch
 
 - Cost: `45.65`
-- Time: `13.909985542297363`
+- Time: `13.330718994140625`
 - Capacity: `50`
-- Expected impact: `5.909985542297363`
+- Expected impact: `5.330718994140625`
 - Feasible in the allowed-time-20 case: `true`
 
 Recommended option in the allowed-time-20 case:

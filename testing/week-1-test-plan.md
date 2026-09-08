@@ -1,4 +1,4 @@
-# Supply Prescript — Week 1 QA Test Plan
+# Supply Prescript ??? Week 1 QA Test Plan
 
 ## Purpose
 
@@ -56,7 +56,7 @@ No test is marked as PASS until supporting implementation evidence is available.
 
 If the database foundation is not yet available:
 
-`BLOCKED — database foundation not yet available`
+`BLOCKED - database foundation not yet available`
 
 The database must not be marked PASS without actual connectivity evidence.
 
@@ -78,10 +78,10 @@ The database must not be marked PASS without actual connectivity evidence.
 
 Current status:
 
-- Predictive Model: Pending
-- Shipment-delay Prediction: Pending
-- Model Evaluation: Pending
-- React Application: Pending
-- Database Connection: Pending
+- Predictive Model: PASS
+- Shipment-delay Prediction: PASS
+- Model Evaluation: PASS
+- React Application: PASS
+- Database Connection: BLOCKED
 
 Statuses will be updated only after actual implementation evidence is available.

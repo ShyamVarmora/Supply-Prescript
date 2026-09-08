@@ -11,6 +11,7 @@ Business alternatives:
 """
 
 from dataclasses import dataclass
+import math
 from typing import Any
 
 import numpy as np
@@ -36,6 +37,18 @@ class OptimizationInput:
 
 def validate_input(scenario: OptimizationInput) -> None:
     """Validate optimization scenario inputs."""
+
+    for field_name in (
+        "budget",
+        "allowed_time",
+        "available_capacity",
+        "predicted_delay",
+        "shipment_cost",
+        "shipment_time",
+        "shipment_capacity",
+    ):
+        if not math.isfinite(getattr(scenario, field_name)):
+            raise ValueError(f"{field_name} must be finite")
 
     if scenario.budget < 0:
         raise ValueError("budget must be non-negative")
@@ -164,7 +177,22 @@ def optimize_alternatives(
     feasible = []
 
     for alternative in alternatives:
-        if validate_constraints(alternative, scenario):
+        alternative["budget_valid"] = (
+            alternative["cost"] <= scenario.budget
+        )
+        alternative["time_valid"] = (
+            alternative["time"] <= scenario.allowed_time
+        )
+        alternative["capacity_valid"] = (
+            alternative["capacity"] <= scenario.available_capacity
+        )
+        alternative["all_constraints_satisfied"] = (
+            alternative["budget_valid"]
+            and alternative["time_valid"]
+            and alternative["capacity_valid"]
+        )
+
+        if alternative["all_constraints_satisfied"]:
             alternative["feasibility"] = "feasible"
             feasible.append(alternative)
         else:

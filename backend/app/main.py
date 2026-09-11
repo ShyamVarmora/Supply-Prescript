@@ -1,3 +1,5 @@
+import hashlib
+import json
 import os
 from typing import Any, Literal
 
@@ -29,10 +31,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=[origin.strip() for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -86,19 +88,6 @@ class ShipmentPredictionInput(BaseModel):
 # ============================================================
 
 class OptimizationRequest(BaseModel):
-    warehouse_inventory_level: float = Field(..., allow_inf_nan=False)
-    handling_equipment_availability: float = Field(..., allow_inf_nan=False)
-    order_fulfillment_status: float = Field(..., allow_inf_nan=False)
-    weather_condition_severity: float = Field(..., allow_inf_nan=False)
-    shipping_costs: float = Field(..., allow_inf_nan=False)
-    supplier_reliability_score: float = Field(..., allow_inf_nan=False)
-    lead_time_days: float = Field(..., allow_inf_nan=False)
-    historical_demand: float = Field(..., allow_inf_nan=False)
-    cargo_condition_status: float = Field(..., allow_inf_nan=False)
-    route_risk_level: float = Field(..., allow_inf_nan=False)
-    customs_clearance_time: float = Field(..., allow_inf_nan=False)
-    supplier_country: str
-
     budget: float = Field(..., ge=0, allow_inf_nan=False)
     allowed_time: float = Field(..., ge=0, allow_inf_nan=False)
     available_capacity: float = Field(..., ge=0, allow_inf_nan=False)
@@ -262,6 +251,18 @@ def recommend_action(
             shipment_data
         )
 
+        cursor.execute(
+            """
+            INSERT INTO predictions (
+                record_id, prediction_target, predicted_value
+            )
+            VALUES (%s, %s, %s)
+            RETURNING prediction_id, created_at
+            """,
+            (request.record_id, "delivery_time_deviation", predicted_delay),
+        )
+        prediction_record = cursor.fetchone()
+
         # ----------------------------------------------------
         # 4. Build optimization scenario
         # ----------------------------------------------------
@@ -273,7 +274,7 @@ def recommend_action(
                 "available_capacity"
             ],
             predicted_delay=predicted_delay,
-            shipment_cost=request_data["shipping_costs"],
+            shipment_cost=record["shipping_costs"],
             shipment_time=request_data["shipment_time"],
             shipment_capacity=request_data[
                 "shipment_capacity"
@@ -293,12 +294,63 @@ def recommend_action(
 
         alternatives = result.get("alternatives", [])
         stored_recommendations = []
+        batch_id = hashlib.sha256(
+            json.dumps(
+                request.model_dump(),
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+
+        cursor.execute(
+            """
+            SELECT recommendation_id, recommendation_rank, action,
+                   action_cost, capacity_required, operational_impact,
+                   budget_valid, time_valid, capacity_valid,
+                   all_constraints_satisfied
+            FROM prescriptive_recommendations
+            WHERE recommendation_batch_id = %s
+            ORDER BY recommendation_rank
+            """,
+            (batch_id,),
+        )
+        existing_recommendations = cursor.fetchall()
 
         for alternative in alternatives:
+            existing = next(
+                (row for row in existing_recommendations
+                 if row["recommendation_rank"] == alternative["option"]),
+                None,
+            )
+            if existing is not None:
+                stored_recommendations.append({
+                    "record_id": request.record_id,
+                    "recommendation_id": existing["recommendation_id"],
+                    "option": alternative["option"],
+                    "action": existing["action"],
+                    "cost": existing["action_cost"],
+                    "time": alternative["time"],
+                    "capacity": existing["capacity_required"],
+                    "expected_impact": existing["operational_impact"],
+                    "risk_reduction": None,
+                    "time_saved_days": None,
+                    "budget_valid": existing["budget_valid"],
+                    "time_valid": existing["time_valid"],
+                    "capacity_valid": existing["capacity_valid"],
+                    "all_constraints_satisfied": existing[
+                        "all_constraints_satisfied"
+                    ],
+                    "feasibility": (
+                        "feasible" if existing["all_constraints_satisfied"]
+                        else "infeasible"
+                    ),
+                })
+                continue
             cursor.execute(
                 """
                 INSERT INTO prescriptive_recommendations (
                     record_id,
+                    recommendation_batch_id,
                     recommendation_rank,
                     action,
                     action_cost,
@@ -313,13 +365,14 @@ def recommend_action(
                     all_constraints_satisfied
                 )
                 VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s
                 )
                 RETURNING recommendation_id
                 """,
                 (
                     request.record_id,
+                    batch_id,
                     alternative["option"],
                     alternative["action"],
                     alternative["cost"],
@@ -371,6 +424,7 @@ def recommend_action(
             "prediction": {
                 "target": "delivery_time_deviation",
                 "predicted_delay": predicted_delay,
+                "prediction_id": prediction_record["prediction_id"],
             },
             "optimization": result,
         }
@@ -636,6 +690,75 @@ def evaluation_threshold_percent() -> float:
     return float(os.getenv("EVALUATION_THRESHOLD_PERCENT", "10.0"))
 
 
+@app.get("/decisions/analytics/roi")
+def decision_roi_analytics():
+    """Aggregate ROI using actual outcomes only.
+
+    Positive outcome means actual_cost <= expected_cost. ROI is the
+    cost-avoidance percentage: (expected - actual) / expected * 100.
+    """
+    connection = None
+    cursor = None
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT d.expected_cost, o.actual_cost
+            FROM decision_log d
+            JOIN LATERAL (
+                SELECT actual_cost
+                FROM actual_outcomes
+                WHERE decision_id = d.decision_id
+                ORDER BY evaluated_at DESC, outcome_id DESC
+                LIMIT 1
+            ) o ON TRUE
+            """
+        )
+        rows = cursor.fetchall()
+        evaluated = [
+            row for row in rows
+            if row["actual_cost"] is not None
+        ]
+        roi_values = [
+            ((float(row["expected_cost"]) - float(row["actual_cost"]))
+             / float(row["expected_cost"])) * 100.0
+            for row in evaluated
+            if float(row["expected_cost"]) > 0
+        ]
+        positive = sum(
+            float(row["actual_cost"]) <= float(row["expected_cost"])
+            for row in evaluated
+        )
+        return {
+            "positive_outcome_definition": (
+                "actual_cost <= expected_cost"
+            ),
+            "total_decisions": len(rows),
+            "evaluated_decisions": len(evaluated),
+            "positive_outcomes": positive,
+            "negative_outcomes": len(evaluated) - positive,
+            "positive_outcome_rate": (
+                (positive / len(evaluated)) * 100.0
+                if evaluated else None
+            ),
+            "average_roi": (
+                sum(roi_values) / len(roi_values)
+                if roi_values else None
+            ),
+        }
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except psycopg.Error as exc:
+        raise HTTPException(status_code=503, detail="Database operation failed.")
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if connection is not None and not connection.closed:
+            connection.close()
+
+
 @app.get("/decisions/history")
 def decision_history():
     connection = None
@@ -655,6 +778,7 @@ def decision_history():
                 d.expected_risk_reduction,
                 d.expected_time_saved_days,
                 d.decision_status,
+                d.retraining_triggered_at,
                 d.selected_at,
                 o.actual_cost,
                 o.actual_delay_days,
@@ -725,6 +849,7 @@ def decision_evaluation(decision_id: int):
                 d.record_id,
                 d.recommendation_id,
                 d.expected_cost AS predicted_cost,
+                d.retraining_triggered_at,
                 o.actual_cost,
                 o.actual_delay_days,
                 o.outcome_status
@@ -765,7 +890,26 @@ def decision_evaluation(decision_id: int):
         evaluation["outcome_status"] = row["outcome_status"]
         evaluation["roi"] = evaluation["roi_percent"]
 
-        retraining = trigger_retraining_if_needed(evaluation)
+        retraining = {
+            "triggered": False,
+            "evaluation_status": evaluation["status"],
+            "training": None,
+        }
+        if (
+            evaluation["status"] == "discrepancy_detected"
+            and row["retraining_triggered_at"] is None
+        ):
+            retraining = trigger_retraining_if_needed(evaluation)
+            if retraining["triggered"]:
+                cursor.execute(
+                    """
+                    UPDATE decision_log
+                    SET retraining_triggered_at = CURRENT_TIMESTAMP
+                    WHERE decision_id = %s
+                    """,
+                    (decision_id,),
+                )
+                connection.commit()
         return {"evaluation": evaluation, "retraining": retraining}
 
     except HTTPException:

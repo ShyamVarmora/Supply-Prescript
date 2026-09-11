@@ -1,6 +1,8 @@
 """Decision evaluation and discrepancy-triggered model retraining."""
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
+import hashlib
 from pathlib import Path
 from typing import Optional
 
@@ -116,22 +118,39 @@ def retrain_model(model_path: Optional[Path] = None) -> dict:
 
     data = load_dataset()
     features, target = prepare_data(data)
-    pipeline, mae, rmse, r2 = train_model(features, target)
-
-    output_path = model_path or (
+    previous_path = model_path or (
         Path(__file__).resolve().parents[2]
         / "models"
         / "shipment_delay_model.joblib"
     )
+    previous_checksum = None
+    if previous_path.exists():
+        previous_checksum = hashlib.sha256(
+            previous_path.read_bytes()
+        ).hexdigest()
+
+    pipeline, mae, rmse, r2 = train_model(features, target)
+
+    output_path = previous_path
     output_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, output_path)
+    new_checksum = hashlib.sha256(
+        output_path.read_bytes()
+    ).hexdigest()
+    training_rows = int(len(features) * 0.8)
+    test_rows = len(features) - training_rows
 
     return {
         "model_path": str(output_path),
         "prediction_target": "delivery_time_deviation",
+        "previous_checksum": previous_checksum,
+        "new_checksum": new_checksum,
+        "training_rows": training_rows,
+        "test_rows": test_rows,
         "mae": float(mae),
         "rmse": float(rmse),
         "r2": float(r2),
+        "training_timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

@@ -26,61 +26,31 @@ def db_connection():
 
 def test_real_recommendation_and_decision_write_back():
     connection = db_connection()
-    record_id = None
+    record_id = 1
+    prediction_ids = []
+    recommendation_ids = []
+    decision_ids = []
 
     try:
         with connection.cursor() as cursor:
             cursor.execute(
-                """
-                INSERT INTO supply_chain_data (
-                    warehouse_inventory_level,
-                    handling_equipment_availability,
-                    order_fulfillment_status,
-                    weather_condition_severity,
-                    shipping_costs,
-                    supplier_reliability_score,
-                    lead_time_days,
-                    historical_demand,
-                    cargo_condition_status,
-                    route_risk_level,
-                    customs_clearance_time,
-                    supplier_country
-                )
-                VALUES (
-                    985.7168615, 0.481293674, 0.761166168,
-                    0.35906606, 456.503853, 0.986064284,
-                    2.128008822, 100.7728538, 0.777263471,
-                    1.182115989, 0.502006422, 'Greece'
-                )
-                RETURNING record_id
-                """
+                "SELECT record_id FROM supply_chain_data "
+                "WHERE record_id IN (1, 2) ORDER BY record_id"
             )
-            record_id = cursor.fetchone()["record_id"]
-        connection.commit()
+            assert [row["record_id"] for row in cursor.fetchall()] == [1, 2]
 
         client = TestClient(main.app)
+        request_payload = {
+            "record_id": record_id,
+            "budget": 1234.5,
+            "allowed_time": 21.5,
+            "available_capacity": 101.0,
+            "shipment_time": 8.5,
+            "shipment_capacity": 49.5,
+        }
         recommend_response = client.post(
             "/recommend",
-            json={
-                "record_id": record_id,
-                "warehouse_inventory_level": 0,
-                "handling_equipment_availability": 0,
-                "order_fulfillment_status": 0,
-                "weather_condition_severity": 0,
-                "shipping_costs": 456.503853,
-                "supplier_reliability_score": 0,
-                "lead_time_days": 0,
-                "historical_demand": 0,
-                "cargo_condition_status": 0,
-                "route_risk_level": 0,
-                "customs_clearance_time": 0,
-                "supplier_country": "Greece",
-                "budget": 1000,
-                "allowed_time": 20,
-                "available_capacity": 100,
-                "shipment_time": 8,
-                "shipment_capacity": 50,
-            },
+            json=request_payload,
         )
         assert recommend_response.status_code == 200
 
@@ -88,6 +58,12 @@ def test_real_recommendation_and_decision_write_back():
             "stored_recommendations"
         ]
         assert len(stored) == 3
+        prediction_ids.append(
+            recommend_response.json()["prediction"]["prediction_id"]
+        )
+        recommendation_ids.extend(
+            item["recommendation_id"] for item in stored
+        )
         assert all(
             recommendation["record_id"] == record_id
             and recommendation["recommendation_id"] > 0
@@ -95,6 +71,21 @@ def test_real_recommendation_and_decision_write_back():
             and recommendation["time_saved_days"] is None
             for recommendation in stored
         )
+
+        duplicate_response = client.post(
+            "/recommend",
+            json=request_payload,
+        )
+        assert duplicate_response.status_code == 200
+        prediction_ids.append(
+            duplicate_response.json()["prediction"]["prediction_id"]
+        )
+        assert [
+            item["recommendation_id"]
+            for item in duplicate_response.json()["optimization"][
+                "stored_recommendations"
+            ]
+        ] == [item["recommendation_id"] for item in stored]
 
         selected = next(
             recommendation
@@ -112,6 +103,7 @@ def test_real_recommendation_and_decision_write_back():
         )
         assert decision_response.status_code == 200
         decision = decision_response.json()
+        decision_ids.append(decision["decision_id"])
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -138,25 +130,21 @@ def test_real_recommendation_and_decision_write_back():
         }
         print(f"REAL_DB_SELECT {dict(row)}")
 
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                INSERT INTO actual_outcomes (
-                    decision_id,
-                    actual_cost,
-                    actual_delay_days,
-                    outcome_status
-                )
-                VALUES (%s, %s, %s, %s)
-                """,
-                (
-                    decision["decision_id"],
-                    selected["cost"] * 1.2,
-                    11.0,
-                    "COMPLETED",
-                ),
-            )
-        connection.commit()
+        pending_response = client.get(
+            f"/decisions/{decision['decision_id']}/evaluation"
+        )
+        assert pending_response.status_code == 200
+        assert pending_response.json()["evaluation"]["status"] == "pending"
+
+        outcome_response = client.post(
+            f"/decisions/{decision['decision_id']}/outcome",
+            json={
+                "actual_cost": selected["cost"] * 1.2,
+                "actual_delay_days": 11.0,
+                "outcome_status": "COMPLETED",
+            },
+        )
+        assert outcome_response.status_code == 200
 
         evaluation_response = client.get(
             f"/decisions/{decision['decision_id']}/evaluation"
@@ -172,6 +160,41 @@ def test_real_recommendation_and_decision_write_back():
         assert evaluation_result["retraining"]["triggered"] is True
         assert evaluation_result["retraining"]["training"]["mae"] >= 0
         assert evaluation_result["retraining"]["training"]["rmse"] >= 0
+        assert evaluation_result["retraining"]["training"]["r2"] >= -1
+        assert evaluation_result["retraining"]["training"]["previous_checksum"]
+        assert evaluation_result["retraining"]["training"]["new_checksum"]
+        assert evaluation_result["retraining"]["training"]["training_rows"] > 0
+        assert evaluation_result["retraining"]["training"]["test_rows"] > 0
+        assert evaluation_result["retraining"]["training"]["training_timestamp"]
+
+        repeat_evaluation = client.get(
+            f"/decisions/{decision['decision_id']}/evaluation"
+        )
+        assert repeat_evaluation.json()["retraining"]["triggered"] is False
+
+        exact_decision_response = client.post(
+            "/decisions",
+            json={
+                "record_id": record_id,
+                "recommendation_id": selected["recommendation_id"],
+                "selected_action": selected["action"],
+                "decision_status": "SELECTED",
+            },
+        )
+        assert exact_decision_response.status_code == 200
+        exact_decision = exact_decision_response.json()
+        decision_ids.append(exact_decision["decision_id"])
+        exact_outcome = client.post(
+            f"/decisions/{exact_decision['decision_id']}/outcome",
+            json={"actual_cost": selected["cost"]},
+        )
+        assert exact_outcome.status_code == 200
+        exact_evaluation = client.get(
+            f"/decisions/{exact_decision['decision_id']}/evaluation"
+        )
+        assert exact_evaluation.json()["evaluation"]["status"] == (
+            "within_expected_range"
+        )
 
         invalid_record_response = client.post(
             "/decisions",
@@ -183,6 +206,28 @@ def test_real_recommendation_and_decision_write_back():
             },
         )
         assert invalid_record_response.status_code == 404
+
+        invalid_recommendation_response = client.post(
+            "/decisions",
+            json={
+                "record_id": record_id,
+                "recommendation_id": 999999999,
+                "selected_action": selected["action"],
+                "decision_status": "SELECTED",
+            },
+        )
+        assert invalid_recommendation_response.status_code == 404
+
+        cross_record_response = client.post(
+            "/decisions",
+            json={
+                "record_id": 2,
+                "recommendation_id": selected["recommendation_id"],
+                "selected_action": selected["action"],
+                "decision_status": "SELECTED",
+            },
+        )
+        assert cross_record_response.status_code == 404
 
         wrong_action_response = client.post(
             "/decisions",
@@ -199,18 +244,6 @@ def test_real_recommendation_and_decision_write_back():
             "/recommend",
             json={
                 "record_id": record_id,
-                "warehouse_inventory_level": 0,
-                "handling_equipment_availability": 0,
-                "order_fulfillment_status": 0,
-                "weather_condition_severity": 0,
-                "shipping_costs": 456.503853,
-                "supplier_reliability_score": 0,
-                "lead_time_days": 0,
-                "historical_demand": 0,
-                "cargo_condition_status": 0,
-                "route_risk_level": 0,
-                "customs_clearance_time": 0,
-                "supplier_country": "Greece",
                 "budget": 5,
                 "allowed_time": 2,
                 "available_capacity": 10,
@@ -222,6 +255,12 @@ def test_real_recommendation_and_decision_write_back():
         infeasible = infeasible_recommendation_response.json()[
             "optimization"
         ]["stored_recommendations"][0]
+        recommendation_ids.extend(
+            item["recommendation_id"]
+            for item in infeasible_recommendation_response.json()[
+                "optimization"
+            ]["stored_recommendations"]
+        )
         assert infeasible["feasibility"] == "infeasible"
 
         infeasible_decision_response = client.post(
@@ -235,31 +274,112 @@ def test_real_recommendation_and_decision_write_back():
         )
         assert infeasible_decision_response.status_code == 422
     finally:
-        if record_id is not None:
-            with connection.cursor() as cursor:
+        with connection.cursor() as cursor:
+            if decision_ids:
                 cursor.execute(
-                    """
-                    DELETE FROM actual_outcomes
-                    WHERE decision_id IN (
-                        SELECT decision_id
-                        FROM decision_log
-                        WHERE record_id = %s
-                    )
-                    """,
-                    (record_id,),
+                    "DELETE FROM actual_outcomes WHERE decision_id = ANY(%s)",
+                    (decision_ids,),
                 )
                 cursor.execute(
-                    "DELETE FROM decision_log WHERE record_id = %s",
-                    (record_id,),
+                    "DELETE FROM decision_log WHERE decision_id = ANY(%s)",
+                    (decision_ids,),
                 )
+            if recommendation_ids:
                 cursor.execute(
                     "DELETE FROM prescriptive_recommendations "
-                    "WHERE record_id = %s",
-                    (record_id,),
+                    "WHERE recommendation_id = ANY(%s)",
+                    (recommendation_ids,),
                 )
+            if prediction_ids:
                 cursor.execute(
-                    "DELETE FROM supply_chain_data WHERE record_id = %s",
-                    (record_id,),
+                    "DELETE FROM predictions WHERE prediction_id = ANY(%s)",
+                    (prediction_ids,),
                 )
-            connection.commit()
+        connection.commit()
         connection.close()
+
+
+def test_real_recommendation_is_idempotent_and_evaluates_pending():
+    connection = db_connection()
+    record_id = None
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT record_id
+                FROM supply_chain_data
+                ORDER BY record_id
+                OFFSET 1
+                LIMIT 1
+                """
+            )
+            record_id = cursor.fetchone()["record_id"]
+
+        client = TestClient(main.app)
+        request = {
+            "record_id": record_id,
+            "budget": 1000,
+            "allowed_time": 20,
+            "available_capacity": 100,
+            "shipment_time": 8,
+            "shipment_capacity": 50,
+        }
+        first = client.post("/recommend", json=request)
+        second = client.post("/recommend", json=request)
+        assert first.status_code == second.status_code == 200
+        first_rows = first.json()["optimization"]["stored_recommendations"]
+        second_rows = second.json()["optimization"]["stored_recommendations"]
+        assert len(first_rows) == len(second_rows) == 3
+        assert [row["recommendation_id"] for row in first_rows] == [
+            row["recommendation_id"] for row in second_rows
+        ]
+
+        feasible = next(
+            row for row in first_rows if row["feasibility"] == "feasible"
+        )
+        decision = client.post(
+            "/decisions",
+            json={
+                "record_id": record_id,
+                "recommendation_id": feasible["recommendation_id"],
+                "selected_action": feasible["action"],
+            },
+        )
+        assert decision.status_code == 200
+        decision_id = decision.json()["decision_id"]
+        pending = client.get(f"/decisions/{decision_id}/evaluation")
+        assert pending.status_code == 200
+        assert pending.json()["evaluation"]["status"] == "pending"
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) AS count FROM prescriptive_recommendations "
+                "WHERE record_id = %s",
+                (record_id,),
+            )
+            assert cursor.fetchone()["count"] == 3
+    finally:
+        if connection is not None:
+            if record_id is not None:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "DELETE FROM actual_outcomes WHERE decision_id IN "
+                        "(SELECT decision_id FROM decision_log WHERE record_id = %s)",
+                        (record_id,),
+                    )
+                    cursor.execute(
+                        "DELETE FROM decision_log WHERE record_id = %s",
+                        (record_id,),
+                    )
+                    cursor.execute(
+                        "DELETE FROM prescriptive_recommendations "
+                        "WHERE record_id = %s",
+                        (record_id,),
+                    )
+                    cursor.execute(
+                        "DELETE FROM predictions WHERE record_id = %s",
+                        (record_id,),
+                    )
+                connection.commit()
+            connection.close()

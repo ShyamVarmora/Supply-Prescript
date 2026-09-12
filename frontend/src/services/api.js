@@ -2,22 +2,31 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
+async function parseResponse(response) {
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail ||
+        data.message ||
+        `Request failed with status ${response.status}.`
+    );
+  }
+
+  return data;
+}
+
 export async function checkBackendHealth() {
   try {
     const response = await fetch(
       `${API_BASE_URL}/health`
     );
 
-    if (!response.ok) {
-      throw new Error(
-        `Backend returned ${response.status}`
-      );
-    }
-
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to connect to the backend: ${error.message}`,
+      error?.message ||
+        "Unable to connect to the backend.",
       { cause: error }
     );
   }
@@ -38,42 +47,11 @@ export async function getPredictionRecommendations(
       }
     );
 
-    if (!response.ok) {
-      let message =
-        `Backend returned ${response.status}`;
-
-      try {
-        const errorData =
-          await response.json();
-
-        if (errorData?.detail) {
-          message = errorData.detail;
-        }
-      } catch {
-        // Keep default HTTP error message.
-      }
-
-      throw new Error(message);
-    }
-
-    const data = await response.json();
-
-    if (
-      !data ||
-      data.prediction_target !==
-        "delivery_time_deviation" ||
-      typeof data.predicted_delivery_time_deviation !==
-        "number"
-    ) {
-      throw new Error(
-        "Invalid prediction response from backend."
-      );
-    }
-
-    return data;
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to load shipment prediction: ${error.message}`,
+      error?.message ||
+        "Unable to generate shipment prediction.",
       { cause: error }
     );
   }
@@ -94,121 +72,113 @@ export async function getRecommendations(
       }
     );
 
-    if (!response.ok) {
-      let message =
-        `Backend returned ${response.status}`;
-
-      try {
-        const errorData =
-          await response.json();
-
-        if (errorData?.detail) {
-          message = errorData.detail;
-        }
-      } catch {
-        // Keep default HTTP error message.
-      }
-
-      throw new Error(message);
-    }
-
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to load recommendations: ${error.message}`,
+      error?.message ||
+        "Unable to load recommendations.",
       { cause: error }
     );
   }
 }
 
-/*
- * Decision write-back endpoint.
- *
- * This is kept separate from the Week-3
- * evaluation/ROI UI.
- *
- * Do not invent or modify the request
- * contract until the backend endpoint
- * is confirmed.
- */
 export async function executeDecision(
-  recommendation
+  decision
 ) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/decisions`,
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
-        body: JSON.stringify(
-          recommendation
-        ),
+        body: JSON.stringify(decision),
       }
     );
 
-    if (!response.ok) {
-      let message =
-        `Backend returned ${response.status}`;
-
-      try {
-        const errorData =
-          await response.json();
-
-        if (errorData?.detail) {
-          message = errorData.detail;
-        } else if (errorData?.message) {
-          message = errorData.message;
-        }
-      } catch {
-        // Keep default HTTP error message.
-      }
-
-      throw new Error(message);
-    }
-
-    const data = await response.json();
-
-    if (!data) {
-      throw new Error(
-        "Backend did not confirm decision execution."
-      );
-    }
-
-    return data;
+    return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      `Unable to execute decision: ${error.message}`,
+      error?.message ||
+        "Unable to execute decision.",
       { cause: error }
     );
   }
 }
 
-/*
- * Week-3 decision evaluation API placeholder.
- *
- * The backend evaluation endpoint has not
- * been defined yet.
- *
- * Do not invent an endpoint or return
- * fake evaluation/ROI data.
- */
-export async function getDecisionEvaluation() {
-  return null;
+export async function recordDecisionOutcome(
+  decisionId,
+  outcome
+) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions/${decisionId}/outcome`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(outcome),
+      }
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to record decision outcome.",
+      { cause: error }
+    );
+  }
 }
 
-/*
- * Week-3 decision history API placeholder.
- *
- * The backend history endpoint has not
- * been defined yet.
- *
- * Do not invent an endpoint or return
- * fake decision history.
- */
+export async function getDecisionEvaluation(
+  decisionId
+) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions/${decisionId}/evaluation`
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to load decision evaluation.",
+      { cause: error }
+    );
+  }
+}
+
 export async function getDecisionHistory() {
-  return [];
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions/history`
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to load decision history.",
+      { cause: error }
+    );
+  }
+}
+
+export async function getRoiAnalytics() {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions/analytics/roi`
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to load ROI analytics.",
+      { cause: error }
+    );
+  }
 }

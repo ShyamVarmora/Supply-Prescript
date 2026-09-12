@@ -238,3 +238,54 @@ Documentation, planned code, hard-coded UI cards, or placeholder values
 are not sufficient evidence for PASS.
 
 No fabricated results or metrics are reported.
+
+---
+
+## Final Optimizer Evidence — 1/9/26
+
+The optimizer was tested using normal and deliberately restrictive
+scenarios.
+
+| Validation | Status | Evidence |
+|---|---|---|
+| Budget constraint | PASS | Budget-restricted optimizer output |
+| Time constraint | PASS | Time-restricted optimizer output |
+| Capacity constraint | PASS | Capacity-restricted optimizer output |
+| Recommendation validity | PASS | Infeasible alternatives were not returned as recommendations |
+| Evidence captured | PASS | Terminal outputs from all executed validation cases |
+
+### Normal Case
+
+The optimizer executed successfully and returned:
+
+- Air Freight — feasible
+- Secondary Supplier — feasible
+- Delay Launch — infeasible because its time exceeded the allowed time
+- Recommended option — Air Freight
+
+### Budget-Restricted Case
+
+With budget set to 40:
+
+- No feasible alternatives were returned.
+- `recommended_option` was `None`.
+
+### Time-Restricted Case
+
+With allowed time set to 5:
+
+- Air Freight — feasible
+- Secondary Supplier — infeasible
+- Delay Launch — infeasible
+
+### Capacity-Restricted Case
+
+With available capacity set to 40 and shipment capacity set to 50:
+
+- Option 1 — infeasible
+- Option 2 — infeasible
+- Option 3 — infeasible
+- `feasible_alternatives` — `[]`
+- `recommended_option` — `None`
+
+No optimizer redesign was performed.

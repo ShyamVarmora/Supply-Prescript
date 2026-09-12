@@ -1,4 +1,4 @@
-# Supply Prescript — Week 3 QA Test Plan
+# Supply Prescript ??? Week 3 QA Test Plan
 
 ## Purpose
 
@@ -26,11 +26,11 @@ No fabricated evaluation results or ROI percentages will be reported.
 
 ```text
 Decision
-    ↓
+    ???
 Predicted Cost
-    ↓
+    ???
 Actual Cost
-    ↓
+    ???
 Closed-Loop Evaluation
 ```
 
@@ -45,26 +45,26 @@ Closed-Loop Evaluation
 
 ## 3. Evaluation Scenarios
 
-### Scenario 1 — Positive Outcome
+### Scenario 1 ??? Positive Outcome
 
 - [ ] Recorded decision exists.
 - [ ] Predicted cost exists.
 - [ ] Actual cost exists.
 - [ ] Evaluation identifies the outcome correctly.
 
-### Scenario 2 — Negative Outcome
+### Scenario 2 ??? Negative Outcome
 
 - [ ] Predicted and actual results differ.
 - [ ] Discrepancy is detected.
 
-### Scenario 3 — Missing Outcome
+### Scenario 3 ??? Missing Outcome
 
 - [ ] Decision exists.
 - [ ] Actual outcome is unavailable.
-- [ ] Evaluation remains pending.
+- [x] Standalone evaluation verified; operational database-backed evaluation remains IN PROGRESS.
 - [ ] ROI is not calculated from incomplete data.
 
-### Scenario 4 — Multiple Decisions
+### Scenario 4 ??? Multiple Decisions
 
 - [ ] Multiple evaluated decisions are counted.
 - [ ] Positive outcomes are counted.
@@ -94,22 +94,22 @@ No fabricated cost, outcome, evaluation result, or ROI percentage should be repo
 
 | Requirement | Status |
 |---|---|
-| Recorded decision identification | Pending |
-| Predicted cost availability | Pending |
-| Actual historical outcome | Pending |
-| Predicted vs actual comparison | Pending |
-| Discrepancy calculation | Pending |
-| Evaluation persistence/retrieval | Pending |
-| Decision ROI calculation | Pending |
-| Positive outcomes count | Pending |
-| Total evaluated decisions count | Pending |
-| ROI displayed in analytics UI | Pending |
-| Empty state | Pending |
+| Recorded decision identification | IN PROGRESS |
+| Predicted cost availability | PASS |
+| Actual historical outcome | NOT STARTED |
+| Predicted vs actual comparison | PASS |
+| Discrepancy calculation | PASS |
+| Evaluation persistence/retrieval | IN PROGRESS |
+| Decision ROI calculation | IN PROGRESS |
+| Positive outcomes count | NOT STARTED |
+| Total evaluated decisions count | NOT STARTED |
+| ROI displayed in analytics UI | IN PROGRESS |
+| Empty state | PASS |
 
 ---
 
 ## 6. QA Conclusion
 
-Week 3 validation remains pending until the closed-loop evaluation implementation and Decision ROI UI provide actual supporting evidence.
+Week 3 standalone evaluation logic has been verified with actual execution evidence. Database-backed closed-loop evaluation, real outcomes, and real ROI remain unverified.
 
 No unverified test results or fabricated ROI values will be reported.

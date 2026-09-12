@@ -1,4 +1,4 @@
-# Supply Prescript — Week 3 Evidence Matrix
+# Supply Prescript ??? Week 3 Evidence Matrix
 
 ## Purpose
 
@@ -34,7 +34,7 @@ Compare the predicted cost of the user's selected decision against the actual hi
 
 ### Status
 
-PENDING — implementation not yet available.
+NOT STARTED - implementation not yet available.
 
 This follows the PDF directly. The PDF does not merely ask for a UI mockup; it requires comparison against the actual historical database outcome.
 
@@ -65,7 +65,7 @@ Build an analytics view showing Decision ROI and tracking how often AI recommend
 
 ### Status
 
-PENDING — implementation not yet available.
+NOT STARTED - implementation not yet available.
 
 Again, this comes directly from the Week 3 requirement.
 
@@ -85,7 +85,7 @@ The following dependencies must exist before Week 3 can be fully verified:
 8. Decision ROI calculation
 9. Feedback / analytics UI
 
-If a dependency is unavailable, the related test remains BLOCKED or PENDING.
+If a dependency is unavailable, the related test remains BLOCKED or NOT STARTED.
 
 A missing dependency must not be replaced with fabricated data.
 
@@ -95,14 +95,14 @@ A missing dependency must not be replaced with fabricated data.
 
 | Requirement | Implementation Evidence | Data Evidence | UI Evidence | Status |
 |---|---|---|---|---|
-| Predicted cost available | Pending | Pending | Pending | PENDING |
-| Actual outcome available | Pending | Pending | Pending | PENDING |
-| Predicted vs actual comparison | Pending | Pending | Pending | PENDING |
-| Discrepancy calculation | Pending | Pending | Pending | PENDING |
-| Evaluation persistence/retrieval | Pending | Pending | Pending | PENDING |
-| Decision ROI calculation | Pending | Pending | Pending | PENDING |
-| Positive outcomes tracking | Pending | Pending | Pending | PENDING |
-| ROI displayed in analytics UI | Pending | Pending | Pending | PENDING |
+| Predicted cost available | PASS | Standalone evaluator received predicted cost input | Actual standalone evaluation evidence | PASS |
+| Actual outcome available | NOT STARTED | No database-backed actual outcome | No real outcome evidence | NOT STARTED |
+| Predicted vs actual comparison | PASS | Standalone evaluation executed | Actual comparison outputs captured | PASS |
+| Discrepancy calculation | PASS | Standalone discrepancy tests executed | Actual discrepancy outputs captured | PASS |
+| Evaluation persistence/retrieval | IN PROGRESS | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | IN PROGRESS |
+| Decision ROI calculation | IN PROGRESS | ROI formula documented; no real evaluated DB decisions available | No real ROI result | IN PROGRESS |
+| Positive outcomes tracking | NOT STARTED | No real outcome records available | No verified positive outcomes | NOT STARTED |
+| ROI displayed in analytics UI | IN PROGRESS | UI structure exists; live outcome data unavailable | No real ROI display evidence | IN PROGRESS |
 
 ---
 
@@ -117,7 +117,7 @@ The following are not acceptable as proof of completion:
 - Placeholder values presented as real results
 - Documentation claiming PASS without implementation evidence
 
-A requirement can only move from PENDING/BLOCKED to PASS after the corresponding implementation and verification evidence exists.
+A requirement can only move from NOT STARTED/BLOCKED to PASS after the corresponding implementation and verification evidence exists.
 
 ---
 
@@ -125,14 +125,14 @@ A requirement can only move from PENDING/BLOCKED to PASS after the corresponding
 
 | Dependency | Status |
 |---|---|
-| Historical dataset | BLOCKED — pending database work |
-| Predictive model | PENDING |
-| Prescriptive solver | PENDING |
-| Database write-back | PENDING |
-| Closed-loop evaluation | PENDING |
-| Decision ROI | PENDING |
-| Feedback analytics | PENDING |
-| Continuous learning | PENDING |
+| Historical dataset | PASS | Real dataset used by training was verified independently of database runtime | Training dataset evidence available | PASS |
+| Predictive model | PASS | Actual model load and training evidence verified |
+| Prescriptive solver | PASS | Actual optimizer execution verified |
+| Database write-back | BLOCKED | No database runtime or INSERT/SELECT evidence |
+| Closed-loop evaluation | IN PROGRESS | Standalone evaluator verified; DB workflow not verified |
+| Decision ROI | IN PROGRESS | Formula documented; real outcome-based ROI not verified |
+| Feedback analytics | IN PROGRESS | UI structure exists; real evaluation data unavailable |
+| Continuous learning | IN PROGRESS | Standalone retraining trigger/workflow verified; production loop not verified |
 
 ---
 

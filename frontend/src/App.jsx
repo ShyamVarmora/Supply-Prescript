@@ -10,6 +10,7 @@ import {
   getDecisionEvaluation,
   getDecisionHistory,
   getRecommendations,
+  getRoiAnalytics,
   recordDecisionOutcome,
 } from "./services/api";
 
@@ -101,6 +102,19 @@ function App() {
 
   const [historyError, setHistoryError] =
     useState("");
+
+  const [roiAnalytics, setRoiAnalytics] =
+    useState(null);
+
+  const [
+    roiAnalyticsStatus,
+    setRoiAnalyticsStatus,
+  ] = useState("empty");
+
+  const [
+    roiAnalyticsError,
+    setRoiAnalyticsError,
+  ] = useState("");
 
   const handleShipmentChange = (event) => {
     const { name, value } = event.target;
@@ -460,6 +474,43 @@ function App() {
       }
     };
 
+  const loadRoiAnalytics =
+    async () => {
+      setRoiAnalyticsStatus(
+        "loading"
+      );
+
+      setRoiAnalyticsError("");
+
+      try {
+        const result =
+          await getRoiAnalytics();
+
+        if (result) {
+          setRoiAnalytics(result);
+
+          setRoiAnalyticsStatus(
+            "success"
+          );
+        } else {
+          setRoiAnalytics(null);
+
+          setRoiAnalyticsStatus(
+            "empty"
+          );
+        }
+      } catch (error) {
+        setRoiAnalytics(null);
+
+        setRoiAnalyticsStatus("error");
+
+        setRoiAnalyticsError(
+          error.message ||
+            "Unable to load ROI analytics."
+        );
+      }
+    };
+
   const handleExecuteDecision =
     async () => {
       if (
@@ -639,6 +690,8 @@ function App() {
         );
 
         await loadDecisionHistory();
+
+        await loadRoiAnalytics();
       } catch (error) {
         setOutcomeStatus("error");
 
@@ -746,6 +799,14 @@ function App() {
     return `${numericValue.toFixed(
       2
     )}%`;
+  };
+
+  const formatMetric = (value) => {
+    if (value == null) {
+      return "—";
+    }
+
+    return value;
   };
 
   return (
@@ -1662,26 +1723,142 @@ function App() {
               </h2>
 
               <p className="section-description">
-                ROI analytics will use
-                backend-derived evaluation
-                results only.
+                Aggregated ROI metrics from
+                evaluated decisions using real
+                backend data.
               </p>
             </div>
+
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={
+                loadRoiAnalytics
+              }
+              disabled={
+                roiAnalyticsStatus ===
+                "loading"
+              }
+            >
+              {roiAnalyticsStatus ===
+              "loading"
+                ? "Loading..."
+                : "Refresh ROI Analytics"}
+            </button>
           </div>
 
-          <div className="recommendation-state">
-            <strong>
-              ROI analytics data is not
-              available yet.
-            </strong>
+          {roiAnalyticsStatus ===
+            "empty" && (
+            <div className="recommendation-state">
+              <strong>
+                No ROI analytics data available.
+              </strong>
 
-            <p>
-              No ROI values are fabricated in
-              the frontend. The dashboard will
-              display analytics when the backend
-              analytics contract is available.
-            </p>
-          </div>
+              <p>
+                ROI analytics will appear when
+                the backend has evaluated decision
+                outcomes.
+              </p>
+            </div>
+          )}
+
+          {roiAnalyticsStatus ===
+            "loading" && (
+            <div className="recommendation-state">
+              Loading ROI analytics...
+            </div>
+          )}
+
+          {roiAnalyticsStatus ===
+            "error" && (
+            <div className="recommendation-state error">
+              <strong>
+                Unable to load ROI analytics
+              </strong>
+
+              <p>
+                {roiAnalyticsError}
+              </p>
+            </div>
+          )}
+
+          {roiAnalyticsStatus ===
+            "success" &&
+            roiAnalytics && (
+              <div className="evaluation-grid">
+                <article className="evaluation-card">
+                  <span>
+                    Total Decisions
+                  </span>
+
+                  <strong>
+                    {formatMetric(
+                      roiAnalytics.total_decisions
+                    )}
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Evaluated Decisions
+                  </span>
+
+                  <strong>
+                    {formatMetric(
+                      roiAnalytics.evaluated_decisions
+                    )}
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Positive Outcomes
+                  </span>
+
+                  <strong>
+                    {formatMetric(
+                      roiAnalytics.positive_outcomes
+                    )}
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Negative Outcomes
+                  </span>
+
+                  <strong>
+                    {formatMetric(
+                      roiAnalytics.negative_outcomes
+                    )}
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Positive Outcome Rate
+                  </span>
+
+                  <strong>
+                    {formatPercentage(
+                      roiAnalytics.positive_outcome_rate
+                    )}
+                  </strong>
+                </article>
+
+                <article className="evaluation-card">
+                  <span>
+                    Average ROI
+                  </span>
+
+                  <strong>
+                    {formatPercentage(
+                      roiAnalytics.average_roi
+                    )}
+                  </strong>
+                </article>
+              </div>
+            )}
         </section>
       </main>
     </div>

@@ -18,17 +18,23 @@ async function parseResponse(response) {
 
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(
+      `${API_BASE_URL}/health`
+    );
+
     return await parseResponse(response);
   } catch (error) {
     throw new Error(
-      error?.message || "Unable to connect to the backend.",
+      error?.message ||
+        "Unable to connect to the backend.",
       { cause: error }
     );
   }
 }
 
-export async function getPredictionRecommendations(shipment) {
+export async function getPredictionRecommendations(
+  shipment
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/predict/shipment-delay`,
@@ -51,7 +57,9 @@ export async function getPredictionRecommendations(shipment) {
   }
 }
 
-export async function getRecommendations(requestData) {
+export async function getRecommendations(
+  requestData
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/recommend`,
@@ -74,7 +82,9 @@ export async function getRecommendations(requestData) {
   }
 }
 
-export async function executeDecision(decision) {
+export async function executeDecision(
+  decision
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/decisions`,
@@ -123,7 +133,9 @@ export async function recordDecisionOutcome(
   }
 }
 
-export async function getDecisionEvaluation(decisionId) {
+export async function getDecisionEvaluation(
+  decisionId
+) {
   try {
     const response = await fetch(
       `${API_BASE_URL}/decisions/${decisionId}/evaluation`
@@ -150,6 +162,22 @@ export async function getDecisionHistory() {
     throw new Error(
       error?.message ||
         "Unable to load decision history.",
+      { cause: error }
+    );
+  }
+}
+
+export async function getRoiAnalytics() {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/decisions/analytics/roi`
+    );
+
+    return await parseResponse(response);
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+        "Unable to load ROI analytics.",
       { cause: error }
     );
   }

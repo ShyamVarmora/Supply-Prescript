@@ -505,3 +505,9 @@ Feedback-driven XGBoost retraining
 End-to-end operational workflow
 
 The repository implementation should remain aligned with the actual verified system rather than claiming capabilities that have not been demonstrated.
+
+### ROI Analytics API
+
+`GET /decisions/analytics/roi`
+
+Returns aggregated decision metrics including total decisions, evaluated decisions, positive and negative outcomes, positive outcome rate, and average ROI.

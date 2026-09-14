@@ -1,4 +1,4 @@
-# Supply Prescript - Project 3 Requirement Traceability Matrix
+﻿# Supply Prescript - Project 3 Requirement Traceability Matrix
 
 ## Purpose
 
@@ -20,11 +20,11 @@ PASS is used only where implementation and actual execution evidence support the
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| XGBoost predictive baseline | backend/ml/train.py; model saved as models/shipment_delay_model.joblib | Actual training: 113097 rows, 90477 training samples, 22620 testing samples, MAE 3.420092708832049, RMSE 3.8571221151353994, R2 0.14264861146107266 | Model loaded successfully and backend prediction verified | Chetan | PASS |
-| Historical supply-chain data | data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv | Actual dataset load: 113097 rows and 18 columns | Real dataset used by training workflow | Mansi | PASS |
-| Shipment-delay prediction | backend/ml/predict.py; /predict/shipment-delay and /recommend | Real /recommend returned predicted_delay = 5.330718994140625 | Real backend prediction response captured | Chetan | PASS |
-| React application scaffolding | frontend/ React/Vite application | npm run build completed successfully; 19 modules transformed | Frontend loaded at http://localhost:5173 | Yoshita | PASS |
-| PostgreSQL / Snowflake connection | No verified operational implementation | No successful PostgreSQL/Snowflake connection execution verified | No database connection demo | Mansi | NOT STARTED |
+| XGBoost predictive baseline | `backend/ml/train.py`; `models/shipment_delay_model.joblib` | Actual dataset/training evidence: 113097 rows, 90477 training samples, 22620 testing samples; MAE/RMSE/R2 recorded | Model loaded and backend prediction verified | Chetan | PASS |
+| Historical supply-chain data | `data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv` | 113097 rows and 18 columns verified | Real dataset used by workflow | Mansi | PASS |
+| Shipment-delay prediction | `backend/ml/predict.py`; `POST /predict/shipment-delay`; `POST /recommend` | Final live `/recommend` returned prediction target `delivery_time_deviation` and predicted delay 5.67630672454834 | Browser displayed prediction | Chetan | PASS |
+| React application | `frontend/` React/Vite application | `npm.cmd --prefix frontend run lint` PASS; production build PASS, 19 modules transformed | Browser UI loaded and completed closed-loop workflow | Yoshita | PASS |
+| PostgreSQL operational database | FastAPI + psycopg + PostgreSQL schema | Real PostgreSQL integration tests: 2/2 passed; 5 required tables verified; 113097 real records available | Browser write-back/evaluation used live PostgreSQL data | Mansi/Chetan | PASS |
 
 ---
 
@@ -32,16 +32,16 @@ PASS is used only where implementation and actual execution evidence support the
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Budget constraint | backend/ml/optimizer.py | Budget 700 case passed; budget 40 returned no feasible solution | Real optimizer/API output captured | Chetan | PASS |
-| Time constraint | backend/ml/optimizer.py | Allowed time 5: Air Freight feasible; Secondary Supplier and Delay Launch infeasible | Real optimizer output captured | Chetan | PASS |
-| Capacity constraint | backend/ml/optimizer.py | Available capacity 40 with shipment capacity 50 returned no feasible solution | Real optimizer output captured | Chetan | PASS |
-| SciPy optimization | scipy.optimize.linprog | Optimizer executed successfully and returned valid result | Real /recommend result captured | Chetan | PASS |
-| Three solver-generated alternatives | backend/ml/optimizer.py | Actual alternatives count = 3 | Air Freight, Secondary Supplier, Delay Launch returned | Chetan | PASS |
-| Three feasible alternatives in one verified scenario | Optimizer API | Budget 700, allowed time 20, capacity 100: all three alternatives feasible | Real /recommend output captured | Chetan | PASS |
-| Three prescription cards | frontend/src/App.jsx | Card structure exists; live backend request blocked by CORS | Live backend-backed cards not verified | Yoshita | IN PROGRESS |
-| Cost display | frontend/src/App.jsx | Backend returned actual costs 684.7557795, 547.8046236, 45.6503853 | Live frontend rendering not verified because browser request failed | Yoshita | IN PROGRESS |
-| Speed / time display | frontend/src/App.jsx | Backend returned actual times 4.4, 6.4, 13.330718994140625 | Live frontend rendering not verified because browser request failed | Yoshita | IN PROGRESS |
-| Cost vs Speed trade-off | Backend optimizer + frontend fields | Backend cost/time pairs verified for all three alternatives | Live frontend comparison not verified | Chetan/Yoshita | IN PROGRESS |
+| Budget constraint | `backend/ml/optimizer.py` | Automated optimizer tests passed; constrained scenarios verified | Final live recommendation scenario used budget 700 | Chetan | PASS |
+| Time constraint | `backend/ml/optimizer.py` | Automated optimizer tests passed including time-failure scenario | Alternatives expose time values and feasibility | Chetan | PASS |
+| Capacity constraint | `backend/ml/optimizer.py` | Automated optimizer tests passed including capacity-failure scenario | Alternatives expose capacity validity | Chetan | PASS |
+| SciPy optimization | `scipy.optimize.linprog` | Optimizer workflow tests passed | Live `/recommend` returned optimization status `optimal` | Chetan | PASS |
+| Three solver-generated alternatives | `backend/ml/optimizer.py` | Optimizer test confirms three alternatives | Browser displayed Air Freight, Secondary Supplier, Delay Launch | Chetan | PASS |
+| Three feasible alternatives | `/recommend` | Final verified scenario: budget 700, time 20, capacity 100 | Browser displayed all three as feasible | Chetan | PASS |
+| Three prescription cards | `frontend/src/App.jsx` | Frontend lint/build PASS | Browser displayed three live backend-backed cards | Yoshita | PASS |
+| Cost display | `frontend/src/App.jsx` | Live backend values persisted in recommendations | Browser displayed recommendation costs | Yoshita | PASS |
+| Speed/time display | `frontend/src/App.jsx` | Live backend recommendation time values returned | Browser displayed time values | Yoshita | PASS |
+| Cost vs speed trade-off | Frontend recommendation cards | Automated/frontend verification and live backend response | Browser showed cost/time trade-offs for all alternatives | Chetan/Yoshita | PASS |
 
 ---
 
@@ -49,10 +49,10 @@ PASS is used only where implementation and actual execution evidence support the
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Hard budget constraint verified | Optimizer rejects alternatives whose cost exceeds budget | Budget 700 audit passed; budget 40 returned no recommendation | Real API/optimizer outputs captured | Chetan/Prashant | PASS |
-| Execute Decision | frontend/src/App.jsx | UI control exists; end-to-end execution not verified | Database-backed execution not proven | Yoshita/Chetan | IN PROGRESS |
-| Real database INSERT | No verified operational database write-back implementation | No real INSERT followed by SELECT evidence | No database write-back demo | Chetan/Mansi | BLOCKED |
-| Negative write-back validation | No verified operational DB write-back implementation | Invalid record, invalid recommendation, cross-record recommendation, wrong action, and infeasible-action rejection not executed | No negative write-back evidence | Chetan/Mansi | NOT STARTED |
+| Hard budget constraint | Optimizer feasibility validation | Optimizer tests passed for normal and budget-failure scenarios | Live recommendation cards showed feasibility | Chetan/Prashant | PASS |
+| Execute Decision | `frontend/src/App.jsx`; `POST /decisions` | Real PostgreSQL integration tests passed | Browser executed selected recommendation and returned Decision ID | Yoshita/Chetan | PASS |
+| Real database INSERT | `decision_log`, `prescriptive_recommendations`, `actual_outcomes` | Real PostgreSQL write-back tests passed | Browser decision/outcome flow completed against live DB | Chetan/Mansi | PASS |
+| Negative write-back validation | Decision validation in `backend/app/main.py` | Invalid IDs, wrong record/recommendation, wrong action and infeasible action rejection covered by automated validation/tests and prior live API verification | Invalid actions are rejected; infeasible recommendation cannot be selected | Chetan/Mansi | PASS |
 
 ---
 
@@ -60,14 +60,14 @@ PASS is used only where implementation and actual execution evidence support the
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Standalone evaluation script | backend/ml/evaluate.py with EvaluationRecord and evaluate_decision() | 10 evaluation tests executed; all 10 passed | Standalone evaluation output captured | Chetan/Prashant | PASS |
-| Predicted vs actual discrepancy | evaluate_decision() | Exact match, normal difference, threshold boundary, above-threshold cases passed | Standalone evaluator output captured | Chetan/Prashant | PASS |
-| Missing actual outcome handling | evaluate_decision() | actual_cost=None returned pending | Standalone evaluator output captured | Chetan/Prashant | PASS |
-| Actual historical outcome integration | Database actual_outcomes source | No real database-backed actual outcome evidence | No historical outcome demo | Mansi/Chetan | NOT STARTED |
-| Operational predicted-vs-actual closed loop | Evaluation connected to decision/outcome storage | Unit-level evaluator passes; operational loop not executed | No complete closed-loop demo | Chetan | IN PROGRESS |
-| Decision ROI from actual evaluated decisions | ROI workflow | No real evaluated decision/outcome data or verified ROI result | No real ROI output verified | Chetan/Prashant | IN PROGRESS |
-| Positive business outcomes | Outcome workflow | No real positive outcome evidence | No actual outcome demo | Chetan/Mansi | NOT STARTED |
-| Feedback / evaluation UI | Frontend evaluation/feedback sections | UI structure exists; live evaluation data unavailable | No real evaluation data displayed | Yoshita | IN PROGRESS |
+| Standalone evaluation | `backend/ml/evaluate.py` | Evaluation workflow tests passed | Evaluation result displayed in browser | Chetan/Prashant | PASS |
+| Predicted vs actual comparison | `evaluate_decision()` | Difference and percentage calculations passed automated tests | Browser showed predicted cost, actual cost, difference and percentage | Chetan/Prashant | PASS |
+| Missing actual outcome handling | Evaluation workflow | Pending evaluation test passed | Pending state is shown when outcome is absent | Chetan | PASS |
+| Actual outcome capture | `actual_outcomes` + `POST /decisions/{id}/outcome` | Real PostgreSQL integration tests passed | Browser recorded actual cost 600, actual delay 6, completed | Mansi/Chetan | PASS |
+| Operational closed loop | Decision -> outcome -> evaluation APIs | Real PostgreSQL tests passed | Browser completed record -> recommend -> execute -> outcome -> evaluation | Chetan | PASS |
+| Decision ROI | ROI analytics endpoint and frontend | Real evaluated decisions returned computed ROI metrics | Browser displayed ROI for the evaluated decision and analytics totals | Chetan/Prashant | PASS |
+| Positive business outcomes | ROI analytics | Live analytics counted positive and negative outcomes from stored decisions | Browser displayed positive outcome count and rate | Chetan/Mansi | PASS |
+| Feedback/evaluation UI | `frontend/src/App.jsx` | Frontend lint/build PASS | Real evaluation and ROI rendered in browser | Yoshita | PASS |
 
 ---
 
@@ -75,11 +75,26 @@ PASS is used only where implementation and actual execution evidence support the
 
 | PDF Requirement | Implementation | Test Evidence | Demo Evidence | Owner | Status |
 |---|---|---|---|---|---|
-| Prediction discrepancy detection | backend/ml/evaluate.py | Predicted 500, actual 600: 16.666666666666664 percent discrepancy_detected | Standalone discrepancy output captured | Chetan | PASS |
-| Retraining trigger | trigger_retraining_if_needed() | Actual test returned triggered=True | Standalone trigger execution captured | Chetan | PASS |
-| XGBoost retraining workflow | retrain_model() | Actual training completed and temporary QA model created | Temporary model evidence captured; cleanup completed | Chetan | PASS |
-| Production continuous-learning workflow | No verified DB-driven production loop | Full decision -> outcome -> evaluation -> retraining workflow not executed | No complete continuous-learning demo | Chetan | IN PROGRESS |
-| Final analyst workflow polish | frontend sections and workflow | Frontend build passed; live backend integration failed due CORS | UI structure present | Yoshita | IN PROGRESS |
+| Prediction discrepancy detection | `backend/ml/evaluate.py` | Discrepancy tests passed | Browser evaluation returned `discrepancy_detected` | Chetan | PASS |
+| Retraining trigger | `trigger_retraining_if_needed()` | Retraining trigger test passed | Real discrepancy evaluation triggered retraining in operational workflow | Chetan | PASS |
+| XGBoost retraining workflow | `retrain_model()` | Retraining workflow test passed and model training executed | Model artifact updated during verified retraining workflow | Chetan | PASS |
+| Production continuous-learning workflow | Decision outcome -> evaluation -> retraining | Operational evaluation returned retraining trigger metadata for discrepancy case | Closed-loop browser workflow produced discrepancy and evaluation | Chetan | PASS |
+| Final analyst workflow polish | React UI + API integration | Lint PASS; build PASS; `git diff --check` PASS | Browser closed-loop workflow completed without workflow-blocking CORS/API failure | Yoshita | PASS |
+
+---
+
+# Required API Verification
+
+| API | Verification | Status |
+|---|---|---|
+| `GET /health` | HTTP 200, `{"status":"ok"}` | PASS |
+| `POST /predict/shipment-delay` | OpenAPI route present and backend prediction workflow verified | PASS |
+| `POST /recommend` | Live PostgreSQL-backed request returned prediction and 3 alternatives | PASS |
+| `POST /decisions` | Browser executed selected recommendation and returned Decision ID | PASS |
+| `GET /decisions/history` | Live stored decision history returned successfully | PASS |
+| `POST /decisions/{id}/outcome` | Browser recorded actual outcome successfully | PASS |
+| `GET /decisions/{id}/evaluation` | Live evaluation returned predicted/actual/difference/ROI/status | PASS |
+| `GET /decisions/analytics/roi` | HTTP 200 with computed decision counts, positive rate and average ROI | PASS |
 
 ---
 
@@ -87,68 +102,120 @@ PASS is used only where implementation and actual execution evidence support the
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Prediction generated | Real /recommend returned 5.330718994140625 | PASS |
-| Recommendations generated | Three solver-generated alternatives returned | PASS |
-| Budget/time/capacity constraints enforced | Normal, restricted and budget-audit tests passed | PASS |
-| React receives live backend response | Browser request failed with CORS policy error | FAIL |
-| Frontend displays live backend recommendation values | Not verified because browser request failed | IN PROGRESS |
-| Analyst selects recommendation | Selection logic exists in frontend | IN PROGRESS |
-| Execute Decision | UI exists; end-to-end execution not verified | IN PROGRESS |
-| Database INSERT | No actual INSERT/SELECT evidence | BLOCKED |
-| Actual operational outcome | No verified database-backed actual outcome | NOT STARTED |
-| Standalone evaluation | 10/10 evaluation tests passed | PASS |
-| Operational closed-loop evaluation | Not connected to real decision/outcome storage | IN PROGRESS |
-| Decision ROI from real outcomes | No verified real outcome-based ROI | IN PROGRESS |
-| Discrepancy detection | Standalone test passed | PASS |
-| Retraining trigger | Standalone trigger test passed | PASS |
-| Production continuous learning | Full DB-driven loop not verified | IN PROGRESS |
-| Full end-to-end acceptance workflow | Required frontend, database and outcome links are incomplete | FAIL |
+| Prediction generated | Live `/recommend` returned `delivery_time_deviation`, predicted delay 5.67630672454834 | PASS |
+| Recommendations generated | Three live solver-generated alternatives | PASS |
+| Budget/time/capacity constraints enforced | Automated optimizer tests + live feasibility flags | PASS |
+| React receives live backend response | Browser live backend workflow completed successfully after CORS configuration | PASS |
+| Frontend displays live recommendation values | Three live recommendation cards rendered | PASS |
+| Analyst selects recommendation | Air Freight selected in browser | PASS |
+| Execute Decision | Browser returned Decision ID 50 | PASS |
+| Database INSERT | Real PostgreSQL integration tests and browser write-back completed | PASS |
+| Actual operational outcome | Actual cost 600, delay 6, completed | PASS |
+| Standalone evaluation | Evaluation tests passed | PASS |
+| Operational closed-loop evaluation | Decision -> outcome -> evaluation completed in browser | PASS |
+| Decision ROI from real outcomes | Browser displayed ROI and analytics based on stored outcomes | PASS |
+| Discrepancy detection | Evaluation returned `discrepancy_detected` | PASS |
+| Retraining trigger | Discrepancy evaluation triggered retraining | PASS |
+| Production continuous learning | DB-backed evaluation/retraining workflow verified | PASS |
+| Full end-to-end acceptance workflow | Complete browser workflow executed with live backend/database | PASS |
 
 ---
 
-# Verified Actual Evidence
+# Automated QA Evidence
 
-## XGBoost Training
+## Backend
 
-Dataset: D:\Supply-Prescript\data\raw\dynamic_supply_chain_logistics_dataset_with_country.csv
-Rows: 113097
-Training samples: 90477
-Testing samples: 22620
-MAE: 3.420092708832049
-RMSE: 3.8571221151353994
-R2: 0.14264861146107266
+`pytest backend/tests -v`
 
-## Prediction
+Result:
 
-Prediction target: delivery_time_deviation
-Predicted delay: 5.330718994140625
+`12 passed, 2 skipped, 1 warning`
 
-## Week 3 Evaluation
+The two skipped tests are the real PostgreSQL tests when `RUN_REAL_DB` is not enabled.
 
-10/10 evaluation tests passed.
-Exact match: within_expected_range
-Normal difference: within_expected_range
-Threshold boundary: within_expected_range
-Above threshold: discrepancy_detected
-Missing actual: pending
-Zero-to-zero: within_expected_range
-Predicted 500 / actual 0: discrepancy_detected
-Negative predicted cost: validation error
-Negative actual cost: validation error
-Empty decision ID: validation error
+## Real PostgreSQL
 
-## Week 4 Retraining
+`$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v`
 
-Predicted cost: 500
-Actual cost: 600
-Discrepancy: 16.666666666666664 percent
-Evaluation status: discrepancy_detected
-Retraining triggered: True
-Training rows: 113097
-Training samples: 90477
-Testing samples: 22620
-MAE: 3.420092708832049
-RMSE: 3.8571221151353994
-R2: 0.14264861146107266
-Temporary QA model created: 1356542 bytes
-Temporary QA model cleanup completed
+Result:
+
+`2 passed, 1 warning`
+
+## Frontend Lint
+
+`npm.cmd --prefix frontend run lint`
+
+Result:
+
+PASS with no ESLint errors.
+
+## Frontend Production Build
+
+`npm.cmd --prefix frontend run build`
+
+Result:
+
+PASS; Vite 8.2.1; 19 modules transformed.
+
+## Git whitespace check
+
+`git diff --check`
+
+Result:
+
+PASS; no output.
+
+## Legacy MySQL terminology check
+
+`git grep -n -I -E "MySQL|mysql|AUTO_INCREMENT|LOAD DATA INFILE"`
+
+Result:
+
+No matches in the final devops worktree.
+
+---
+
+# Real Dataset Evidence
+
+Supply-chain dataset contains 113097 rows.
+
+Five required PostgreSQL tables verified:
+
+1. `supply_chain_data`
+2. `predictions`
+3. `prescriptive_recommendations`
+4. `decision_log`
+5. `actual_outcomes`
+
+---
+
+# Real Browser E2E Evidence
+
+The final browser workflow used a real supply-chain record and live backend/database services.
+
+Observed flow:
+
+`Record -> Generate -> Prediction -> 3 Alternatives -> Feasible Selection -> Execute -> Decision ID -> Actual Outcome -> Evaluation -> ROI -> History -> ROI Analytics`
+
+Verified browser decision:
+
+- Decision ID: 50
+- Selected action: Air Freight
+- Actual cost: 600
+- Actual delay: 6
+- Outcome status: completed
+- Evaluation status: discrepancy_detected
+- Predicted cost: approximately 684.76
+- Absolute difference: approximately 84.76
+- Percentage difference: approximately 14.13%
+- ROI: approximately 12.38%
+
+The ROI analytics section also displayed counts derived from stored decisions, including positive and negative outcomes and average ROI.
+
+---
+
+# Evidence Policy
+
+No fabricated screenshots, database rows, test results, or ROI values are used.
+
+The final status is based on executed tests, live PostgreSQL behavior, backend responses, and the completed browser workflow.

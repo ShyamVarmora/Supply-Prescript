@@ -161,3 +161,24 @@ Evaluate
   â†“
 Learn
 
+
+## API Endpoints
+
+- GET /health
+- POST /predict/shipment-delay
+- POST /recommend
+- POST /decisions
+- GET /decisions/history
+- POST /decisions/{id}/outcome
+- GET /decisions/{id}/evaluation
+- GET /decisions/analytics/roi
+
+### Final QA ROI Analytics Evidence
+
+- total_decisions: 8
+- evaluated_decisions: 8
+- positive_outcomes: 5
+- negative_outcomes: 3
+- positive_outcome_rate: 62.5%
+- average_roi: -0.30889857936569803%
+- positive outcome definition: actual_cost <= expected_cost

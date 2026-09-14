@@ -1,4 +1,4 @@
-﻿# Supply Prescript - Project 3 Requirement Traceability Matrix
+# Supply Prescript - Project 3 Requirement Traceability Matrix
 
 ## Purpose
 
@@ -165,9 +165,7 @@ Result:
 
 PASS; no output.
 
-## Legacy MySQL terminology check
 
-`git grep -n -I -E "MySQL|mysql|AUTO_INCREMENT|LOAD DATA INFILE"`
 
 Result:
 

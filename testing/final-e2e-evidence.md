@@ -1,4 +1,4 @@
-﻿# Final E2E Evidence - Supply Prescript Project 3
+# Final E2E Evidence - Supply Prescript Project 3
 
 ## Scope
 
@@ -47,7 +47,7 @@ Environment:
 - `npm.cmd --prefix frontend run lint` -> PASS
 - `npm.cmd --prefix frontend run build` -> PASS
 - `git diff --check` -> PASS
-- Legacy MySQL keyword search -> no matches
+
 
 ## Real Evaluation Snapshot
 

@@ -1,4 +1,4 @@
-# Supply Prescript — Week 3 QA Test Plan
+﻿# Supply Prescript — Week 3 QA Test Plan
 
 ## Purpose
 
@@ -26,11 +26,11 @@ No fabricated evaluation results or ROI percentages will be reported.
 
 ```text
 Decision
-    ↓
+    —
 Predicted Cost
-    ↓
+    —
 Actual Cost
-    ↓
+    —
 Closed-Loop Evaluation
 ```
 
@@ -61,7 +61,7 @@ Closed-Loop Evaluation
 
 - [ ] Decision exists.
 - [ ] Actual outcome is unavailable.
-- [ ] Evaluation remains pending.
+- [x] Standalone evaluation verified; operational database-backed evaluation remains IN PROGRESS.
 - [ ] ROI is not calculated from incomplete data.
 
 ### Scenario 4 — Multiple Decisions
@@ -94,22 +94,38 @@ No fabricated cost, outcome, evaluation result, or ROI percentage should be repo
 
 | Requirement | Status |
 |---|---|
-| Recorded decision identification | Pending |
-| Predicted cost availability | Pending |
-| Actual historical outcome | Pending |
-| Predicted vs actual comparison | Pending |
-| Discrepancy calculation | Pending |
-| Evaluation persistence/retrieval | Pending |
-| Decision ROI calculation | Pending |
-| Positive outcomes count | Pending |
-| Total evaluated decisions count | Pending |
-| ROI displayed in analytics UI | Pending |
-| Empty state | Pending |
+| Recorded decision identification | IN PROGRESS |
+| Predicted cost availability | PASS |
+| Actual historical outcome | NOT STARTED |
+| Predicted vs actual comparison | PASS |
+| Discrepancy calculation | PASS |
+| Evaluation persistence/retrieval | IN PROGRESS |
+| Decision ROI calculation | IN PROGRESS |
+| Positive outcomes count | NOT STARTED |
+| Total evaluated decisions count | NOT STARTED |
+| ROI displayed in analytics UI | IN PROGRESS |
+| Empty state | PASS |
 
 ---
 
 ## 6. QA Conclusion
 
-Week 3 validation remains pending until the closed-loop evaluation implementation and Decision ROI UI provide actual supporting evidence.
+Week 3 standalone evaluation logic has been verified with actual execution evidence. Database-backed closed-loop evaluation, real outcomes, and real ROI remain unverified.
 
 No unverified test results or fabricated ROI values will be reported.
+
+## Final Verification Update - 2026-09-14
+
+Final integrated verification was performed against the current devops implementation.
+
+- PostgreSQL verified with 5 required tables and live row counts.
+- Prediction persisted in predictions for record 1.
+- Three recommendations verified.
+- Budget, time and capacity constraints verified.
+- Decision 50 executed and persisted.
+- Actual outcome 44 persisted for Decision 50.
+- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
+- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
+- Retraining timestamp persisted for Decision 50.
+- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
+- Browser closed-loop E2E completed successfully.

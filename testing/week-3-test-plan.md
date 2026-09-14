@@ -1,4 +1,4 @@
-# Supply Prescript ??? Week 3 QA Test Plan
+﻿# Supply Prescript — Week 3 QA Test Plan
 
 ## Purpose
 
@@ -26,11 +26,11 @@ No fabricated evaluation results or ROI percentages will be reported.
 
 ```text
 Decision
-    ???
+    —
 Predicted Cost
-    ???
+    —
 Actual Cost
-    ???
+    —
 Closed-Loop Evaluation
 ```
 
@@ -45,26 +45,26 @@ Closed-Loop Evaluation
 
 ## 3. Evaluation Scenarios
 
-### Scenario 1 ??? Positive Outcome
+### Scenario 1 — Positive Outcome
 
 - [ ] Recorded decision exists.
 - [ ] Predicted cost exists.
 - [ ] Actual cost exists.
 - [ ] Evaluation identifies the outcome correctly.
 
-### Scenario 2 ??? Negative Outcome
+### Scenario 2 — Negative Outcome
 
 - [ ] Predicted and actual results differ.
 - [ ] Discrepancy is detected.
 
-### Scenario 3 ??? Missing Outcome
+### Scenario 3 — Missing Outcome
 
 - [ ] Decision exists.
 - [ ] Actual outcome is unavailable.
 - [x] Standalone evaluation verified; operational database-backed evaluation remains IN PROGRESS.
 - [ ] ROI is not calculated from incomplete data.
 
-### Scenario 4 ??? Multiple Decisions
+### Scenario 4 — Multiple Decisions
 
 - [ ] Multiple evaluated decisions are counted.
 - [ ] Positive outcomes are counted.

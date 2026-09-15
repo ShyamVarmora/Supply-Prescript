@@ -163,7 +163,7 @@ Latest verified result:
 
 No actual whitespace errors. On Windows, a CRLF conversion warning was observed for the traceability file.
 
----
+PASS; no output.
 
 # Real Dataset vs Operational Database Evidence
 
@@ -187,7 +187,7 @@ PostgreSQL operational test database:
 
 The CSV historical row count is intentionally not presented as the PostgreSQL operational row count.
 
----
+Supply-chain dataset contains 113097 rows.
 
 # Decision 50 / SQL Evidence
 
@@ -231,7 +231,7 @@ threshold = 10
 
 These values are tied to the stored Decision 50 and Outcome 44 records rather than being presented as an unreferenced UI snapshot.
 
----
+Verified browser decision:
 
 # ROI Analytics Evidence
 

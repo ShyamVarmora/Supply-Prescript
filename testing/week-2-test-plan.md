@@ -1,4 +1,4 @@
-# Supply Prescript — Week 2 QA Test Plan
+﻿# Supply Prescript — Week 2 QA Test Plan
 
 ## Purpose
 
@@ -39,7 +39,7 @@ No unverified test results or fabricated values will be reported.
 
 ## 3. Write-Back Preparation
 
-These checks will remain pending until the required implementation is available.
+These checks remain NOT STARTED or BLOCKED until the required implementation and verification evidence are available.
 
 - [ ] Execute Decision control exists.
 - [ ] Selected recommendation can be identified.
@@ -71,18 +71,18 @@ No final numerical budget, solver performance, or database result should be inve
 
 | Area | Status |
 |---|---|
-| Business constraints | Pending |
-| Budget constraint | Pending |
-| Time constraint | Pending |
-| Capacity constraint | Pending |
-| SciPy LP solver | Pending |
-| Three alternative actions | Pending |
-| Recommendation cards | Pending |
-| Cost display | Pending |
-| Speed/time display | Pending |
-| Cost-vs-speed trade-off | Pending |
-| Execute Decision | Pending |
-| Database INSERT | Pending |
+| Business constraints | PASS |
+| Budget constraint | PASS |
+| Time constraint | PASS |
+| Capacity constraint | PASS |
+| SciPy LP solver | PASS |
+| Three alternative actions | PASS |
+| Recommendation cards | IN PROGRESS |
+| Cost display | IN PROGRESS |
+| Speed/time display | IN PROGRESS |
+| Cost-vs-speed trade-off | IN PROGRESS |
+| Execute Decision | IN PROGRESS |
+| Database INSERT | BLOCKED |
 
 ---
 
@@ -90,4 +90,20 @@ No final numerical budget, solver performance, or database result should be inve
 
 Week 2 validation will be completed after the optimization engine and prescriptive UI implementation provide sufficient evidence.
 
-Until then, the relevant checks remain **Pending**.
+The verified backend optimization checks are PASS. Frontend live-value rendering remains IN PROGRESS, Execute Decision remains IN PROGRESS, and database write-back is BLOCKED.
+
+## Final Verification Update - 2026-09-14
+
+Final integrated verification was performed against the current devops implementation.
+
+- PostgreSQL verified with 5 required tables and live row counts.
+- Prediction persisted in predictions for record 1.
+- Three recommendations verified.
+- Budget, time and capacity constraints verified.
+- Decision 50 executed and persisted.
+- Actual outcome 44 persisted for Decision 50.
+- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
+- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
+- Retraining timestamp persisted for Decision 50.
+- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
+- Browser closed-loop E2E completed successfully.

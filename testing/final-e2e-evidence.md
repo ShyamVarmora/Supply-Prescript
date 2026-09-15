@@ -1,4 +1,4 @@
-﻿# Final E2E Evidence - Supply Prescript Project 3
+# Final E2E Evidence - Supply Prescript Project 3
 
 ## Scope
 
@@ -7,34 +7,34 @@ Target branch: final integrated `devops` branch.
 Environment:
 - React frontend
 - FastAPI backend
-- PostgreSQL database
+- PostgreSQL operational test database
 - XGBoost prediction
 - SciPy optimization
 
 ## 20-Point Evidence Matrix
 
-| # | E2E Requirement | Evidence | Status |
-|---|---|---|---|
-| 1 | Real supply-chain record available | Record ID 1 used from live dataset | PASS |
-| 2 | Prediction generated | Live `/recommend` returned `delivery_time_deviation` prediction | PASS |
-| 3 | XGBoost prediction used | Backend prediction workflow loaded trained model | PASS |
-| 4 | Optimization executed | Live optimization status returned `optimal` | PASS |
-| 5 | Three alternatives generated | Air Freight, Secondary Supplier, Delay Launch | PASS |
-| 6 | Budget feasibility shown | Budget validity returned for alternatives | PASS |
-| 7 | Time feasibility shown | Time validity returned for alternatives | PASS |
-| 8 | Capacity feasibility shown | Capacity validity returned for alternatives | PASS |
-| 9 | Frontend displays backend data | Three live recommendation cards rendered | PASS |
-| 10 | Analyst selects feasible recommendation | Air Freight selected | PASS |
-| 11 | Infeasible recommendation cannot be selected | Frontend disables selection for infeasible recommendations | PASS |
-| 12 | Decision execution succeeds | Browser returned Decision ID 50 | PASS |
-| 13 | Decision persisted | Real PostgreSQL decision write-back test passed | PASS |
-| 14 | Actual outcome captured | Actual cost 600, delay 6, completed | PASS |
-| 15 | Predicted vs actual evaluated | Evaluation displayed predicted cost, actual cost and difference | PASS |
-| 16 | Discrepancy status calculated | Evaluation returned `discrepancy_detected` | PASS |
-| 17 | ROI calculated | Browser displayed approximately 12.38% ROI for the evaluated decision | PASS |
-| 18 | History updated | Browser displayed stored decision history | PASS |
-| 19 | ROI analytics updated | Browser displayed positive/negative counts, positive rate and average ROI | PASS |
-| 20 | Continuous-learning trigger | Discrepancy evaluation returned retraining trigger metadata | PASS |
+| # | E2E Requirement | Actual Result | Evidence | Status |
+|---|---|---|---|---|
+| 1 | Database connected | PostgreSQL connection succeeded against `supply_prescript_db` | Real PostgreSQL QA run | PASS |
+| 2 | Historical dataset loaded | CSV historical dataset contains 113097 rows | `data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv` | PASS |
+| 3 | Real record selected | Record ID 1 used for final E2E workflow | Live `/recommend` request | PASS |
+| 4 | Prediction generated | `delivery_time_deviation` prediction returned for record 1 | Live `/recommend` response | PASS |
+| 5 | Prediction persisted | Prediction row persisted for record 1 | SQL verification of `predictions` | PASS |
+| 6 | 3 recommendations generated | Air Freight, Secondary Supplier, Delay Launch returned | Live optimization response | PASS |
+| 7 | Budget constraint verified | Feasibility enforced by optimizer; hard-budget test also executed | Optimizer tests / live feasibility flags | PASS |
+| 8 | Time constraint verified | Feasibility enforced by optimizer | Optimizer time-constraint test | PASS |
+| 9 | Capacity constraint verified | Feasibility enforced by optimizer | Optimizer capacity-constraint test | PASS |
+| 10 | Feasible recommendation selected | Air Freight selected | Browser E2E execution | PASS |
+| 11 | Execute Decision | Decision ID 50 returned | Browser/API execution | PASS |
+| 12 | decision_log INSERT verified | Decision 50 stored with recommendation 109 and expected cost 684.7557795 | SQL verification below | PASS |
+| 13 | Actual Outcome submitted | Outcome 44 stored: actual cost 600, delay 6, completed | SQL verification below | PASS |
+| 14 | actual_outcomes INSERT verified | Outcome 44 linked to Decision 50 | SQL verification below | PASS |
+| 15 | Evaluation generated | Predicted 684.7557795 vs actual 600; difference 84.75577950000002 | Decision 50 evaluation data | PASS |
+| 16 | Discrepancy detected | 14.125963250000003% difference against 10% threshold; status `discrepancy_detected` | Decision 50 evaluation data | PASS |
+| 17 | Decision ROI generated | ROI = 12.377519407267744% | Decision 50 evaluation data | PASS |
+| 18 | Decision history verified | Decision 50 appears with stored outcome/evaluation data | `GET /decisions/history` | PASS |
+| 19 | ROI analytics verified | 8 total/evaluated; 5 positive; 3 negative; 62.5% positive rate; average ROI -0.30889857936569803 | `GET /decisions/analytics/roi` | PASS |
+| 20 | Discrepancy/retraining evidence verified | Decision 50 has `retraining_triggered_at`; updated model artifact was captured with SHA-256 and timestamp in final QA matrix | SQL + model artifact evidence | PASS |
 
 ## Browser Workflow
 
@@ -42,53 +42,91 @@ Environment:
 
 ## Automated Evidence
 
-- `pytest backend/tests -v` -> 12 passed, 2 skipped
-- `RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v` -> 2 passed
-- `npm.cmd --prefix frontend run lint` -> PASS
-- `npm.cmd --prefix frontend run build` -> PASS
-- `git diff --check` -> PASS
+- `pytest backend/tests -v` -> **14 passed**
+- `RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v` -> **2 passed, 1 warning**
+- `npm.cmd --prefix frontend run lint` -> **PASS**
+- `npm.cmd --prefix frontend run build` -> **PASS; Vite 8.2.1; 19 modules transformed**
+- `git diff --check` -> **PASS; no actual whitespace errors; only Windows LF/CRLF warning was observed**
 
+## Decision 50 - API and SQL Evidence
 
-## Real Evaluation Snapshot
+### Decision API result
 
-Decision ID: 50
+The verified browser/API execution returned:
 
-Selected action: Air Freight
+- `decision_id`: 50
+- `record_id`: 1
+- `recommendation_id`: 109
+- `selected_action`: `Air Freight`
+- `expected_cost`: `684.7557795`
+- `decision_status`: `SELECTED`
 
-Predicted cost: approximately 684.76
+### Decision SQL verification
 
-Actual cost: 600
+Verified stored `decision_log` row:
 
-Absolute difference: approximately 84.76
+```text
+decision_id = 50
+record_id = 1
+recommendation_id = 109
+selected_action = Air Freight
+expected_cost = 684.7557795
+decision_status = SELECTED
+retraining_triggered_at = 2026-09-14 23:30:59.769236+05:30
+selected_at = 2026-09-14 23:30:08.782491+05:30
+```
 
-Percentage difference: approximately 14.13%
+### Outcome API result
 
-Evaluation status: `discrepancy_detected`
+Decision 50 was followed by an actual outcome submission:
 
-ROI: approximately 12.38%
+- `outcome_id`: 44
+- `decision_id`: 50
+- `actual_cost`: 600
+- `actual_delay_days`: 6
+- `outcome_status`: `completed`
 
-Outcome status: completed
+### Outcome SQL verification
+
+Verified stored `actual_outcomes` row:
+
+```text
+outcome_id = 44
+decision_id = 50
+actual_cost = 600
+actual_delay_days = 6
+outcome_status = completed
+evaluated_at = 2026-09-14 23:30:59.702662+05:30
+```
+
+### Evaluation / history verification
+
+Stored/history evaluation for Decision 50:
+
+```text
+status = discrepancy_detected
+predicted_cost = 684.7557795
+actual_cost = 600
+absolute_difference = 84.75577950000002
+percentage_difference = 14.125963250000003
+roi_percent = 12.377519407267744
+threshold = 10
+```
+
+## Operational Database Scope
+
+The historical CSV dataset contains 113097 rows. This must not be interpreted as 113097 operational PostgreSQL rows.
+
+The PostgreSQL QA database was verified with the required tables:
+
+1. `supply_chain_data`
+2. `predictions`
+3. `prescriptive_recommendations`
+4. `decision_log`
+5. `actual_outcomes`
+
+Final E2E evidence uses real PostgreSQL test records and persisted decision/outcome rows rather than claiming the CSV row count as the operational database row count.
 
 ## Evidence Integrity
 
-All PASS entries above are based on actual execution evidence available during final QA. No fabricated database records, screenshots, performance values, or ROI values are asserted.
----
-
-## Local Final Verification Run
-
-Date: 2026-09-15 10:59:30
-Branch: devops
-
-### Automated Tests
-
-- Full backend suite: 14 passed, 0 failed, 0 skipped.
-- Real PostgreSQL integration test: PASS.
-- Frontend lint: PASS.
-- Frontend production build: PASS.
-- PostgreSQL connection/table verification: PASS.
-- git diff --check: will be verified after documentation updates.
-
-### Important Evidence Rule
-
-The values above are generated from the actual commands executed during this verification run.
-No previous PR claim is used as a substitute for the current automated test result.
+This document distinguishes historical dataset size from operational PostgreSQL test data. Automated-test counts and Decision 50 values are taken from the latest verified evidence available for the final QA package. No fabricated screenshots, database rows, test results, performance values, or ROI values are asserted.

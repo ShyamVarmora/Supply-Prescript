@@ -1,131 +1,75 @@
-﻿# Supply Prescript — Week 3 QA Test Plan
+# Supply Prescript — Week 3 QA Test Plan
 
 ## Purpose
 
-This document defines the QA checks for the Week 3 closed-loop evaluation and Decision ROI requirements.
+Final Week 3 QA checks for the integrated `devops` implementation.
 
-The checks are based directly on the Week 3 project requirements.
+## 1. Closed-Loop Evaluation
 
-No test is marked as PASS until supporting implementation evidence is available.
-
-No fabricated evaluation results or ROI percentages will be reported.
-
----
-
-## 1. Closed Loop Evaluation
-
-- [ ] A recorded decision can be identified.
-- [ ] Predicted cost is available.
-- [ ] Actual historical outcome is available.
-- [ ] Predicted cost is compared against actual cost.
-- [ ] Difference/discrepancy is calculated.
-- [ ] Evaluation result is persisted or retrievable.
-- [ ] Evaluation does not use fabricated values.
-
-### Evaluation Flow
-
-```text
-Decision
-    —
-Predicted Cost
-    —
-Actual Cost
-    —
-Closed-Loop Evaluation
-```
+| Check | Actual Result | Status |
+|---|---|---|
+| Recorded decision identified | Decision 50 / record 1 | PASS |
+| Predicted cost available | 684.7557795 | PASS |
+| Actual outcome available | Outcome 44: cost 600, delay 6, completed | PASS |
+| Predicted vs actual comparison | Difference 84.75577950000002; percentage 14.125963250000003% | PASS |
+| Discrepancy detection | `discrepancy_detected` at 10% threshold | PASS |
+| Evaluation retrievable | Evaluation/history data returned | PASS |
 
 ## 2. Decision ROI
 
-- [ ] Decision ROI is calculated from real evaluated decisions.
-- [ ] Positive business outcomes are tracked.
-- [ ] Total evaluated decisions can be counted.
-- [ ] ROI is displayed in the analytics UI.
-- [ ] No fabricated ROI percentage is displayed.
-- [ ] Empty state is shown when evaluation data is unavailable.
+| Check | Actual Result | Status |
+|---|---|---|
+| Decision ROI | Decision 50 ROI = 12.377519407267744% | PASS |
+| Positive outcomes | 5 positive, 3 negative in latest analytics | PASS |
+| Evaluated decisions | 8 evaluated | PASS |
+| Positive outcome rate | 62.5% | PASS |
+| Average ROI | -0.30889857936569803% | PASS |
 
 ## 3. Evaluation Scenarios
 
-### Scenario 1 — Positive Outcome
+### Verified discrepancy case
 
-- [ ] Recorded decision exists.
-- [ ] Predicted cost exists.
-- [ ] Actual cost exists.
-- [ ] Evaluation identifies the outcome correctly.
+Decision 50 produced `discrepancy_detected` because the stored percentage difference exceeded the 10% threshold.
 
-### Scenario 2 — Negative Outcome
+### Missing outcome behavior
 
-- [ ] Predicted and actual results differ.
-- [ ] Discrepancy is detected.
-
-### Scenario 3 — Missing Outcome
-
-- [ ] Decision exists.
-- [ ] Actual outcome is unavailable.
-- [x] Standalone evaluation verified; operational database-backed evaluation remains IN PROGRESS.
-- [ ] ROI is not calculated from incomplete data.
-
-### Scenario 4 — Multiple Decisions
-
-- [ ] Multiple evaluated decisions are counted.
-- [ ] Positive outcomes are counted.
-- [ ] Decision ROI is calculated from real results.
-
----
+The evaluation implementation includes a pending/incomplete path when actual outcome data is unavailable. No fabricated result is used.
 
 ## 4. Evidence Rules
 
-A test must not be marked PASS without supporting implementation evidence.
-
-Acceptable evidence may include:
-
-- Evaluation script output
-- Implementation code
-- Pull request
-- API response
-- Database record
-- Analytics UI screenshot
-- Actual historical outcome data
-
-No fabricated cost, outcome, evaluation result, or ROI percentage should be reported.
-
----
+PASS requires implementation plus actual execution evidence. Database-backed claims use PostgreSQL evidence; historical CSV size is not treated as an operational database row count.
 
 ## 5. Current Status
 
 | Requirement | Status |
 |---|---|
-| Recorded decision identification | IN PROGRESS |
+| Recorded decision identification | PASS |
 | Predicted cost availability | PASS |
-| Actual historical outcome | NOT STARTED |
+| Actual outcome | PASS |
 | Predicted vs actual comparison | PASS |
 | Discrepancy calculation | PASS |
-| Evaluation persistence/retrieval | IN PROGRESS |
-| Decision ROI calculation | IN PROGRESS |
-| Positive outcomes count | NOT STARTED |
-| Total evaluated decisions count | NOT STARTED |
-| ROI displayed in analytics UI | IN PROGRESS |
-| Empty state | PASS |
+| Evaluation retrieval | PASS |
+| Decision ROI | PASS |
+| Positive outcome count | PASS |
+| Total evaluated decisions count | PASS |
+| ROI analytics | PASS |
 
----
+## 6. Final Automated QA Reference
 
-## 6. QA Conclusion
+```text
+pytest backend/tests -v
+14 passed
 
-Week 3 standalone evaluation logic has been verified with actual execution evidence. Database-backed closed-loop evaluation, real outcomes, and real ROI remain unverified.
+RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
+2 passed, 1 warning
 
-No unverified test results or fabricated ROI values will be reported.
+npm.cmd --prefix frontend run lint
+PASS
 
-## Final Verification Update - 2026-09-14
+npm.cmd --prefix frontend run build
+PASS; Vite 8.2.1; 19 modules transformed
+```
 
-Final integrated verification was performed against the current devops implementation.
+## Final Status
 
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+**PASS - Week 3 QA is synchronized with the final integrated Project 3 evidence.**

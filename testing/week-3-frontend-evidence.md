@@ -1,74 +1,33 @@
-﻿# Week 3 Frontend Integration Evidence
+# Week 3 Frontend Integration Evidence
 
-**Date:** 02/09/2026
-**Branch:** ui
+## Scope
+
+Final Week 3 frontend integration evidence for the integrated `devops` implementation.
 
 ## Test Results
 
-| Test                         | Expected Result                                          | Actual Result                                | Status           |
-| ---------------------------- | -------------------------------------------------------- | -------------------------------------------- | ---------------- |
-| Frontend build               | `npm run build` completes successfully                   | Vite production build completed successfully | PASS             |
-| Git diff check               | No whitespace errors                                     | `git diff --check` produced no output        | PASS             |
-| Backend health API           | Backend returns a successful response                    | `GET /health` returned `{"status":"ok"}`     | PASS             |
-| Prediction API | Valid request returns prediction data | Direct backend prediction was verified; browser frontend request was blocked by CORS during live integration | IN PROGRESS |
-| Recommendation API | Valid request returns optimization results | Direct backend /recommend execution was verified; browser frontend request was blocked by CORS during live integration | IN PROGRESS |
-| Recommendation cards | Cards display actual backend alternatives | RecommendationCard UI structure exists, but live backend-backed card rendering was not verified because browser request was blocked by CORS | IN PROGRESS |
-| Recommendation selection | Selected card is visibly identified | Frontend selection logic exists, but live backend-backed selection flow was not verified | IN PROGRESS |
-| Decision display | Selected recommendation updates Decision section | Frontend decision-display logic exists, but live backend-backed update was not verified | IN PROGRESS |
-| Execute Decision             | Button remains disabled until write-back endpoint exists | Button remained disabled; no decision write-back was attempted | PASS |
-| Invalid input handling       | Controlled error is displayed                            | Invalid input produced a controlled error without fake recommendation data | PASS |
-| Backend unavailable handling | Controlled error is displayed                            | Backend-unavailable state produced a controlled load error | PASS |
-| No feasible solution         | Empty state is displayed without fake data               | No-feasible-solution case was handled without fake recommendation data | PASS |
-| Responsive layout            | UI remains usable on narrow screens                      | UI remained usable at narrow/mobile viewport | PASS |
+| Test | Expected Result | Actual Result | Status |
+|---|---|---|---|
+| Frontend build | Production build succeeds | Vite build succeeded; 19 modules transformed | PASS |
+| Git diff check | No actual whitespace errors | No actual whitespace errors; Windows CRLF conversion warning observed | PASS |
+| Backend health API | Backend returns successful response | `GET /health` returned `{"status":"ok"}` | PASS |
+| Prediction API | Valid request returns prediction | Live `/recommend` flow returned prediction for record 1 | PASS |
+| Recommendation API | Valid request returns optimization results | Live `/recommend` returned 3 alternatives and feasibility data | PASS |
+| Recommendation cards | Cards display actual backend alternatives | Three live backend-backed cards rendered | PASS |
+| Recommendation selection | Feasible selection is visibly identified | Air Freight selected in final browser workflow | PASS |
+| Decision display | Selected recommendation updates decision section | Final browser flow returned Decision ID 50 | PASS |
+| Execute Decision | Feasible selection can be executed | Decision 50 executed successfully | PASS |
+| Invalid input handling | Controlled error is displayed | Invalid input is handled without fabricated recommendation data | PASS |
+| Backend unavailable handling | Controlled error is displayed | Backend-unavailable state is handled without fabricated data | PASS |
+| No feasible solution | Empty/non-executable state is displayed | Infeasible recommendations are not selectable/executable | PASS |
+| Responsive layout | UI remains usable on narrow screens | Responsive layout verified during frontend QA | PASS |
 
-## Build Evidence
+## Final Browser Workflow
 
-Command:
+`Record → Generate → Prediction → 3 Alternatives → Select Feasible Alternative → Execute Decision → Decision ID → Actual Outcome → Evaluation → ROI → History → ROI Analytics`
 
-`npm --prefix frontend run build`
+No workflow-blocking CORS/API error remained during the final integrated run.
 
-Result:
+## Final Status
 
-`built successfully`
-
-## Git Diff Check
-
-Command:
-
-`git diff --check`
-
-Result:
-
-No output, indicating no whitespace errors.
-
-## Backend Health Evidence
-
-Command:
-
-`curl http://127.0.0.1:8000/health`
-
-Result:
-
-`{"status":"ok"}`
-
-## Notes
-
-The decision write-back endpoint is not available yet. Therefore, Execute Decision remains disabled and no fake execution success is displayed.
-
-Backend files used for local integration testing must not be included in the frontend UI commit.
-
-## Final Verification Update - 2026-09-14
-
-Final integrated verification was performed against the current devops implementation.
-
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+**PASS - Week 3 frontend evidence is synchronized with the final integrated Project 3 state.**

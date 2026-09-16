@@ -144,11 +144,11 @@ Actual output:
 
 ```text
 actual_outcomes
-contactless_recommendations
-? 
+decision_log
+predictions
+prescriptive_recommendations
+supply_chain_data
 ```
-
-For final QA, the required five tables were separately verified as present in `supply_prescript_db`: `supply_chain_data`, `predictions`, `prescriptive_recommendations`, `decision_log`, `actual_outcomes`.
 
 ### Real record verification
 

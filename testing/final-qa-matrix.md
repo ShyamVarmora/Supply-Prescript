@@ -28,7 +28,7 @@ PASS is used only where actual implementation and execution evidence support the
 | Browser E2E | Full UI workflow | Closed-loop workflow completes without blocking error | Record -> Generate -> Prediction -> 3 alternatives -> Select -> Execute -> Outcome -> Evaluation -> ROI -> History -> ROI Analytics completed | Browser E2E evidence | PASS |
 | Frontend lint | `npm.cmd --prefix frontend run lint` | No lint errors | PASS | Latest frontend lint run | PASS |
 | Frontend build | `npm.cmd --prefix frontend run build` | Production bundle succeeds | PASS; Vite 8.2.1; 19 modules transformed | Latest frontend build output | PASS |
-| Backend automated tests | `pytest backend/tests -v` | All current backend tests pass | **14 passed** | Latest local test run | PASS |
+| Backend automated tests | `pytest backend/tests -v` | All current backend tests pass | **14 passed, 1 warning** | Latest local test run | PASS |
 | Real PostgreSQL tests | `RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v` | Real DB integration tests pass | **2 passed, 1 warning** | Latest local real-DB test run | PASS |
 | Git whitespace | `git diff --check` | No actual diff-check errors | No actual whitespace errors; only Windows LF/CRLF conversion warning was observed | Latest diff check | PASS |
 
@@ -184,7 +184,7 @@ Latest verified backend analytics:
 
 ```text
 pytest backend/tests -v
-14 passed
+14 passed, 1 warning
 
 RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
 2 passed, 1 warning
@@ -215,4 +215,4 @@ No garbled README replacement is included in this final docs correction.
 
 ## Evidence Integrity
 
-No fabricated screenshots, database rows, test results, or ROI values are asserted. Historical CSV volume is explicitly distinguished from operational PostgreSQL test data, and the latest backend test result is recorded as 14 passed rather than the earlier stale snapshot.
+No fabricated screenshots, database rows, test results, or ROI values are asserted. Historical CSV volume is explicitly distinguished from operational PostgreSQL test data, and the latest backend test result is recorded as 14 passed, 1 warning rather than the earlier stale snapshot.

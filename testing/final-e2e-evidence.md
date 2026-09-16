@@ -42,7 +42,7 @@ Environment:
 
 ## Automated Evidence
 
-- `pytest backend/tests -v` -> **14 passed**
+- `pytest backend/tests -v` -> **14 passed, 1 warning**
 - `RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v` -> **2 passed, 1 warning**
 - `npm.cmd --prefix frontend run lint` -> **PASS**
 - `npm.cmd --prefix frontend run build` -> **PASS; Vite 8.2.1; 19 modules transformed**

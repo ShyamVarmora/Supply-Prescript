@@ -144,7 +144,7 @@ outcome_id=44 | decision_id=50 | actual_cost=600 | actual_delay_days=6 | complet
 
 ```text
 pytest backend/tests -v
-14 passed
+14 passed, 1 warning
 
 RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
 2 passed, 1 warning

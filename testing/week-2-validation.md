@@ -98,7 +98,7 @@ Historical CSV row count of 113097 is documented separately and is not treated a
 
 ```text
 pytest backend/tests -v
-14 passed
+14 passed, 1 warning
 
 RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
 2 passed, 1 warning

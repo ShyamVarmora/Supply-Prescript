@@ -1,103 +1,36 @@
-﻿# Supply Prescript — Week 1 QA Test Plan
+# Supply Prescript — Week 1 QA Test Plan
 
 ## Purpose
 
-This document defines the QA checks for the Week 1 implementation of Supply Prescript.
+Final Week 1 QA status for the integrated `devops` implementation.
 
-These checks are derived from the Week 1 project requirements.
+## Predictive Model
 
-No test is marked as PASS until supporting implementation evidence is available.
+| Check | Actual Result | Status |
+|---|---|---|
+| Historical supply-chain dataset | CSV contains 113097 rows and 18 columns | PASS |
+| XGBoost model | Model artifact loads successfully | PASS |
+| Shipment-delay prediction | Live `/recommend` generated `delivery_time_deviation` for record 1 | PASS |
+| Model evaluation | Actual training/evaluation metrics are documented in project evidence | PASS |
+| No fabricated metrics | Final documentation uses recorded execution evidence | PASS |
 
----
+## Application
 
-## 1. Predictive Model
+| Check | Actual Result | Status |
+|---|---|---|
+| React application | Local production build succeeded; browser workflow completed | PASS |
+| PostgreSQL connectivity | `supply_prescript_db` connected; required five tables verified | PASS |
 
-### Historical Mock Supply-Chain Data
+## Final E2E Reference
 
-- [ ] Historical mock supply-chain data loads correctly.
-- [ ] Required input data is available.
-- [ ] Data can be consumed by the predictive model.
+The verified workflow continues from the Week 1 foundation into the integrated Project 3 flow:
 
-### XGBoost Training
+`Record → Prediction → Recommendation → Decision → Outcome → Evaluation → ROI → History → ROI Analytics`
 
-- [ ] XGBoost training completes successfully.
-- [ ] Training uses the historical mock supply-chain data.
-- [ ] Training output is generated successfully.
+## Evidence Rule
 
-### Shipment-Delay Prediction
+PASS requires implementation plus actual execution evidence. Historical CSV volume is not treated as PostgreSQL operational row count.
 
-- [ ] Shipment-delay prediction is produced.
-- [ ] Prediction output is available for the expected input.
-- [ ] Prediction result can be consumed by the application.
+## Final Status
 
-### Model Evaluation
-
-- [ ] Model evaluation result is recorded.
-- [ ] Evaluation method is documented.
-- [ ] Actual measured results are recorded.
-- [ ] No fabricated performance numbers are reported.
-
----
-
-## 2. Application
-
-### React Application
-
-- [ ] React application starts successfully.
-- [ ] Main Supply Prescript screen loads.
-- [ ] Required Week 1 UI foundation exists.
-- [ ] No critical UI error prevents the application from loading.
-
-### Database Connection
-
-- [ ] PostgreSQL or Snowflake connection is configured.
-- [ ] Database configuration is documented.
-- [ ] Actual database connectivity is verified when the database is available.
-
-If the database foundation is not yet available:
-
-`BLOCKED - database foundation not yet available`
-
-The database must not be marked PASS without actual connectivity evidence.
-
----
-
-## 3. Evidence Sources
-
-| Area | Evidence |
-|---|---|
-| XGBoost baseline | Chetan PR / implementation |
-| Shipment-delay prediction | Chetan PR / model output |
-| Model evaluation | Chetan implementation/evaluation result |
-| React application | Yoshita PR / application screenshot |
-| Database connection | Yoshita + Mansi implementation/evidence |
-
----
-
-## 4. Test Status
-
-Current status:
-
-- Predictive Model: PASS
-- Shipment-delay Prediction: PASS
-- Model Evaluation: PASS
-- React Application: PASS
-- Database Connection: BLOCKED
-
-Statuses will be updated only after actual implementation evidence is available.
-
-## Final Verification Update - 2026-09-14
-
-Final integrated verification was performed against the current devops implementation.
-
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+**PASS - Week 1 requirements are synchronized with the final integrated Project 3 QA state.**

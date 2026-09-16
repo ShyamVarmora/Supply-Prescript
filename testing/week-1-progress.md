@@ -1,32 +1,47 @@
-﻿# Supply Prescript - Week 1 Progress
+# Supply Prescript - Week 1 Progress
 
-## Day 2 Verification Record
+## Final Verification Status
+
+Week 1 predictive and application foundation requirements are verified against the integrated `devops` implementation.
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| XGBoost baseline | PASS | Actual model load and reproducible XGBoost training metrics verified: 113097 rows, 90477 training samples, 22620 testing samples, MAE 3.420092708832049, RMSE 3.8571221151353994, R2 0.14264861146107266 |
-| Shipment delay prediction | PASS | Real /recommend execution returned predicted_delay = 5.330718994140625 |
-| React app scaffolding | PASS | npm run build completed successfully; 19 modules transformed and frontend loaded locally |
-| Database connection | BLOCKED | PostgreSQL client/service and Docker were not available on the office PC; database schema exists but live connection was not verified |
+| XGBoost baseline | PASS | XGBoost model artifact and training/evaluation evidence verified using the historical CSV dataset. |
+| Shipment-delay prediction | PASS | Live `/recommend` workflow returned a `delivery_time_deviation` prediction for record 1. |
+| React app scaffolding | PASS | Frontend lint and production build passed; browser application loaded successfully. |
+| PostgreSQL connection | PASS | `supply_prescript_db` connection and the five required tables were verified; real test records were used for E2E. |
 
-## QA Note
+## Dataset Scope
 
-These statuses are based on actual implementation and verification evidence.
+Historical dataset:
 
-No fabricated test results, model performance numbers, or PASS statuses are being added.
+`data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv`
 
-## Final Verification Update - 2026-09-14
+- 113097 historical rows
+- 18 columns
 
-Final integrated verification was performed against the current devops implementation.
+The CSV row count is not used as the PostgreSQL operational row count.
 
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+## Final Automated Verification
+
+```text
+pytest backend/tests -v
+14 passed
+
+RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
+2 passed, 1 warning
+
+npm.cmd --prefix frontend run lint
+PASS
+
+npm.cmd --prefix frontend run build
+PASS; Vite 8.2.1; 19 modules transformed
+```
+
+## Final E2E Reference
+
+Record 1 was used through prediction, optimization, decision execution, actual outcome capture, evaluation, ROI, history and ROI analytics. Decision 50 and Outcome 44 are documented in the final E2E evidence and final QA matrix.
+
+## Status
+
+**PASS - final integrated Week 1 evidence synchronized with the current Project 3 state.**

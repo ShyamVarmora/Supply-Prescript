@@ -1,109 +1,60 @@
-﻿# Supply Prescript — Week 2 QA Test Plan
+# Supply Prescript — Week 2 QA Test Plan
 
 ## Purpose
 
-This document defines the QA checks for the Week 2 optimization engine and prescriptive UI implementation.
-
-The checks are based on the Week 2 project requirements and will be marked PASS only when supporting implementation evidence is available.
-
-No unverified test results or fabricated values will be reported.
-
----
+Final Week 2 QA checks for the integrated `devops` optimization engine and prescriptive UI.
 
 ## 1. Optimization
 
-### Business Constraints
-
-- [ ] Business constraints are explicitly defined.
-- [ ] Budget constraint is enforced.
-- [ ] Time constraint is represented.
-- [ ] Capacity constraint is represented where applicable.
-
-### Solver
-
-- [ ] SciPy linear-programming solver runs successfully.
-- [ ] Solver generates three alternative actions.
-- [ ] Generated alternatives satisfy the applicable hard constraints.
-
----
+| Check | Actual Result | Status |
+|---|---|---|
+| Business constraints | Budget, time and capacity are represented and enforced by the optimizer | PASS |
+| Budget constraint | Budget 40 hard-failure case returned no feasible alternative | PASS |
+| Time constraint | Restrictive time handling verified by optimizer tests | PASS |
+| Capacity constraint | Restrictive capacity handling verified by optimizer tests | PASS |
+| SciPy solver | `scipy.optimize.linprog` executed successfully | PASS |
+| Three alternatives | Air Freight, Secondary Supplier, Delay Launch generated | PASS |
 
 ## 2. Prescriptive UI
 
-- [ ] Three recommendation cards are displayed.
-- [ ] Each recommendation has an identifiable action.
-- [ ] Cost is displayed for each recommendation.
-- [ ] Speed/time is displayed for each recommendation.
-- [ ] Cost-versus-speed trade-off is understandable.
+| Check | Actual Result | Status |
+|---|---|---|
+| Recommendation cards | Three live backend-backed cards rendered in final browser workflow | PASS |
+| Action identification | Air Freight, Secondary Supplier, Delay Launch visible | PASS |
+| Cost display | Backend recommendation costs displayed | PASS |
+| Time display | Backend recommendation times displayed | PASS |
+| Cost-vs-speed trade-off | Three alternatives exposed different cost/time values | PASS |
+| Feasible selection | Air Freight selected in final workflow | PASS |
 
----
+## 3. Execute Decision / Database
 
-## 3. Write-Back Preparation
-
-These checks remain NOT STARTED or BLOCKED until the required implementation and verification evidence are available.
-
-- [ ] Execute Decision control exists.
-- [ ] Selected recommendation can be identified.
-- [ ] Backend receives the selected decision.
-- [ ] Database INSERT occurs.
-- [ ] Inserted decision can be verified in the operational database.
-
----
+| Check | Actual Result | Status |
+|---|---|---|
+| Execute Decision control | Final browser workflow executed selected recommendation | PASS |
+| Backend write-back | Decision 50 created | PASS |
+| Database INSERT | Decision 50 verified in PostgreSQL `decision_log` | PASS |
+| Stored decision retrieval | Decision history returned stored decision data | PASS |
 
 ## 4. Evidence Rules
 
-A test must not be marked PASS without supporting evidence.
-
-Evidence may include:
-
-- Implementation code
-- Pull request
-- Runtime output
-- UI screenshot
-- Solver output
-- Database record
-- API response
-
-No final numerical budget, solver performance, or database result should be invented.
-
----
+PASS requires implementation plus actual execution evidence. Historical CSV volume is not treated as PostgreSQL operational row count.
 
 ## 5. Current Status
 
-| Area | Status |
-|---|---|
-| Business constraints | PASS |
-| Budget constraint | PASS |
-| Time constraint | PASS |
-| Capacity constraint | PASS |
-| SciPy LP solver | PASS |
-| Three alternative actions | PASS |
-| Recommendation cards | IN PROGRESS |
-| Cost display | IN PROGRESS |
-| Speed/time display | IN PROGRESS |
-| Cost-vs-speed trade-off | IN PROGRESS |
-| Execute Decision | IN PROGRESS |
-| Database INSERT | BLOCKED |
+All Week 2 requirements are synchronized with the final integrated state and are **PASS** where the final evidence supports them.
 
----
+## 6. Final Automated QA Reference
 
-## 6. QA Conclusion
+```text
+pytest backend/tests -v
+14 passed
 
-Week 2 validation will be completed after the optimization engine and prescriptive UI implementation provide sufficient evidence.
+RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
+2 passed, 1 warning
 
-The verified backend optimization checks are PASS. Frontend live-value rendering remains IN PROGRESS, Execute Decision remains IN PROGRESS, and database write-back is BLOCKED.
+npm.cmd --prefix frontend run lint
+PASS
 
-## Final Verification Update - 2026-09-14
-
-Final integrated verification was performed against the current devops implementation.
-
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+npm.cmd --prefix frontend run build
+PASS; Vite 8.2.1; 19 modules transformed
+```

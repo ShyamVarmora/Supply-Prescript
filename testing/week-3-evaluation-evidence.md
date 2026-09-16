@@ -1,73 +1,56 @@
-﻿# Supply Prescript â€” Week 3 Evaluation Evidence
+# Supply Prescript — Week 3 Evaluation Evidence
 
-## Purpose
+## Scope
 
-This document records the actual execution evidence for the Week 3
-predicted-versus-actual evaluation module.
+Final Week 3 evaluation evidence for the integrated `devops` implementation.
 
-The evaluation module compares a predicted cost with a known actual cost
-and calculates the discrepancy.
+The evaluation module compares stored expected/predicted cost with the recorded actual outcome for an executed decision.
 
-The module is independent of the database, frontend, Decision ROI UI,
-and automatic retraining workflow.
+## Verified Decision
 
-Only tests that were actually executed are marked PASS.
+Decision 50 was executed for record 1 and linked to recommendation 109 (`Air Freight`).
 
----
+Outcome 44 recorded:
 
-## Evaluation Module
+- actual cost: `600`
+- actual delay: `6`
+- status: `completed`
 
-Implementation:
-
-`backend/ml/evaluate.py`
-
-The module accepts an evaluation record containing:
-
-- `decision_id`
-- `predicted_cost`
-- `actual_cost`
-
-It can also accept:
-
-- `predicted_time`
-- `actual_time`
-- `predicted_outcome`
-- `actual_outcome`
-
-The discrepancy threshold is configurable through:
-
-`discrepancy_threshold_percent`
-
-The default implementation threshold is 10%.
-
-This is an implementation/testing threshold and is not presented as a
-company-provided business rule.
-
----
-
-## Test 1 â€” Exact Match
-
-**Status: PASS**
-
-### Input
+## Evaluation Result
 
 ```text
-decision_id = test-1
-predicted_cost = 500
-actual_cost = 500
+status = discrepancy_detected
+predicted_cost = 684.7557795
+actual_cost = 600
+absolute_difference = 84.75577950000002
+percentage_difference = 14.125963250000003
+threshold = 10
+roi_percent = 12.377519407267744
+```
 
-## Final Verification Update - 2026-09-14
+## ROI Analytics
 
-Final integrated verification was performed against the current devops implementation.
+Positive outcome definition:
 
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+`actual_cost <= expected_cost`
+
+Latest verified analytics:
+
+- total decisions: 8
+- evaluated decisions: 8
+- positive outcomes: 5
+- negative outcomes: 3
+- positive outcome rate: 62.5%
+- average ROI: -0.30889857936569803%
+
+## Missing Actual Handling
+
+The automated evaluation workflow includes a pending/incomplete path when an actual outcome is unavailable. This remains part of the evaluated behavior and is not used to fabricate an outcome.
+
+## Closed-Loop Discrepancy-Triggered Retraining
+
+Decision 50 has a populated `retraining_triggered_at` value in `decision_log`. The updated model artifact checksum and timestamp are recorded in final QA evidence.
+
+## Final Status
+
+**PASS - Week 3 evaluation, ROI and feedback evidence synchronized with the final Project 3 state.**

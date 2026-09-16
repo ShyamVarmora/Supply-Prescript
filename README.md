@@ -131,13 +131,11 @@ Historical Supply-Chain Data
 
 ## 5. Core Modules
 
-5.1 Predictive Model :- 
+5.1 Predictive Model :-
 
 The predictive layer uses XGBoost to estimate shipment disruption / delivery-time deviation from historical supply-chain information.
 
-The prediction layer is separated from the prescriptive optimization layer so that predicted operational risk can be used as an input to decision optimization.
-
-5.2 Prescriptive Optimization :- 
+5.2 Prescriptive Optimization :-
 
 The optimization layer uses SciPy to generate alternative actions under operational constraints.
 
@@ -153,15 +151,13 @@ The output contains alternative actions together with feasibility information.
 
 A recommendation is only executable when the required constraints are satisfied.
 
-5.3 Decision Write-Back :- 
+5.3 Decision Write-Back :-
 
 After reviewing the recommendations, the operator can select a feasible action.
 
 The selected decision is sent to the FastAPI backend and persisted in PostgreSQL.
 
-The write-back layer connects the analytical recommendation with the operational decision record.
-
-5.4 Outcome Capture :- 
+5.4 Outcome Capture :-
 
 After a decision has been executed operationally, the actual outcome can be recorded.
 
@@ -171,29 +167,21 @@ Actual Cost
 Actual Delay
 Outcome Status
 
-This creates the historical record required for closed-loop evaluation.
-
 5.5 Decision Evaluation :-
 
 The evaluation layer compares the expected/predicted decision result with the actual recorded outcome.
 
-This allows the system to identify whether the decision performed as expected and whether a significant discrepancy occurred.
-
-5.6 Decision ROI :- 
+5.6 Decision ROI :-
 
 Decision ROI provides a business-oriented view of decision effectiveness.
-
-The evaluation layer provides the basis for determining whether an executed recommendation produced a positive or negative operational outcome.
 
 The exact ROI calculation and reporting rules are maintained with the evaluation implementation and test evidence rather than being hard-coded into the README.
 
 5.7 Feedback and Retraining :-
 
-The final stage of the closed loop is feedback.
-
 When evaluation identifies a meaningful discrepancy between expected and actual results, the system can trigger model retraining.
 
-This creates the intended learning cycle:
+The resulting closed-loop sequence is:
 
 Decision
    ↓
@@ -216,22 +204,18 @@ The backend exposes REST endpoints for the main system workflow.
 Health
 GET /health
 
-Used to verify that the API service is available.
-
 Shipment Delay Prediction
 POST /predict/shipment-delay
-
-Runs shipment-delay prediction using the predictive model.
 
 Recommendation Generation
 POST /recommend
 
-Validates a supply-chain record, obtains the required shipment data, runs prediction, executes the constrained optimization process, stores generated recommendations, and returns the recommendation set.
+Validates a supply-chain record, obtains the required shipment data, runs prediction, executes constrained optimization, stores generated recommendations, and returns the recommendation set.
 
 Decision Write-Back
 POST /decisions
 
-Validates the selected recommendation and writes the operational decision to the database.
+Validates the selected recommendation and writes the operational decision to PostgreSQL.
 
 Decision History
 GET /decisions/history
@@ -248,82 +232,76 @@ GET /decisions/{decision_id}/evaluation
 
 Evaluates the executed decision against the recorded actual outcome and supports discrepancy-driven feedback.
 
+ROI Analytics
+GET /decisions/analytics/roi
+
+Returns aggregated decision metrics including total decisions, evaluated decisions, positive and negative outcomes, positive outcome rate, and average ROI.
+
 ---
 
 ## 7. Data Layer
 
 The project uses PostgreSQL for the operational and analytical workflow.
 
-Main Tables
-
-| Table                          | Purpose                             |
-| ------------------------------ | ----------------------------------- |
-| `supply_chain_data`            | Source supply-chain records         |
-| `predictions`                  | Prediction records                  |
+| Table | Purpose |
+|---|---|
+| `supply_chain_data` | Source supply-chain records |
+| `predictions` | Prediction records |
 | `prescriptive_recommendations` | Generated optimization alternatives |
-| `decision_log`                 | Operator-selected decisions         |
-| `actual_outcomes`              | Actual operational outcomes         |
+| `decision_log` | Operator-selected decisions |
+| `actual_outcomes` | Actual operational outcomes |
 
 The database schema is maintained in:
 
-database/schema.sql
+`database/schema.sql`
 
 ---
 
 ## 8. Technology Stack
 
-| Layer           | Technology      |
-| --------------- | --------------- |
-| Frontend        | React           |
-| Backend         | FastAPI         |
-| Language        | Python          |
-| Database        | PostgreSQL      |
-| Prediction      | XGBoost         |
-| Optimization    | SciPy           |
-| API             | REST            |
+| Layer | Technology |
+|---|---|
+| Frontend | React |
+| Backend | FastAPI |
+| Language | Python |
+| Database | PostgreSQL |
+| Prediction | XGBoost |
+| Optimization | SciPy |
+| API | REST |
 | Data Processing | Python / Pandas |
-| Testing         | Pytest          |
+| Testing | Pytest |
 
 ---
 
 ## 9. Repository Structure
 
+```text
 Supply-Prescript/
-│
 ├── backend/
 │   ├── app/
 │   │   └── main.py
-│   │
 │   ├── ml/
 │   │   ├── train.py
 │   │   ├── predict.py
 │   │   ├── optimizer.py
 │   │   ├── evaluate.py
 │   │   └── MODEL_CONTRACT.md
-│   │
 │   ├── tests/
 │   │   ├── test_decisions.py
 │   │   ├── test_workflows.py
 │   │   └── test_real_postgres.py
-│   │
 │   └── requirements.txt
-│
 ├── database/
 │   └── schema.sql
-│
 ├── data/
 │   ├── raw/
 │   └── processed/
-│
 ├── frontend/
-│
 ├── models/
-│
 ├── testing/
-│
 ├── Decisions/
-│
 └── README.md
+```
 
 ---
 
@@ -379,27 +357,13 @@ The system follows a complete operational decision cycle:
       ↓
 12. Improve Future Decisions
 
-The purpose of the architecture is not simply to display analytics.
-
-The system is designed to connect an AI recommendation directly to an operational decision and then measure what happened afterward.
-
 ---
 
 ## 12. Quality Gate
 
 A feature should be considered complete only when the following conditions are satisfied:
 
-Implementation
-      +
-Integration
-      +
-Actual Execution
-      +
-Database Verification
-      +
-Test Evidence
-      +
-Documentation
+Implementation + Integration + Actual Execution + Database Verification + Test Evidence + Documentation
 
 Code existing in the repository alone is not treated as proof of successful end-to-end operation.
 
@@ -410,8 +374,6 @@ Final project claims must be supported by reproducible test or execution evidenc
 ---
 
 ## 13. Verification Philosophy
-
-Supply Prescript follows an evidence-based validation approach.
 
 Important checks include:
 
@@ -461,11 +423,11 @@ Separation of Responsibilities
 
 Prediction, optimization, operational write-back, evaluation, and feedback are kept as distinct stages of the system.
 
---- 
+---
 
 ## 15. Project Outcome
 
-Supply Prescript is intended to demonstrate a complete prescriptive analytics workflow for supply-chain operations:
+Supply Prescript demonstrates the intended prescriptive analytics workflow:
 
 Predict the disruption
         ↓
@@ -483,8 +445,6 @@ Measure decision effectiveness
         ↓
 Learn from discrepancies
 
-This architecture transforms predictive analytics from a passive reporting system into an operational decision-support workflow.
-
 ---
 
 ## 16. Reference Architecture
@@ -501,13 +461,7 @@ Hard constraint validation
 Execute Decision write-back
 Historical outcome evaluation
 Decision ROI
-Feedback-driven XGBoost retraining
+Closed-loop discrepancy-triggered XGBoost retraining
 End-to-end operational workflow
 
 The repository implementation should remain aligned with the actual verified system rather than claiming capabilities that have not been demonstrated.
-
-### ROI Analytics API
-
-`GET /decisions/analytics/roi`
-
-Returns aggregated decision metrics including total decisions, evaluated decisions, positive and negative outcomes, positive outcome rate, and average ROI.

@@ -1,162 +1,145 @@
-﻿# Supply Prescript — Week 3 Evidence Matrix
+# Supply Prescript — Week 3 Evidence Matrix
 
 ## Purpose
 
-This document maps the Week 3 requirements from the project specification to the implementation evidence that must be collected before the requirements can be marked complete.
+This document maps the Week 3 requirements to the final verified state of the integrated `devops` implementation.
 
-No requirement is marked PASS without actual implementation evidence.
-
----
+PASS is used only where implementation and actual execution evidence support the requirement.
 
 ## 1. Closed-Loop Evaluation
 
-### Requirement
-
-Compare the predicted cost of the user's selected decision against the actual historical outcome stored in the database.
-
-### Required Evidence
-
-- [ ] Selected decision can be identified.
-- [ ] Predicted cost is stored or retrievable.
-- [ ] Actual historical outcome is stored or retrievable.
-- [ ] Predicted cost is compared with actual outcome.
-- [ ] Difference/discrepancy is calculated.
-- [ ] Evaluation result can be retrieved.
-- [ ] Evidence comes from real implementation/data.
-
-### Evidence to Collect
-
-- Backend implementation
-- API response
-- Database record
-- Evaluation output
-- Screenshot showing the result
-
-### Status
-
-NOT STARTED - implementation not yet available.
-
-This follows the PDF directly. The PDF does not merely ask for a UI mockup; it requires comparison against the actual historical database outcome.
-
----
+| Requirement | Actual Evidence | Status |
+|---|---|---|
+| Recorded decision identified | Decision 50 linked to record 1 and recommendation 109 | PASS |
+| Predicted cost available | Decision 50 expected/predicted cost = 684.7557795 | PASS |
+| Actual outcome available | Outcome 44 linked to Decision 50; actual cost 600, delay 6, completed | PASS |
+| Predicted vs actual comparison | Difference and percentage calculated for Decision 50 | PASS |
+| Discrepancy calculation | 14.125963250000003% vs 10% threshold; `discrepancy_detected` | PASS |
+| Evaluation retrievable | Evaluation/history data returned for Decision 50 | PASS |
+| Real evidence | API/browser result plus `decision_log` and `actual_outcomes` SQL evidence | PASS |
 
 ## 2. Decision ROI
 
-### Requirement
+| Requirement | Actual Evidence | Status |
+|---|---|---|
+| ROI calculated from real evaluated decisions | Decision 50 ROI = 12.377519407267744% | PASS |
+| Positive outcomes tracked | Latest analytics: 5 positive, 3 negative | PASS |
+| Total evaluated decisions counted | Latest analytics: 8 evaluated | PASS |
+| ROI displayed/retrievable | Decision evaluation and ROI analytics endpoint returned ROI data | PASS |
+| ROI traceable to decision/outcome | Decision 50 and Outcome 44 are linked in stored evidence | PASS |
+| No fabricated ROI | Values come from stored backend evaluation/analytics evidence | PASS |
 
-Build an analytics view showing Decision ROI and tracking how often AI recommendations result in positive business outcomes.
+## 3. Operational Database Evidence
 
-### Required Evidence
+PostgreSQL database: `supply_prescript_db`
 
-- [ ] ROI is calculated from real evaluated decisions.
-- [ ] Positive business outcomes are identified.
-- [ ] Total evaluated decisions can be counted.
-- [ ] ROI is displayed in the UI.
-- [ ] ROI can be traced to actual decision/outcome data.
-- [ ] No hard-coded ROI percentage is used.
+Required tables verified:
 
-### Evidence to Collect
+1. `supply_chain_data`
+2. `predictions`
+3. `prescriptive_recommendations`
+4. `decision_log`
+5. `actual_outcomes`
 
-- Backend/API result
-- Database records
-- ROI calculation
-- Analytics UI screenshot
-- Test result
+Historical dataset volume is separately documented as **113097 rows in the CSV**. It is not represented as the PostgreSQL operational row count.
 
-### Status
+### SQL table verification
 
-NOT STARTED - implementation not yet available.
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('supply_chain_data','predictions','prescriptive_recommendations','decision_log','actual_outcomes')
+ORDER BY table_name;
+```
 
-Again, this comes directly from the Week 3 requirement.
+Actual output:
 
----
+```text
+actual_outcomes
+decision_log
+predictions
+prescriptive_recommendations
+supply_chain_data
+```
 
-## 3. Dependencies
+### SQL record verification
 
-The following dependencies must exist before Week 3 can be fully verified:
+```sql
+SELECT record_id FROM supply_chain_data
+WHERE record_id IN (1,2,3)
+ORDER BY record_id;
+```
 
-1. Historical supply-chain data
-2. Predictive model output
-3. Prescriptive recommendation
-4. Selected decision
-5. Operational database write-back
-6. Actual historical outcome
-7. Evaluation logic
-8. Decision ROI calculation
-9. Feedback / analytics UI
+Actual output:
 
-If a dependency is unavailable, the related test remains BLOCKED or NOT STARTED.
+```text
+1
+2
+3
+```
 
-A missing dependency must not be replaced with fabricated data.
+## 4. Decision / Outcome Evidence
 
----
+Decision 50:
 
-## Evidence Table
+```text
+decision_id=50
+record_id=1
+recommendation_id=109
+selected_action=Air Freight
+expected_cost=684.7557795
+decision_status=SELECTED
+```
 
-| Requirement | Implementation Evidence | Data Evidence | UI Evidence | Status |
-|---|---|---|---|---|
-| Predicted cost available | PASS | Standalone evaluator received predicted cost input | Actual standalone evaluation evidence | PASS |
-| Actual outcome available | NOT STARTED | No database-backed actual outcome | No real outcome evidence | NOT STARTED |
-| Predicted vs actual comparison | PASS | Standalone evaluation executed | Actual comparison outputs captured | PASS |
-| Discrepancy calculation | PASS | Standalone discrepancy tests executed | Actual discrepancy outputs captured | PASS |
-| Evaluation persistence/retrieval | IN PROGRESS | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | IN PROGRESS |
-| Decision ROI calculation | IN PROGRESS | ROI formula documented; no real evaluated DB decisions available | No real ROI result | IN PROGRESS |
-| Positive outcomes tracking | NOT STARTED | No real outcome records available | No verified positive outcomes | NOT STARTED |
-| ROI displayed in analytics UI | IN PROGRESS | UI structure exists; live outcome data unavailable | No real ROI display evidence | IN PROGRESS |
+Outcome 44:
 
----
-
-## 4. Evidence Rule
-
-The following are not acceptable as proof of completion:
-
-- Hard-coded ROI percentages
-- Hard-coded actual costs
-- Fake database records
-- Screenshots containing fabricated results
-- Placeholder values presented as real results
-- Documentation claiming PASS without implementation evidence
-
-A requirement can only move from NOT STARTED/BLOCKED to PASS after the corresponding implementation and verification evidence exists.
-
----
+```text
+outcome_id=44
+decision_id=50
+actual_cost=600
+actual_delay_days=6
+outcome_status=completed
+```
 
 ## 5. Current Dependency Status
 
 | Dependency | Status |
 |---|---|
-| Historical dataset | PASS | Real dataset used by training was verified independently of database runtime | Training dataset evidence available | PASS |
-| Predictive model | PASS | Actual model load and training evidence verified |
-| Prescriptive solver | PASS | Actual optimizer execution verified |
-| Database write-back | BLOCKED | No database runtime or INSERT/SELECT evidence |
-| Closed-loop evaluation | IN PROGRESS | Standalone evaluator verified; DB workflow not verified |
-| Decision ROI | IN PROGRESS | Formula documented; real outcome-based ROI not verified |
-| Feedback analytics | IN PROGRESS | UI structure exists; real evaluation data unavailable |
-| Continuous learning | IN PROGRESS | Standalone retraining trigger/workflow verified; production loop not verified |
+| Historical dataset | PASS |
+| Predictive model | PASS |
+| Prescriptive solver | PASS |
+| PostgreSQL operational test database | PASS |
+| Prediction persistence | PASS |
+| Decision write-back | PASS |
+| Actual outcome capture | PASS |
+| Closed-loop evaluation | PASS |
+| Decision ROI | PASS |
+| Feedback analytics | PASS |
+| Closed-loop discrepancy-triggered retraining | PASS |
 
----
+## 6. Final Verification Status
 
-## 6. Duplication and Scope Check
+The Week 3 workflow is verified against the current integrated state:
 
-- [x] Did not duplicate `Test-plan.md`.
-- [x] Did not duplicate `week-3-test-plan.md`.
-- [x] Did not modify Yoshita's frontend.
-- [x] Did not modify Chetan's backend.
-- [x] Did not invent implementation results.
-- [x] Did not mark anything PASS.
+`Decision → Actual Outcome → Evaluation → ROI → History → ROI Analytics`
 
-## Final Verification Update - 2026-09-14
+The final browser workflow also completed the preceding recommendation and execution stages.
 
-Final integrated verification was performed against the current devops implementation.
+**Status: PASS**
 
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+## Final Automated QA Reference
+
+```text
+pytest backend/tests -v
+14 passed
+
+RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v
+2 passed, 1 warning
+
+npm.cmd --prefix frontend run lint
+PASS
+
+npm.cmd --prefix frontend run build
+PASS; Vite 8.2.1; 19 modules transformed
+```

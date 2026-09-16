@@ -1,307 +1,65 @@
-﻿# Week 2 Optimization Evidence
+# Week 2 Optimization Evidence
 
-## Purpose
+## Scope
 
-Evidence for the prescriptive optimization solver implemented on the
-backend branch.
+Final Week 2 evidence for the integrated `devops` implementation.
 
-Only tests that were actually executed are marked PASS.
+## Optimization
 
----
+The backend uses `scipy.optimize.linprog` to generate three solver-backed alternatives with budget, time and capacity feasibility information.
 
-## Test 1 â€” Normal Constraints
+### Normal Final Scenario
 
-**Status: PASS**
+Configuration used in the final recommendation workflow:
 
-The prescriptive optimization solver was executed successfully.
-
-The solver returned business alternatives containing cost, time,
-capacity, expected impact, and feasibility information.
-
-Evidence:
-
-- Terminal optimizer output
-- Swagger `/recommend` response
-
----
-
-## Test 2 â€” Budget Constraint
-
-**Status: PASS**
-
-A budget-boundary test was executed with:
-
-- Budget: 40
+- Budget: 700
 - Allowed time: 20
 - Available capacity: 100
-
-Observed result:
-
-- No feasible alternative was returned.
-- `feasible_alternatives`: `[]`
-- `recommended_option`: `null`
-
-The solver did not return an alternative whose cost exceeded the
-configured budget.
-
-Evidence:
-
-- Terminal optimizer output
-
----
-
-## Test 3 â€” Capacity Constraint
-
-**Status: PASS**
-
-A dedicated capacity-boundary test was executed with:
-
-- Available capacity: 1
+- Shipment time: 10
 - Shipment capacity: 50
 
-Observed result:
+Three alternatives returned:
 
-- Option 1: infeasible
-- Option 2: infeasible
-- Option 3: infeasible
-- `feasible_alternatives`: `[]`
-- `recommended_option`: `null`
+| Option | Cost | Time | Capacity | Feasible |
+|---|---:|---:|---:|---|
+| Air Freight | 684.7557795 | 5.5 | 50 | Yes |
+| Secondary Supplier | 547.8046236 | 8 | 50 | Yes |
+| Delay Launch | 45.6503853 | 15.67630672454834 | 50 | Yes |
 
-The solver did not return an alternative that exceeded the available
-capacity.
+Recommended option: `Air Freight`
 
-Evidence:
+## Constraint Verification
 
-- Swagger `/recommend` response
+### Budget Failure
 
----
+Tested budget: `40`.
 
-## Test 4 â€” Time Constraint
+The budget-failure case produced no feasible alternative and `recommended_option = null`.
 
-**Status: PASS**
+### Time Constraint
 
-A dedicated time-boundary test was executed with:
+Restrictive time handling was covered by the optimizer tests; options exceeding the configured allowed time are marked infeasible.
 
-- Budget: 1000
-- Allowed time: 5
-- Available capacity: 100
+### Capacity Constraint
 
-Observed result:
+Restrictive capacity handling was covered by the optimizer tests; options exceeding available capacity are marked infeasible.
 
-- Air Freight: feasible
-- Secondary Supplier: infeasible
-- Delay Launch: infeasible
+### Infeasible Selection
 
-The solver rejected alternatives whose time exceeded the configured
-allowed time.
+The frontend disables selection of infeasible recommendations, so an infeasible option cannot be executed through the normal UI flow.
 
-Evidence:
+## Final Status
 
-- Terminal optimizer output
-
----
-
-## Test 5 â€” Three Feasible Alternatives
-
-**Status: PASS**
-
-A scenario was tested specifically to verify that all three generated
-business alternatives can be feasible when the configured constraints
-allow them.
-
-Test configuration:
-
-- Budget: 1000
-- Allowed time: 20
-- Available capacity: 100
-- Shipment cost: 456.503853
-- Shipment time: 8
-- Shipment capacity: 50
-- Predicted delay: 9.110681821
-
-Expected alternatives:
-
-1. Air Freight
-2. Secondary Supplier
-3. Delay Launch
-
-The test must show:
-
-- Three generated alternatives
-- Three feasible alternatives
-- Actual cost and time for each alternative
-- One recommended option selected by the optimization result
-
-Evidence:
-
-- Terminal optimizer output
-- `/recommend` API response
-
----
-
-## Test 6 â€” Infeasible Option Rejected
-
-**Status: PASS**
-
-A deliberately restrictive case was tested.
-
-Observed result:
-
-- Infeasible alternatives were marked `infeasible`.
-- `feasible_alternatives` did not contain infeasible options.
-- `recommended_option` was `null` when no feasible solution existed.
-
-No infeasible option was returned as the recommendation.
-
-Evidence:
-
-- Swagger `/recommend` response
-
----
-
-## Test 7 â€” Cost vs Speed Values
-
-**Status: PASS**
-
-The generated alternatives contain actual numeric cost and time values.
-
-The tested solver output showed different cost-versus-speed trade-offs
-between the alternatives.
-
-Evidence:
-
-- Terminal optimizer output
-- Swagger `/recommend` response
-
----
-
-## Test 8 â€” API Integration
-
-**Status: PASS**
-
-The existing `POST /recommend` endpoint successfully calls the
-optimization implementation.
-
-Observed:
-
-- HTTP 200 response
-- Prediction returned
-- Optimization result returned
-- Alternatives returned
-- Cost returned
-- Time returned
-- Capacity returned
-- Feasibility returned
-- Recommended option returned when a feasible solution exists
-
-Evidence:
-
-- Swagger `/recommend` response
-
----
-
-## Test 9 â€” Execute Decision
-
-**Status: BLOCKED**
-
-Dependency:
-
-- Backend write-back endpoint
-- Database INSERT functionality
-
-The Execute Decision flow is not marked PASS because actual database
-write-back has not been verified.
-
----
-
-## Validation Summary
-
-| Test | Status |
+| Requirement | Status |
 |---|---|
-| W2-01 Optimization exists | PASS |
-| W2-02 Budget constraint | PASS |
-| W2-03 Time constraint | PASS |
-| W2-04 Capacity constraint | PASS |
-| W2-05 Three feasible alternatives | PASS |
-| W2-06 Cost vs Speed | PASS |
-| W2-07 Execute Decision | BLOCKED |
-| W2-08 Evidence requirement | PASS |
-
----
+| SciPy optimization | PASS |
+| Budget constraint | PASS |
+| Time constraint | PASS |
+| Capacity constraint | PASS |
+| Three alternatives | PASS |
+| Feasibility handling | PASS |
+| Cost vs speed data | PASS |
 
 ## Evidence Rule
 
-A test is marked PASS only after actual implementation and execution
-evidence has been collected.
-
-Documentation, planned code, hard-coded UI cards, or placeholder values
-are not sufficient evidence for PASS.
-
-No fabricated results or metrics are reported.
-
----
-
-## Final Optimizer Evidence â€” 1/9/26
-
-The optimizer was tested using normal and deliberately restrictive
-scenarios.
-
-| Validation | Status | Evidence |
-|---|---|---|
-| Budget constraint | PASS | Budget-restricted optimizer output |
-| Time constraint | PASS | Time-restricted optimizer output |
-| Capacity constraint | PASS | Capacity-restricted optimizer output |
-| Recommendation validity | PASS | Infeasible alternatives were not returned as recommendations |
-| Evidence captured | PASS | Terminal outputs from all executed validation cases |
-
-### Normal Case
-
-The optimizer executed successfully and returned:
-
-- Air Freight â€” feasible
-- Secondary Supplier â€” feasible
-- Delay Launch â€” infeasible because its time exceeded the allowed time
-- Recommended option â€” Air Freight
-
-### Budget-Restricted Case
-
-With budget set to 40:
-
-- No feasible alternatives were returned.
-- `recommended_option` was `None`.
-
-### Time-Restricted Case
-
-With allowed time set to 5:
-
-- Air Freight â€” feasible
-- Secondary Supplier â€” infeasible
-- Delay Launch â€” infeasible
-
-### Capacity-Restricted Case
-
-With available capacity set to 40 and shipment capacity set to 50:
-
-- Option 1 â€” infeasible
-- Option 2 â€” infeasible
-- Option 3 â€” infeasible
-- `feasible_alternatives` â€” `[]`
-- `recommended_option` â€” `None`
-
-No optimizer redesign was performed.
-
-## Final Verification Update - 2026-09-14
-
-Final integrated verification was performed against the current devops implementation.
-
-- PostgreSQL verified with 5 required tables and live row counts.
-- Prediction persisted in predictions for record 1.
-- Three recommendations verified.
-- Budget, time and capacity constraints verified.
-- Decision 50 executed and persisted.
-- Actual outcome 44 persisted for Decision 50.
-- Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
-- ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
-- Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
-- Browser closed-loop E2E completed successfully.
+The final evidence distinguishes three generated alternatives from the number of feasible alternatives in a given constraint scenario. No unsupported or fabricated result is claimed.

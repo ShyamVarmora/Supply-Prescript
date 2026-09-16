@@ -1,4 +1,4 @@
-# Supply Prescript — Week 3 QA Test Plan
+# Supply Prescript - Week 3 QA Test Plan
 
 ## Purpose
 
@@ -8,36 +8,36 @@ Final Week 3 QA checks for the integrated `devops` implementation.
 
 | Check | Actual Result | Status |
 |---|---|---|
-| Recorded decision identified | Decision 50 / record 1 | PASS |
+| Recorded decision identified | Decision 50 linked to record 1 and recommendation 109 | PASS |
 | Predicted cost available | 684.7557795 | PASS |
-| Actual outcome available | Outcome 44: cost 600, delay 6, completed | PASS |
-| Predicted vs actual comparison | Difference 84.75577950000002; percentage 14.125963250000003% | PASS |
-| Discrepancy detection | `discrepancy_detected` at 10% threshold | PASS |
-| Evaluation retrievable | Evaluation/history data returned | PASS |
+| Actual outcome available | Outcome 44: actual cost 600, delay 6, completed | PASS |
+| Predicted vs actual comparison | Difference and percentage calculated | PASS |
+| Discrepancy calculation | 14.125963250000003% vs 10% threshold; `discrepancy_detected` | PASS |
+| Evaluation retrievable | Decision 50 evaluation/history data returned | PASS |
 
 ## 2. Decision ROI
 
 | Check | Actual Result | Status |
 |---|---|---|
-| Decision ROI | Decision 50 ROI = 12.377519407267744% | PASS |
-| Positive outcomes | 5 positive, 3 negative in latest analytics | PASS |
-| Evaluated decisions | 8 evaluated | PASS |
-| Positive outcome rate | 62.5% | PASS |
-| Average ROI | -0.30889857936569803% | PASS |
+| ROI calculated from real evaluated decision | Decision 50 ROI = 12.377519407267744% | PASS |
+| Positive outcomes tracked | 5 positive, 3 negative | PASS |
+| Total evaluated decisions | 8 | PASS |
+| ROI analytics endpoint | `GET /decisions/analytics/roi` returned aggregated metrics | PASS |
+| ROI traceable to outcome | Decision 50 linked to Outcome 44 | PASS |
 
 ## 3. Evaluation Scenarios
 
-### Verified discrepancy case
+### Stored decision scenario
 
-Decision 50 produced `discrepancy_detected` because the stored percentage difference exceeded the 10% threshold.
+Decision 50 has a completed outcome and discrepancy evaluation.
 
-### Missing outcome behavior
+### Missing-outcome behavior
 
-The evaluation implementation includes a pending/incomplete path when actual outcome data is unavailable. No fabricated result is used.
+The automated evaluation suite includes pending-evaluation handling. No fabricated outcome is used.
 
 ## 4. Evidence Rules
 
-PASS requires implementation plus actual execution evidence. Database-backed claims use PostgreSQL evidence; historical CSV size is not treated as an operational database row count.
+PASS requires implementation plus actual execution evidence. Historical CSV volume is not treated as PostgreSQL operational row count.
 
 ## 5. Current Status
 
@@ -50,7 +50,7 @@ PASS requires implementation plus actual execution evidence. Database-backed cla
 | Discrepancy calculation | PASS |
 | Evaluation retrieval | PASS |
 | Decision ROI | PASS |
-| Positive outcome count | PASS |
+| Positive outcomes count | PASS |
 | Total evaluated decisions count | PASS |
 | ROI analytics | PASS |
 
@@ -70,6 +70,6 @@ npm.cmd --prefix frontend run build
 PASS; Vite 8.2.1; 19 modules transformed
 ```
 
-## Final Status
+## 7. Final Status
 
-**PASS - Week 3 QA is synchronized with the final integrated Project 3 evidence.**
+**PASS - Week 3 requirements are synchronized with the final integrated Project 3 QA state.**

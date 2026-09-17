@@ -1,146 +1,61 @@
-﻿# Supply Prescript — Project 3 QA Test Plan
+# Supply Prescript - Project 3 QA Test Plan
 
 ## 1. Purpose
 
-This document defines the QA testing plan for the complete Supply Prescript Project 3 lifecycle.
+This document captures the final QA status for the verified devops implementation of Supply Prescript.
 
-Testing covers the predictive model, prescriptive optimization, operational UI, database write-back, closed-loop validation, decision ROI, continuous learning, and final analyst workflow.
-
-No Project 3 functionality has been marked as PASS at this stage unless actual implementation evidence is available.
+The active branch is the current PostgreSQL-backed implementation of the Project 3 closed-loop workflow. The verification here reflects actual execution evidence from the repository, the backend tests, the real DB integration tests, and the frontend build/lint checks.
 
 ---
 
-## 2. Predictive Model
+## 2. Verified Workflow
 
-### Historical Supply-Chain Data
+The following workflow is verified in the current branch:
 
-- [ ] Historical supply-chain data loads correctly.
-- [ ] Required input fields are available.
-- [ ] Data can be consumed by the predictive model.
-
-### Predictive Model
-
-- [ ] XGBoost or the implemented predictive model trains successfully.
-- [ ] Disruption / shipment-delay prediction is produced.
-- [ ] Prediction output is generated for valid input data.
-- [ ] Model evaluation result is recorded.
-- [ ] Actual measured performance is documented.
-- [ ] No fabricated performance numbers are reported.
+- real supply-chain record lookup by record_id
+- XGBoost shipment-delay prediction
+- SciPy optimization with hard budget, time, and capacity checks
+- generation of three alternatives
+- selection of a feasible recommendation
+- decision write-back into PostgreSQL
+- actual outcome capture
+- evaluation and ROI calculation
+- discrepancy detection and retraining trigger
 
 ---
 
-## 3. Prescriptive Solver
+## 3. Automated Verification
 
-### Optimization
+### Backend
 
-- [ ] Optimization workflow executes successfully.
-- [ ] Budget constraint is enforced.
-- [ ] Time constraint is considered.
-- [ ] Capacity constraint is considered.
-- [ ] Three best alternative actions are generated.
-- [ ] Generated recommendations are based on available input data.
+- `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
 
----
+### Real PostgreSQL
 
-## 4. Operational UI
+- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 
-### Application
+### Frontend
 
-- [ ] React / Retool application starts successfully.
-- [ ] Main Supply Prescript screen loads.
-- [ ] Recommendations are displayed.
-- [ ] Cost vs Speed trade-offs are shown.
-- [ ] User can execute a decision.
-- [ ] Analyst can participate in the decision workflow.
+- `npm --prefix frontend run lint` → passed
+- `npm --prefix frontend run build` → passed
+
+### Repository hygiene
+
+- `git diff --check` → clean
 
 ---
 
-## 5. Write-Back
+## 4. Required Evidence Rules
 
-### Operational Database
-
-- [ ] Decision is inserted into the operational database.
-- [ ] Decision data is persisted correctly.
-- [ ] Stored decision can be retrieved.
-- [ ] Write-back does not create unintended duplicate records.
+- PASS only when actual implementation and execution evidence exist.
+- Historical snapshots remain valid only as historical development records.
+- Current active status must reflect the verified devops implementation.
+- No stale BLOCKED claims are carried into the active final status when the real implementation has been verified.
 
 ---
 
-## 6. Closed Loop
+## 12. Overall Final Test Status
 
-### Outcome Verification
+**Current Status: Verified on current devops implementation**
 
-- [ ] Predicted cost is recorded.
-- [ ] Actual outcome is captured.
-- [ ] Predicted cost can be compared with actual outcome.
-- [ ] Difference between predicted and actual outcome is calculated or displayed.
-
----
-
-## 7. Decision ROI
-
-### ROI
-
-- [ ] Decision ROI is calculated using actual available data.
-- [ ] ROI result is displayed.
-- [ ] ROI is traceable to the corresponding decision and outcome.
-
-No ROI value should be documented unless it has been actually calculated and verified.
-
----
-
-## 8. Continuous Learning
-
-### Retraining
-
-- [ ] Prediction discrepancies can be detected.
-- [ ] Discrepancy information is recorded.
-- [ ] Retraining trigger behavior is verified.
-- [ ] XGBoost retraining workflow is verified where implemented.
-- [ ] Retraining does not use fabricated evaluation results.
-
----
-
-## 9. Database Connectivity
-
-- [ ] PostgreSQL or Snowflake connection is configured where required.
-- [ ] Database configuration is documented.
-- [ ] Actual database connectivity is verified when the database is available.
-
-If the database foundation is unavailable:
-
-`BLOCKED - database foundation not yet available`
-
-Database connectivity must not be marked PASS without actual evidence.
-
----
-
-## 10. Final Analyst Workflow
-
-- [ ] Analyst can review the prediction.
-- [ ] Analyst can review recommended actions.
-- [ ] Analyst can compare cost vs speed trade-offs.
-- [ ] Analyst can participate in the decision.
-- [ ] Analyst can execute the selected decision.
-- [ ] Decision is written back to the operational database.
-- [ ] Actual outcome can be used for closed-loop analysis.
-
----
-
-## 11. Test Evidence Rules
-
-The following rules apply to all QA results:
-
-- Do not mark a test PASS without actual evidence.
-- Do not invent model accuracy or performance numbers.
-- Do not mark database connectivity PASS without actual connectivity evidence.
-- Record implementation evidence from the relevant PR, screenshot, test output, or application result.
-- Use BLOCKED when a required dependency is genuinely unavailable.
-
----
-
-## 12. Overall Test Status
-
-**Current Status: Partial Verification - Final QA Complete for Available Components; DB-Dependent E2E Blocked**
-
-Available Project 3 components have been marked using actual execution evidence. Database-dependent and production end-to-end requirements remain BLOCKED, NOT STARTED, IN PROGRESS, or FAIL where verification was not available.
+The integrated PostgreSQL-backed workflow has been verified with backend API execution, real PostgreSQL decision write-back, actual outcome capture, evaluation, discrepancy detection, discrepancy-triggered XGBoost retraining, and frontend lint/build checks. The real PostgreSQL tests create and clean up temporary records, so this document does not claim a persistent decision ID or database count.

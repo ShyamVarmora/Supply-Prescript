@@ -1,5 +1,9 @@
 # Supply Prescript - Project 3 Requirement Traceability Matrix
 
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
+
 ## Purpose
 
 This matrix maps Project 3 requirements to implementation, actual verification evidence, demo evidence, owner, and status.
@@ -209,3 +213,40 @@ The ROI analytics section also displayed counts derived from stored decisions, i
 No fabricated screenshots, database rows, test results, or ROI values are used.
 
 The final status is based on executed tests, live PostgreSQL behavior, backend responses, and the completed browser workflow.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical evidence above is retained for audit continuity.
+### Direct shipment-delay prediction
+
+Actual local verification:
+POST /predict/shipment-delay → HTTP 200
+prediction_target = delivery_time_deviation
+predicted_delivery_time_deviation = 5.67630672454834
+
+### PostgreSQL operational evidence
+
+Historical CSV: 113097 rows.
+PostgreSQL operational test database connected and verified with real test records used in the final E2E workflow.
+Five required tables verified.
+
+The current final-QA PC does not have PostgreSQL available on localhost:5432, so the latest local RUN_REAL_DB rerun is recorded as BLOCKED rather than claimed as passed.
+
+### Current automated verification
+
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
+
+### Current frontend verification
+
+npm.cmd --prefix frontend run lint → PASS.
+npm.cmd --prefix frontend run build → PASS; 19 modules transformed.
+git diff --check → clean.
+
+### Historical SQL evidence retained
+
+Decision 50: record_id 1, recommendation_id 109, selected_action Air Freight, decision_status SELECTED.
+Outcome 44: decision_id 50, actual_cost 600, actual_delay_days 6, outcome_status completed.
+
+Retraining is documented as discrepancy-triggered XGBoost retraining only. No production continuous-learning deployment is claimed.

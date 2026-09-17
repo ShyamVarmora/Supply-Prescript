@@ -1,5 +1,9 @@
 # Final Project 3 E2E Evidence
 
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
+
 ## 1. Database Connection
 Actual result: PASS
 Evidence: `psycopg.connect` succeeded against the PostgreSQL `supply_prescript_db` instance, and the live DB query returned the required tables and counts.
@@ -90,3 +94,15 @@ Evidence:
 All PASS entries above are based on actual execution evidence available during final QA. No fabricated database records, screenshots, performance values, or ROI values are asserted.
 
 This evidence reflects the current devops implementation only. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+
+Backend: pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
+Real PostgreSQL rerun: BLOCKED; psycopg.connect() could not reach localhost:5432 and the run was interrupted after 212.42s.
+Frontend lint: PASS. Frontend build: PASS; 19 modules transformed. git diff --check: clean.
+
+Historical live-PostgreSQL evidence remains preserved above; no current 2 passed PostgreSQL result is claimed.

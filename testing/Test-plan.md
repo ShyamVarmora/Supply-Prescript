@@ -1,5 +1,9 @@
 # Supply Prescript - Project 3 QA Test Plan
 
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
+
 ## 1. Purpose
 
 This document captures the final QA status for the verified devops implementation of Supply Prescript.
@@ -59,3 +63,24 @@ The following workflow is verified in the current branch:
 **Current Status: Verified on current devops implementation**
 
 The integrated PostgreSQL-backed workflow has been verified with backend API execution, real PostgreSQL decision write-back, actual outcome capture, evaluation, discrepancy detection, discrepancy-triggered XGBoost retraining, and frontend lint/build checks. The real PostgreSQL tests create and clean up temporary records, so this document does not claim a persistent decision ID or database count.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical planning and verification material above is retained for audit continuity.
+
+### Current final-QA results
+
+Direct POST /predict/shipment-delay → HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
+Real PostgreSQL rerun → BLOCKED because localhost:5432 is unavailable on this PC; no current 2 passed claim is made.
+npm.cmd --prefix frontend run lint → PASS.
+npm.cmd --prefix frontend run build → PASS; 19 modules transformed.
+git diff --check → clean.
+
+Historical live-PostgreSQL evidence remains preserved separately and is not represented as the current local database state.
+
+### Scope
+
+No backend feature, frontend feature, database architecture, model artifact, or dependency rename was changed by this documentation-only cleanup.

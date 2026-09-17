@@ -1,94 +1,92 @@
-﻿# Final E2E Evidence - Supply Prescript Project 3
+# Final Project 3 E2E Evidence
 
-## Scope
+## 1. Database Connection
+Actual result: PASS
+Evidence: `psycopg.connect` succeeded against the PostgreSQL `supply_prescript_db` instance, and the live DB query returned the required tables and counts.
 
-Target branch: final integrated `devops` branch.
+## 2. Real Dataset
+Actual result: PASS
+Evidence: `SELECT record_id ... FROM supply_chain_data WHERE record_id IN (1, 2)` returned real row data for record_id 1 and 2, including `warehouse_inventory_level` and `shipping_costs` values.
 
-Environment:
-- React frontend
-- FastAPI backend
-- PostgreSQL database
-- XGBoost prediction
-- SciPy optimization
+## 3. Record Selection
+Actual result: PASS
+Evidence: record_id 1 was selected as a valid real shipment record for the live recommendation workflow.
 
-## 20-Point Evidence Matrix
+## 4. Prediction
+Actual result: PASS
+Evidence: `/recommend` for record_id 1 returned `prediction.target = "delivery_time_deviation"` and `predicted_delay = 5.67630672454834`.
 
-| # | E2E Requirement | Evidence | Status |
-|---|---|---|---|
-| 1 | Real supply-chain record available | Record ID 1 used from live dataset | PASS |
-| 2 | Prediction generated | Live `/recommend` returned `delivery_time_deviation` prediction | PASS |
-| 3 | XGBoost prediction used | Backend prediction workflow loaded trained model | PASS |
-| 4 | Optimization executed | Live optimization status returned `optimal` | PASS |
-| 5 | Three alternatives generated | Air Freight, Secondary Supplier, Delay Launch | PASS |
-| 6 | Budget feasibility shown | Budget validity returned for alternatives | PASS |
-| 7 | Time feasibility shown | Time validity returned for alternatives | PASS |
-| 8 | Capacity feasibility shown | Capacity validity returned for alternatives | PASS |
-| 9 | Frontend displays backend data | Three live recommendation cards rendered | PASS |
-| 10 | Analyst selects feasible recommendation | Air Freight selected | PASS |
-| 11 | Infeasible recommendation cannot be selected | Frontend disables selection for infeasible recommendations | PASS |
-| 12 | Decision execution succeeds | Browser returned Decision ID 50 | PASS |
-| 13 | Decision persisted | Real PostgreSQL decision write-back test passed | PASS |
-| 14 | Actual outcome captured | Actual cost 600, delay 6, completed | PASS |
-| 15 | Predicted vs actual evaluated | Evaluation displayed predicted cost, actual cost and difference | PASS |
-| 16 | Discrepancy status calculated | Evaluation returned `discrepancy_detected` | PASS |
-| 17 | ROI calculated | Browser displayed approximately 12.38% ROI for the evaluated decision | PASS |
-| 18 | History updated | Browser displayed stored decision history | PASS |
-| 19 | ROI analytics updated | Browser displayed positive/negative counts, positive rate and average ROI | PASS |
-| 20 | Continuous-learning trigger | Discrepancy evaluation returned retraining trigger metadata | PASS |
+## 5. Prediction Persistence
+Actual result: PASS
+Evidence: the real PostgreSQL workflow verified that the `/recommend` prediction was persisted in the `predictions` table with target `delivery_time_deviation`.
 
-## Browser Workflow
+## 6. Three Recommendations
+Actual result: PASS
+Evidence: `/recommend` returned three alternatives: Air Freight, Secondary Supplier, and Delay Launch.
 
-`Record -> Generate -> Prediction -> 3 Alternatives -> Select Feasible Alternative -> Execute -> Decision ID -> Actual Outcome -> Evaluation -> ROI -> History -> ROI Analytics`
+## 7. Budget Constraint
+Actual result: PASS
+Evidence: the optimizer returned per-alternative budgets and all three alternatives reported `budget_valid = True` under the verified scenario.
 
-## Automated Evidence
+## 8. Time Constraint
+Actual result: PASS
+Evidence: `time_valid` values returned for the live recommendation set were `True`; no time failure occurred in the verified scenario.
 
-- `pytest backend/tests -v` -> 12 passed, 2 skipped
-- `RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v` -> 2 passed
-- `npm.cmd --prefix frontend run lint` -> PASS
-- `npm.cmd --prefix frontend run build` -> PASS
-- `git diff --check` -> PASS
+## 9. Capacity Constraint
+Actual result: PASS
+Evidence: `capacity_valid` values returned `True` for the live recommendation set in the verified scenario.
 
+## 10. Feasible Recommendation
+Actual result: PASS
+Evidence: the recommendation payload included `all_constraints_satisfied = True` and `feasibility = "feasible"` on all three generated alternatives under the validated scenario.
 
-## Real Evaluation Snapshot
+## 11. Execute Decision
+Actual result: PASS
+Evidence: a live `POST /decisions` request succeeded and returned a decision_id for the selected recommendation.
 
-Decision ID: 50
+## 12. decision_log INSERT
+Actual result: PASS
+Evidence: the selected recommendation was inserted into `decision_log`; the live DB output showed a row with `decision_id`, `record_id`, `recommendation_id`, `selected_action`, and `decision_status = "SELECTED"`.
 
-Selected action: Air Freight
+## 13. Actual Outcome
+Actual result: PASS
+Evidence: the real PostgreSQL workflow inserted an actual outcome for the temporary selected decision with completed status; the test cleaned up the temporary record afterward.
 
-Predicted cost: approximately 684.76
+## 14. actual_outcomes INSERT
+Actual result: PASS
+Evidence: the real PostgreSQL workflow verified an inserted row in `actual_outcomes` before cleanup.
 
-Actual cost: 600
+## 15. Evaluation
+Actual result: PASS
+Evidence: `GET /decisions/{decision_id}/evaluation` returned an evaluation for the temporary real-DB decision.
 
-Absolute difference: approximately 84.76
+## 16. ROI
+Actual result: PASS
+Evidence: the evaluation and ROI payload returned a calculated ROI from the recorded actual outcome; no volatile percentage is copied into this static evidence document.
 
-Percentage difference: approximately 14.13%
+## 17. History
+Actual result: PASS
+Evidence: `GET /decisions/history` returned the stored decision list with evaluation data attached for the selected record.
 
-Evaluation status: `discrepancy_detected`
+## 18. ROI Analytics
+Actual result: PASS
+Evidence: `GET /decisions/analytics/roi` returned computed analytics during the verified workflow; aggregate values are runtime data and are not presented as fixed repository facts.
 
-ROI: approximately 12.38%
+## 19. Discrepancy and Retraining
+Actual result: PASS
+Evidence: the real DB integration test executed a discrepancy case by setting actual cost to 1.2x the selected cost; the evaluation returned `status = "discrepancy_detected"`, `triggered = True`, and retraining metadata included model path, checksums, metrics, and timestamps.
 
-Outcome status: completed
+## 20. Final Automated Tests
+Actual result: PASS
+Evidence:
+- `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- `npm --prefix frontend run lint` → passed
+- `npm --prefix frontend run build` → passed
+- `git diff --check` → clean
 
 ## Evidence Integrity
 
 All PASS entries above are based on actual execution evidence available during final QA. No fabricated database records, screenshots, performance values, or ROI values are asserted.
----
 
-## Local Final Verification Run
-
-Date: 2026-09-15 10:59:30
-Branch: devops
-
-### Automated Tests
-
-- Full backend suite: 14 passed, 0 failed, 0 skipped.
-- Real PostgreSQL integration test: PASS.
-- Frontend lint: PASS.
-- Frontend production build: PASS.
-- PostgreSQL connection/table verification: PASS.
-- git diff --check: will be verified after documentation updates.
-
-### Important Evidence Rule
-
-The values above are generated from the actual commands executed during this verification run.
-No previous PR claim is used as a substitute for the current automated test result.
+This evidence reflects the current devops implementation only. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.

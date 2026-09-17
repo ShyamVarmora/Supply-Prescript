@@ -24,7 +24,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Historical supply-chain data | `data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv` | 113097 rows and 18 columns verified | Real dataset used by workflow | Mansi | PASS |
 | Shipment-delay prediction | `backend/ml/predict.py`; `POST /predict/shipment-delay`; `POST /recommend` | Final live `/recommend` returned prediction target `delivery_time_deviation` and predicted delay 5.67630672454834 | Browser displayed prediction | Chetan | PASS |
 | React application | `frontend/` React/Vite application | `npm.cmd --prefix frontend run lint` PASS; production build PASS, 19 modules transformed | Browser UI loaded and completed closed-loop workflow | Yoshita | PASS |
-| PostgreSQL operational database | FastAPI + psycopg + PostgreSQL schema | Real PostgreSQL integration tests: 2/2 passed; 5 required tables verified; 113097 real records available | Browser write-back/evaluation used live PostgreSQL data | Mansi/Chetan | PASS |
+| PostgreSQL operational database | FastAPI + psycopg + PostgreSQL schema | Historical CSV: 113097 rows. PostgreSQL operational test database connected and verified with real test records used in the final E2E workflow. Five required tables verified. | Browser write-back/evaluation used live PostgreSQL data | Mansi/Chetan | PASS |
 
 ---
 
@@ -78,7 +78,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Prediction discrepancy detection | `backend/ml/evaluate.py` | Discrepancy tests passed | Browser evaluation returned `discrepancy_detected` | Chetan | PASS |
 | Retraining trigger | `trigger_retraining_if_needed()` | Retraining trigger test passed | Real discrepancy evaluation triggered retraining in operational workflow | Chetan | PASS |
 | XGBoost retraining workflow | `retrain_model()` | Retraining workflow test passed and model training executed | Model artifact updated during verified retraining workflow | Chetan | PASS |
-| Production continuous-learning workflow | Decision outcome -> evaluation -> retraining | Operational evaluation returned retraining trigger metadata for discrepancy case | Closed-loop browser workflow produced discrepancy and evaluation | Chetan | PASS |
+| Discrepancy-triggered XGBoost retraining | Decision outcome -> evaluation -> retraining trigger | Operational evaluation returned retraining trigger metadata for discrepancy case | Closed-loop browser workflow produced discrepancy and evaluation | Chetan | PASS |
 | Final analyst workflow polish | React UI + API integration | Lint PASS; build PASS; `git diff --check` PASS | Browser closed-loop workflow completed without workflow-blocking CORS/API failure | Yoshita | PASS |
 
 ---
@@ -116,7 +116,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Decision ROI from real outcomes | Browser displayed ROI and analytics based on stored outcomes | PASS |
 | Discrepancy detection | Evaluation returned `discrepancy_detected` | PASS |
 | Retraining trigger | Discrepancy evaluation triggered retraining | PASS |
-| Production continuous learning | DB-backed evaluation/retraining workflow verified | PASS |
+| Discrepancy-triggered XGBoost retraining | Evaluation returned `discrepancy_detected` and invoked the retraining path | PASS |
 | Full end-to-end acceptance workflow | Complete browser workflow executed with live backend/database | PASS |
 
 ---
@@ -129,9 +129,7 @@ PASS is used only where implementation and actual execution evidence support the
 
 Result:
 
-`14 passed, 1 warning`
-
-The two skipped tests are the real PostgreSQL tests when `RUN_REAL_DB` is not enabled.
+`14 passed, 0 failed, 0 skipped, 1 warning`
 
 ## Real PostgreSQL
 
@@ -139,7 +137,7 @@ The two skipped tests are the real PostgreSQL tests when `RUN_REAL_DB` is not en
 
 Result:
 
-`2 passed, 1 warning`
+`2 passed, 0 failed, 1 warning`
 
 ## Frontend Lint
 
@@ -164,12 +162,6 @@ PASS; Vite 8.2.1; 19 modules transformed.
 Result:
 
 PASS; no output.
-
-
-
-Result:
-
-No matches in the final devops worktree.
 
 ---
 

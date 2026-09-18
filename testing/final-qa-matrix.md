@@ -2,13 +2,17 @@
 
 ## Historical snapshot — 02/09/2026
 
-> Historical snapshot only: all results in the table above reflect the 02/09/2026 state. The final acceptance matrix below is the active 17/09/2026 status.
+> Historical snapshot only: all results in the table above reflect the 02/09/2026 state. The verified integrated acceptance matrix below is dated 12/09/2026; the 17/09/2026 section records a separate environment rerun.
+
+## Verified integrated status — 12/09/2026
+
+> The active PASS statuses below are based on the successful integrated PostgreSQL/browser verification performed on 12/09/2026. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
 
 ## Scope
 
-This matrix reflects the verified current devops implementation and the actual execution evidence captured during final QA.
+This matrix records the implementation and actual execution evidence from the successful 12/09/2026 integrated verification.
 
-PASS is used only where implementation and execution evidence exist in the current repository state.
+PASS is used only where the documented implementation and execution evidence support the requirement.
 
 | Requirement | Actual Evidence | Status |
 | --- | --- | --- |
@@ -48,13 +52,13 @@ The actual DB and API evidence captured during the final verification run showed
 
 ## Final Conclusion
 
-The current devops implementation is verified for the implemented closed-loop workflow and does not rely on stale or fabricated evidence.
+The 12/09/2026 integrated verification established the verified functional status of the implemented closed-loop workflow. Later documentation changes did not change the implementation.
 
 ---
 
-## Final integrated verification — 17/09/2026
+## QA-machine rerun — 17/09/2026
 
-The historical snapshot above is retained for audit continuity. The following table records the latest final-QA verification and separates current local evidence from historical live-PostgreSQL evidence.
+The historical snapshot above is retained for audit continuity. The table below records the 17/09/2026 QA-machine rerun separately from the successful 12/09/2026 integrated verification. BLOCKED here is an environment result, not a replacement for the verified functional run.
 
 | Requirement | Test | Expected | Actual | Evidence | Status |
 | --- | --- | --- | --- | --- | --- |

@@ -4,6 +4,10 @@
 
 > The material below is retained as historical QA evidence. It is not the final integrated status.
 
+## Verified integrated E2E run — 12/09/2026
+
+> The 20-point matrix below is the successful integrated E2E verification from 12/09/2026. The later 17/09/2026 PostgreSQL result is a separate QA-machine environment rerun.
+
 ## 1. Database Connection
 Actual result: PASS
 Evidence: `psycopg.connect` succeeded against the PostgreSQL `supply_prescript_db` instance, and the live DB query returned the required tables and counts.
@@ -83,21 +87,21 @@ Evidence: the real DB integration test executed a discrepancy case by setting ac
 ## 20. Final Automated Tests
 Actual result: PASS
 Evidence:
-- Historical 02/09/2026: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
-- Historical 02/09/2026: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- 12/09/2026 integrated verification: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- 12/09/2026 integrated verification: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 - `npm --prefix frontend run lint` → passed
 - `npm --prefix frontend run build` → passed
 - `git diff --check` → clean
 
 ## Evidence Integrity
 
-All PASS entries above are based on actual execution evidence available during final QA. No fabricated database records, screenshots, performance values, or ROI values are asserted.
+All PASS entries in the 12/09/2026 integrated matrix are based on actual execution evidence. No fabricated database records, screenshots, performance values, or ROI values are asserted.
 
-This evidence reflects the current devops implementation only. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.
+The 12/09/2026 run is the verified functional baseline for the implementation in this PR. Documentation-only cleanup followed; no backend/frontend feature or database architecture changes were introduced afterward. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.
 
 ---
 
-## Final integrated verification — 17/09/2026
+## QA-machine rerun — 17/09/2026
 
 Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
 
@@ -105,7 +109,7 @@ Backend: pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning i
 Real PostgreSQL rerun: BLOCKED; psycopg.connect() could not reach localhost:5432 and the run was interrupted after 34.96s.
 Frontend lint: PASS. Frontend build: PASS; 19 modules transformed. git diff --check: clean.
 
-Historical live-PostgreSQL evidence remains preserved above; no current 2 passed PostgreSQL result is claimed.
+The 17/09/2026 PostgreSQL result is an environment-only blocked rerun. The successful 12/09/2026 integrated PostgreSQL verification remains the functional evidence baseline and is preserved above; no current 2 passed PostgreSQL result is claimed.
 
 ---
 

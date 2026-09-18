@@ -6,9 +6,9 @@
 
 ## 1. Purpose
 
-This document captures the final QA status for the verified devops implementation of Supply Prescript.
+This document captures the final QA status for the verified Supply Prescript implementation.
 
-The active branch is the current PostgreSQL-backed implementation of the Project 3 closed-loop workflow. The verification here reflects actual execution evidence from the repository, the backend tests, the real DB integration tests, and the frontend build/lint checks.
+The successful integrated PostgreSQL/browser verification on 12/09/2026 is the functional verification baseline. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
 
 ---
 
@@ -32,11 +32,11 @@ The following workflow is verified in the current branch:
 
 ### Backend
 
-- Historical 02/09/2026: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- 12/09/2026 integrated verification: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
 
 ### Real PostgreSQL
 
-- Historical 02/09/2026: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- 12/09/2026 integrated verification: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 
 ### Frontend
 
@@ -53,22 +53,22 @@ The following workflow is verified in the current branch:
 
 - PASS only when actual implementation and execution evidence exist.
 - Historical snapshots remain valid only as historical development records.
-- Current active status must reflect the verified devops implementation.
-- No stale BLOCKED claims are carried into the active final status when the real implementation has been verified.
+- Active final status is the successful 12/09/2026 integrated verification.
+- The 17/09/2026 PostgreSQL BLOCKED result is recorded separately as an environment-only rerun and does not replace the integrated result.
 
 ---
 
-## 12. Overall Final Test Status
+## 5. Overall Final Test Status
 
-**Current Status: Verified on current devops implementation**
+**Verified integrated status — 12/09/2026**
 
-The integrated PostgreSQL-backed workflow has been verified with backend API execution, real PostgreSQL decision write-back, actual outcome capture, evaluation, discrepancy detection, discrepancy-triggered XGBoost retraining, and frontend lint/build checks. The real PostgreSQL tests create and clean up temporary records, so this document does not claim a persistent decision ID or database count.
+The integrated PostgreSQL-backed workflow was successfully verified on 12/09/2026 with backend API execution, real PostgreSQL decision write-back, actual outcome capture, evaluation, discrepancy detection, discrepancy-triggered XGBoost retraining, and frontend lint/build checks. The real PostgreSQL tests create and clean up temporary records, so this document does not claim a persistent decision ID or database count.
 
 ---
 
-## Final integrated verification — 17/09/2026
+## 6. Final Verification Notes — QA-machine rerun 17/09/2026
 
-Historical planning and verification material above is retained for audit continuity.
+Historical planning and verification material above is retained for audit continuity. The 17/09/2026 results below are environment-only rerun results and do not replace the successful 12/09/2026 integrated verification.
 
 ### Current final-QA results
 

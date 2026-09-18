@@ -4,6 +4,10 @@
 
 > The material below is retained as historical QA evidence. It is not the final integrated status.
 
+## Verified integrated status — 12/09/2026
+
+> The PASS statuses in the sections below represent the successful integrated PostgreSQL/browser verification performed on 12/09/2026. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
+
 ## Purpose
 
 This matrix maps Project 3 requirements to implementation, actual verification evidence, demo evidence, owner, and status.
@@ -125,7 +129,7 @@ PASS is used only where implementation and actual execution evidence support the
 
 ---
 
-# Automated QA Evidence
+# Automated QA Evidence — 12/09/2026 integrated verification
 
 ## Backend
 
@@ -266,3 +270,16 @@ Current backend result: `12 passed, 2 skipped, 1 warning in 12.37s`.
 Exact warning: `DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
 
 Current local PostgreSQL integration: `BLOCKED — 2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s; no PostgreSQL test passed.`
+
+
+---
+
+## QA-machine rerun — 17/09/2026
+
+This is an environment-only rerun on the final-QA machine. It does not replace the successful 12/09/2026 integrated verification and does not indicate that the implementation stopped working.
+
+- Backend unit/integration suite: PASS — 12 passed, 2 skipped, 1 warning in 12.37s.
+- PostgreSQL integration suite: BLOCKED — PostgreSQL was unavailable on localhost:5432; 2 tests were collected, the first test reached the connection attempt, and the run ended with KeyboardInterrupt after 34.96s. No current PostgreSQL pass result is claimed.
+- Frontend lint: PASS.
+- Frontend production build: PASS; 19 modules transformed.
+- Repository hygiene: PASS; git diff --check clean.

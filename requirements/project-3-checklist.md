@@ -58,7 +58,7 @@
 
 ---
 
-# Current Development Phase
+# Historical development-phase checklist
 
 ## Week 1
 
@@ -121,18 +121,33 @@
 
 ---
 
-## Final integrated verification — 17/09/2026
+## Final verification table — integrated run 12/09/2026
 
-Historical planning/status material above is retained for audit continuity.
+> This table is the final functional verification state. The successful 12/09/2026 integrated PostgreSQL/browser run remains the evidence baseline; documentation-only cleanup followed with no implementation changes.
 
-- [x] Historical supply-chain dataset reference retained: 113097 CSV rows.
-- [x] Direct POST /predict/shipment-delay verified with HTTP 200.
-- [x] Direct prediction result recorded: predicted_delivery_time_deviation = 5.67630672454834.
-- [x] Budget, time, and capacity constraint tests passed.
-- [x] Evaluation tests passed for pending, within-expected-range, and discrepancy behavior.
-- [x] Discrepancy-triggered XGBoost retraining behavior verified by tests.
-- [x] Frontend lint passed.
-- [x] Frontend production build passed; 19 modules transformed.
-- [x] git diff --check is clean.
-- [x] Historical live-PostgreSQL evidence is preserved separately.
-- Current local PostgreSQL integration rerun remains BLOCKED because localhost:5432 is unavailable on this PC; the latest run ended with KeyboardInterrupt after 34.96s and produced no passed PostgreSQL test result.
+| Requirement | 12/09/2026 integrated verification |
+|---|---|
+| Predictive model and shipment-delay prediction | PASS — implemented and verified with actual evidence |
+| Historical supply-chain data | PASS — dataset and live workflow evidence recorded |
+| Optimization and hard constraints | PASS — budget, time, and capacity scenarios verified |
+| Three recommendation alternatives | PASS — integrated recommendation workflow verified |
+| Prescriptive UI | PASS — recommendation cards and trade-offs verified |
+| Decision execution and database write-back | PASS — live PostgreSQL verification completed |
+| Actual outcome capture | PASS — outcome persistence verified |
+| Evaluation and closed-loop comparison | PASS — pending, within-threshold, and discrepancy behavior verified |
+| Decision ROI and analytics | PASS — real evaluated decision workflow verified |
+| Discrepancy-triggered retraining | PASS — retraining path and metadata verified |
+| Frontend lint and production build | PASS — lint passed; build completed with 19 modules transformed |
+| Full integrated E2E workflow | PASS — Record → Generate → Prediction → Alternatives → Execute → Outcome → Evaluation → ROI → Analytics |
+
+## QA-machine rerun — 17/09/2026
+
+> Environment-only rerun on the final-QA PC. This does not modify or invalidate the successful 12/09/2026 functional verification.
+
+| Check | 17/09/2026 result |
+|---|---|
+| Backend automated suite | PASS — 12 passed, 2 skipped, 1 warning in 12.37s |
+| PostgreSQL integration suite | BLOCKED — localhost:5432 unavailable; run ended after 34.96s with KeyboardInterrupt and no PostgreSQL test passed |
+| Frontend lint | PASS |
+| Frontend production build | PASS — 19 modules transformed |
+| git diff --check | CLEAN |

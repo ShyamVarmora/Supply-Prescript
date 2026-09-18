@@ -2,7 +2,7 @@
 
 ## Historical snapshot — 02/09/2026
 
-> The material below is retained as historical QA evidence. It is not the final integrated status.
+> Historical snapshot only: all results in the table above reflect the 02/09/2026 state. The final acceptance matrix below is the active 17/09/2026 status.
 
 ## Scope
 
@@ -73,8 +73,21 @@ The historical snapshot above is retained for audit continuity. The following ta
 | Retraining | Retraining trigger test | Trigger only for discrepancy | Passing backend test | backend/tests/test_workflows.py | PASS |
 | Predictions persistence | SQL verification of predictions | Persisted prediction row exists | Historical record-1 prediction persistence was verified | Historical PostgreSQL evidence | PASS - Historical |
 | Recommendation persistence | SQL verification of prescriptive_recommendations | Three recommendation rows exist | Historical three recommendation rows were verified | Historical PostgreSQL evidence | PASS - Historical |
-| PostgreSQL integration suite | RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v -W always | Two tests execute against PostgreSQL | Current PC could not connect to localhost:5432; run interrupted after 212.42s | Current test output + connectivity check | BLOCKED |
-| Backend automated suite | pytest backend/tests -v -W always | No failed tests | 12 passed, 2 skipped, 1 warning in 2.85s | Final-QA local run | PASS |
+| Predictions SQL evidence | SQL SELECT from predictions for record_id=1 | Matching persisted prediction row | Historical row: record_id=1, prediction_target=delivery_time_deviation, predicted_value=6.1492509841918945 | Historical PostgreSQL SQL evidence | PASS — Historical |
+| Recommendation SQL evidence | SQL SELECT from prescriptive_recommendations for recommendation_id=109 | Matching persisted recommendation row | Historical row: recommendation_id=109, record_id=1, action=Air Freight | Historical PostgreSQL SQL evidence | PASS — Historical |
+| decision_log SQL evidence | SQL SELECT decision_log for decision_id=50 | Matching decision row | Historical row: Decision 50, record 1, recommendation 109, Air Freight, SELECTED | Historical PostgreSQL SQL evidence | PASS — Historical |
+| actual_outcomes SQL evidence | SQL SELECT actual_outcomes for decision_id=50 | Matching outcome row | Historical row: Outcome 44, decision 50, actual_cost=600, actual_delay_days=6, completed | Historical PostgreSQL SQL evidence | PASS — Historical |
+| Invalid record rejection | POST /decisions with unknown record | HTTP 404 | Historical integration test asserted HTTP 404 | Historical real-PostgreSQL integration test | PASS — Historical |
+| Invalid recommendation rejection | POST /decisions with unknown recommendation | HTTP 404 | Historical integration test asserted HTTP 404 | Historical real-PostgreSQL integration test | PASS — Historical |
+| Wrong record/recommendation rejection | POST /decisions with mismatched record and recommendation | HTTP 404 | Historical integration test asserted HTTP 404 | Historical real-PostgreSQL integration test | PASS — Historical |
+| Wrong action rejection | POST /decisions with unapproved action | HTTP 422 | Historical integration test asserted HTTP 422 | Historical real-PostgreSQL integration test | PASS — Historical |
+| Infeasible action rejection | POST /decisions with infeasible recommendation | HTTP 422 | Historical integration test asserted HTTP 422 | Historical real-PostgreSQL integration test | PASS — Historical |
+| Model checksum | Historical retraining artifact verification | SHA-256 recorded | DBF30350C08ABA3958219B76C552C8BA847FC7B5534E5E75B4AD468A11BB2F2B | Historical model evidence | PASS — Historical |
+| Model timestamp | Historical retraining artifact verification | Timestamp recorded | 2026-09-14 23:33:28; size 1372358 bytes | Historical model evidence | PASS — Historical |
+| Retraining metrics | Historical retraining assertion | MAE/RMSE/R2 fields present | Historical integration test asserted mae, rmse, r2, checksums, training/test rows and timestamp; exact numeric metrics not captured | Historical real-PostgreSQL integration test | PASS — Historical |
+| Test warning | pytest backend/tests -v -W always | Warning identified | Starlette `BlockingPortal` deprecation warning | Current local test output | WARNING |
+| PostgreSQL integration suite | RUN_REAL_DB=1 pytest backend/tests/test_real_postgres.py -v -W always | Two tests execute against PostgreSQL | Current PC could not connect to localhost:5432; run interrupted after 34.96s | Current test output + connectivity check | BLOCKED |
+| Backend automated suite | pytest backend/tests -v -W always | No failed tests | 12 passed, 2 skipped, 1 warning in 12.37s | Final-QA local run | PASS |
 | Frontend lint | npm.cmd --prefix frontend run lint | No ESLint errors | Passed | Final-QA local run | PASS |
 | Frontend build | npm.cmd --prefix frontend run build | Production build succeeds | Passed; 19 modules transformed | Final-QA local run | PASS |
 | Repository hygiene | git diff --check | No whitespace errors | Clean; no output | Final-QA local run | PASS |

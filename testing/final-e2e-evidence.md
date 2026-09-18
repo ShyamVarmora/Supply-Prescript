@@ -87,8 +87,9 @@ Evidence: the real DB integration test executed a discrepancy case by setting ac
 ## 20. Final Automated Tests
 Actual result: PASS
 Evidence:
-- 12/09/2026 integrated verification: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
-- 12/09/2026 integrated verification: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- GitHub Actions: `pytest -q` → 12 passed, 2 skipped, 1 warning
+- Local full verification: `$env:RUN_REAL_DB="1"; pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- Real PostgreSQL integration: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 - `npm --prefix frontend run lint` → passed
 - `npm --prefix frontend run build` → passed
 - `git diff --check` → clean

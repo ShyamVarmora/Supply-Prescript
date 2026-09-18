@@ -135,4 +135,4 @@ Historical planning/status material above is retained for audit continuity.
 - [x] Frontend production build passed; 19 modules transformed.
 - [x] git diff --check is clean.
 - [x] Historical live-PostgreSQL evidence is preserved separately.
-- Current local PostgreSQL integration rerun remains BLOCKED because localhost:5432 is unavailable on this PC.
+- Current local PostgreSQL integration rerun remains BLOCKED because localhost:5432 is unavailable on this PC; the latest run ended with KeyboardInterrupt after 34.96s and produced no passed PostgreSQL test result.

@@ -83,8 +83,8 @@ Evidence: the real DB integration test executed a discrepancy case by setting ac
 ## 20. Final Automated Tests
 Actual result: PASS
 Evidence:
-- `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
-- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- Historical 02/09/2026: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- Historical 02/09/2026: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 - `npm --prefix frontend run lint` → passed
 - `npm --prefix frontend run build` → passed
 - `git diff --check` → clean
@@ -101,8 +101,105 @@ This evidence reflects the current devops implementation only. Retraining is des
 
 Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
 
-Backend: pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
-Real PostgreSQL rerun: BLOCKED; psycopg.connect() could not reach localhost:5432 and the run was interrupted after 212.42s.
+Backend: pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 12.37s.
+Real PostgreSQL rerun: BLOCKED; psycopg.connect() could not reach localhost:5432 and the run was interrupted after 34.96s.
 Frontend lint: PASS. Frontend build: PASS; 19 modules transformed. git diff --check: clean.
 
 Historical live-PostgreSQL evidence remains preserved above; no current 2 passed PostgreSQL result is claimed.
+
+---
+
+## Explicit final-QA evidence — 17/09/2026
+
+### Direct POST /predict/shipment-delay — current local evidence
+
+Request: `POST /predict/shipment-delay`
+
+Actual response: `HTTP 200`
+
+```json
+{"prediction_target":"delivery_time_deviation","predicted_delivery_time_deviation":5.67630672454834}
+```
+
+### SQL SELECT — predictions — historical live-PostgreSQL evidence
+
+```sql
+SELECT record_id, prediction_target, predicted_value
+FROM predictions
+WHERE record_id = 1
+  AND prediction_target = 'delivery_time_deviation';
+```
+
+Returned historical row: `record_id=1 | prediction_target=delivery_time_deviation | predicted_value=6.1492509841918945`
+
+### SQL SELECT — prescriptive_recommendations — historical live-PostgreSQL evidence
+
+```sql
+SELECT recommendation_id, record_id, action
+FROM prescriptive_recommendations
+WHERE recommendation_id = 109;
+```
+
+Returned historical row: `recommendation_id=109 | record_id=1 | action=Air Freight`
+
+### SQL SELECT — decision_log — historical live-PostgreSQL evidence
+
+```sql
+SELECT decision_id, record_id, recommendation_id,
+       selected_action, decision_status
+FROM decision_log
+WHERE decision_id = 50;
+```
+
+Returned historical row: `decision_id=50 | record_id=1 | recommendation_id=109 | selected_action=Air Freight | decision_status=SELECTED`
+
+### SQL SELECT — actual_outcomes — historical live-PostgreSQL evidence
+
+```sql
+SELECT outcome_id, decision_id,
+       actual_cost, actual_delay_days, outcome_status
+FROM actual_outcomes
+WHERE decision_id = 50;
+```
+
+Returned historical row: `outcome_id=44 | decision_id=50 | actual_cost=600 | actual_delay_days=6 | outcome_status=completed`
+
+### Constraint failures
+
+Budget failure → `budget_valid=False`, `feasibility=infeasible`.
+Time failure → `time_valid=False`, `feasibility=infeasible`.
+Capacity failure → `capacity_valid=False`, `feasibility=infeasible`.
+
+### Decision validation — historical integration coverage
+
+Invalid record → HTTP `404`.
+Invalid recommendation → HTTP `404`.
+Wrong record/recommendation pairing → HTTP `404`.
+Wrong action → HTTP `422`.
+Infeasible recommendation selection → HTTP `422`.
+
+### Evaluation — historical integration coverage
+
+Pending → `pending`.
+Exact-cost → `within_expected_range`.
+Discrepant cost → `discrepancy_detected`.
+
+### Retraining — historical integration coverage
+
+Retraining result asserted `mae`, `rmse`, `r2`, `previous_checksum`, `new_checksum`, `training_rows`, `test_rows`, and `training_timestamp`.
+
+Historical model checksum: `DBF30350C08ABA3958219B76C552C8BA847FC7B5534E5E75B4AD468A11BB2F2B`
+
+Historical model size: `1372358 bytes`
+
+Historical model timestamp: `2026-09-14 23:33:28`
+
+Exact numeric MAE/RMSE/R2 values are not captured in static repository evidence and are not asserted.
+
+### Current automated verification
+
+`pytest backend/tests -v -W always` → `12 passed, 2 skipped, 1 warning in 12.37s`.
+
+Exact warning: `DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
+
+Current real-PostgreSQL rerun: `2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s; no PostgreSQL test passed.`

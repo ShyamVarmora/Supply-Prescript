@@ -30,13 +30,17 @@ The following workflow is verified in the current branch:
 
 ## 3. Automated Verification
 
-### Backend
+### GitHub Actions
 
-- 12/09/2026 integrated verification: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- GitHub Actions CI runs `pytest -q` → 12 passed, 2 skipped, 1 warning.
 
-### Real PostgreSQL
+### Local full verification — 12/09/2026
 
-- 12/09/2026 integrated verification: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- `$env:RUN_REAL_DB="1"; pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning.
+
+### Real PostgreSQL integration — 12/09/2026
+
+- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning.
 
 ### Frontend
 

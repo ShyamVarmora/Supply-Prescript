@@ -32,11 +32,11 @@ The following workflow is verified in the current branch:
 
 ### Backend
 
-- `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
+- Historical 02/09/2026: `pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning
 
 ### Real PostgreSQL
 
-- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
+- Historical 02/09/2026: `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning
 
 ### Frontend
 
@@ -73,7 +73,7 @@ Historical planning and verification material above is retained for audit contin
 ### Current final-QA results
 
 Direct POST /predict/shipment-delay → HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
-pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 12.37s.
 Real PostgreSQL rerun → BLOCKED because localhost:5432 is unavailable on this PC; no current 2 passed claim is made.
 npm.cmd --prefix frontend run lint → PASS.
 npm.cmd --prefix frontend run build → PASS; 19 modules transformed.
@@ -84,3 +84,17 @@ Historical live-PostgreSQL evidence remains preserved separately and is not repr
 ### Scope
 
 No backend feature, frontend feature, database architecture, model artifact, or dependency rename was changed by this documentation-only cleanup.
+
+### Exact warning captured
+
+Current backend warning:
+
+`DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
+
+Source: `starlette/testclient.py:53`.
+
+Current backend result: `12 passed, 2 skipped, 1 warning in 12.37s`.
+
+Current real-PostgreSQL rerun: `BLOCKED — 2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s.`
+
+No `httpx2` → `httpx` dependency rename was made.

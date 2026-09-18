@@ -206,7 +206,7 @@ Evidence:
 
 ## Test 9 â€” Execute Decision
 
-**Status: BLOCKED**
+**Status: Historical — BLOCKED (02/09/2026)**
 
 Dependency:
 
@@ -228,7 +228,7 @@ write-back has not been verified.
 | W2-04 Capacity constraint | PASS |
 | W2-05 Three feasible alternatives | PASS |
 | W2-06 Cost vs Speed | PASS |
-| W2-07 Execute Decision | BLOCKED |
+| W2-07 Execute Decision | Historical — BLOCKED (02/09/2026) |
 | W2-08 Evidence requirement | PASS |
 
 ---
@@ -317,7 +317,7 @@ Final integrated verification was performed against the current devops implement
 Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
 
 - Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
-- Backend automated tests: 12 passed, 2 skipped, 1 warning in 2.85s.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
 - Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC.
 - Frontend lint: PASS.
 - Frontend build: PASS; 19 modules transformed.

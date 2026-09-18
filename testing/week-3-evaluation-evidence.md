@@ -83,9 +83,15 @@ Final integrated verification was performed against the current devops implement
 Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
 
 - Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
-- Backend automated tests: 12 passed, 2 skipped, 1 warning in 2.85s.
-- Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
+- Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC; the latest run ended with KeyboardInterrupt after 34.96s and no PostgreSQL test passed.
 - Frontend lint: PASS.
 - Frontend build: PASS; 19 modules transformed.
 - git diff --check: clean.
 - Historical live-PostgreSQL evidence remains preserved in the document above.
+
+### Exact current warning
+
+`DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
+
+Source: `starlette/testclient.py:53`.

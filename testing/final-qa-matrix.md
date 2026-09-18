@@ -14,31 +14,32 @@ This matrix records the implementation and actual execution evidence from the su
 
 PASS is used only where the documented implementation and execution evidence support the requirement.
 
-| Requirement | Actual Evidence | Status |
-| --- | --- | --- |
-| XGBoost predictive baseline | `backend/ml/predict.py` loads `models/shipment_delay_model.joblib`; live API returned a forecast | PASS |
-| Historical dataset | PostgreSQL `supply_chain_data` was queried successfully and returned record_id 1 and 2 | PASS |
-| PostgreSQL database | Real DB tests passed with live PostgreSQL connections; required tables were present | PASS |
-| Prediction persistence | `predictions` table recorded values for record_id 1; prediction_target was `delivery_time_deviation` | PASS |
-| Three recommendations | `/recommend` returned three alternatives: Air Freight, Secondary Supplier, Delay Launch | PASS |
-| Budget constraint | Optimizer tests covered budget-failure scenarios and passed | PASS |
-| Time constraint | Optimizer tests covered time-failure scenarios and passed | PASS |
-| Capacity constraint | Optimizer tests covered capacity-failure scenarios and passed | PASS |
-| Execute Decision | Real DB test created a selected decision and returned a decision_id | PASS |
-| Decision DB write-back | `decision_log` row was inserted and validated against the selected recommendation | PASS |
-| Actual outcome DB write-back | `actual_outcomes` row was inserted and returned by the API | PASS |
-| Evaluation | `GET /decisions/{decision_id}/evaluation` returned status and the actual difference against prediction | PASS |
-| Discrepancy | Real discrepancy case triggered `discrepancy_detected` and retraining metadata | PASS |
-| Decision ROI | ROI values are returned by `GET /decisions/analytics/roi` and the evaluation payload | PASS |
-| Decision history | `GET /decisions/history` returned prior decisions and evaluation summaries | PASS |
-| ROI analytics | ROI analytics endpoint returned computed metrics during the verified workflow; aggregate values remain runtime data | PASS |
-| Retraining | discrepancy-triggered retraining path was executed in the real DB workflow | PASS |
-| Frontend lint | `npm --prefix frontend run lint` passed | PASS |
-| Frontend build | `npm --prefix frontend run build` passed | PASS |
-| Backend tests | `pytest backend/tests -v` returned 14 passed, 0 failed, 0 skipped, 1 warning | PASS |
-| Real PostgreSQL tests | `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` returned 2 passed, 0 failed, 1 warning | PASS |
-| Git hygiene | `git diff --check` returned no output | PASS |
+Test-result context: GitHub Actions uses `pytest -q` and reported 12 passed, 2 skipped, 1 warning. The 12/09/2026 local full verification used `$env:RUN_REAL_DB="1"; pytest backend/tests -v` and reported 14 passed, 0 failed, 0 skipped, 1 warning. The dedicated real-PostgreSQL suite used `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` and reported 2 passed, 0 failed, 1 warning.
 
+| Requirement | Test | Expected | Actual | Evidence | Status |
+| --- | --- | --- | --- | --- | --- |
+| XGBoost predictive baseline | Load `backend/ml/predict.py` and execute prediction workflow | Model loads and returns a prediction | Live API returned a forecast | 12/09/2026 integrated verification | PASS |
+| Historical dataset | Query live `supply_chain_data` | Real shipment records are available | record_id 1 and 2 returned | 12/09/2026 PostgreSQL verification | PASS |
+| PostgreSQL database | `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` | Tests connect to live PostgreSQL and complete | 2 passed, 0 failed, 1 warning | 12/09/2026 integrated verification | PASS |
+| Prediction persistence | Run `/recommend` and verify `predictions` persistence | Prediction row is stored | Record 1 prediction persisted with target `delivery_time_deviation` | 12/09/2026 live PostgreSQL workflow | PASS |
+| Three recommendations | Call `/recommend` for the verified record | Three alternatives are returned | Air Freight, Secondary Supplier, Delay Launch returned | 12/09/2026 integrated workflow | PASS |
+| Budget constraint | Run optimizer budget tests including failure case | Budget-invalid actions are infeasible | Budget-failure scenarios passed | 12/09/2026 automated verification | PASS |
+| Time constraint | Run optimizer time tests including failure case | Time-invalid actions are infeasible | Time-failure scenarios passed | 12/09/2026 automated verification | PASS |
+| Capacity constraint | Run optimizer capacity tests including failure case | Capacity-invalid actions are infeasible | Capacity-failure scenarios passed | 12/09/2026 automated verification | PASS |
+| Execute Decision | POST `/decisions` with a feasible recommendation | Decision is accepted and assigned an ID | Live decision was created and persisted | 12/09/2026 real PostgreSQL verification | PASS |
+| Decision DB write-back | SELECT the selected decision from `decision_log` | Decision row matches the selected recommendation | Decision write-back was validated | 12/09/2026 live PostgreSQL workflow | PASS |
+| Actual outcome DB write-back | POST `/decisions/{id}/outcome` and verify `actual_outcomes` | Outcome is persisted | Actual outcome row was inserted and returned | 12/09/2026 live PostgreSQL workflow | PASS |
+| Evaluation | GET `/decisions/{id}/evaluation` | Evaluation returns actual-vs-predicted comparison | Evaluation returned status and difference | 12/09/2026 live workflow | PASS |
+| Discrepancy | Evaluate a discrepant actual cost | Discrepancy is detected | `discrepancy_detected` returned with retraining metadata | 12/09/2026 real PostgreSQL workflow | PASS |
+| Decision ROI | Evaluate a stored decision and request ROI | ROI is calculated from evaluated data | ROI returned by evaluation/analytics endpoints | 12/09/2026 live workflow | PASS |
+| Decision history | GET `/decisions/history` | Stored decisions are retrievable | History returned prior decisions and evaluation summaries | 12/09/2026 live workflow | PASS |
+| ROI analytics | GET `/decisions/analytics/roi` | Aggregate ROI analytics are returned | Computed ROI analytics returned | 12/09/2026 live workflow | PASS |
+| Retraining | Run discrepancy-triggered retraining workflow | Retraining is triggered for discrepancy | Retraining path executed in the real DB workflow | 12/09/2026 retraining verification | PASS |
+| Frontend lint | `npm --prefix frontend run lint` | No lint errors | Passed | 12/09/2026 frontend verification | PASS |
+| Frontend build | `npm --prefix frontend run build` | Production build succeeds | Passed | 12/09/2026 frontend verification | PASS |
+| GitHub Actions backend CI | `pytest -q` in GitHub Actions | CI backend suite completes | 12 passed, 2 skipped, 1 warning | GitHub Actions CI | PASS |
+| Local full backend verification | `$env:RUN_REAL_DB="1"; pytest backend/tests -v` | Full local suite completes without failures | 14 passed, 0 failed, 0 skipped, 1 warning | 12/09/2026 local full verification | PASS |
+| Git hygiene | `git diff --check` | No whitespace errors | No output | 12/09/2026 repository verification | PASS |
 ## Live Evidence Snapshot
 
 The actual DB and API evidence captured during the final verification run showed:

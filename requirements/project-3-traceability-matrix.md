@@ -236,7 +236,7 @@ The current final-QA PC does not have PostgreSQL available on localhost:5432, so
 
 ### Current automated verification
 
-pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 2.85s.
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 12.37s.
 
 ### Current frontend verification
 
@@ -250,3 +250,19 @@ Decision 50: record_id 1, recommendation_id 109, selected_action Air Freight, de
 Outcome 44: decision_id 50, actual_cost 600, actual_delay_days 6, outcome_status completed.
 
 Retraining is documented as discrepancy-triggered XGBoost retraining only. No production continuous-learning deployment is claimed.
+
+### Explicit final API and SQL evidence
+
+Current local direct prediction: `POST /predict/shipment-delay` → `HTTP 200`
+
+```json
+{"prediction_target":"delivery_time_deviation","predicted_delivery_time_deviation":5.67630672454834}
+```
+
+Historical SQL evidence includes persisted prediction record_id=1 with target delivery_time_deviation and value 6.1492509841918945; recommendation 109 for record 1 was Air Freight; Decision 50 was record 1 / recommendation 109 / Air Freight / SELECTED; Outcome 44 was decision 50 / cost 600 / delay 6 / completed.
+
+Current backend result: `12 passed, 2 skipped, 1 warning in 12.37s`.
+
+Exact warning: `DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
+
+Current local PostgreSQL integration: `BLOCKED — 2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s; no PostgreSQL test passed.`

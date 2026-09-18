@@ -60,7 +60,7 @@ No test is marked as PASS until supporting implementation evidence is available.
 
 If the database foundation is not yet available:
 
-`BLOCKED - database foundation not yet available`
+`Historical — BLOCKED (02/09/2026): database foundation not yet available`
 
 The database must not be marked PASS without actual connectivity evidence.
 
@@ -86,7 +86,7 @@ Current status:
 - Shipment-delay Prediction: PASS
 - Model Evaluation: PASS
 - React Application: PASS
-- Database Connection: BLOCKED
+- Database Connection: Historical — BLOCKED (02/09/2026)
 
 Statuses will be updated only after actual implementation evidence is available.
 
@@ -113,7 +113,7 @@ Final integrated verification was performed against the current devops implement
 Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
 
 - Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
-- Backend automated tests: 12 passed, 2 skipped, 1 warning in 2.85s.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
 - Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC.
 - Frontend lint: PASS.
 - Frontend build: PASS; 19 modules transformed.

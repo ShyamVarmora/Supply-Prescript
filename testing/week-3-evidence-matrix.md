@@ -100,13 +100,13 @@ A missing dependency must not be replaced with fabricated data.
 | Requirement | Implementation Evidence | Data Evidence | UI Evidence | Status |
 |---|---|---|---|---|
 | Predicted cost available | PASS | Standalone evaluator received predicted cost input | Actual standalone evaluation evidence | PASS |
-| Actual outcome available | Historical — NOT STARTED (02/09/2026) | No database-backed actual outcome | No real outcome evidence | NOT STARTED |
+| Actual outcome available | Historical — NOT STARTED (02/09/2026) | No database-backed actual outcome | No real outcome evidence | Historical — NOT STARTED (02/09/2026) |
 | Predicted vs actual comparison | PASS | Standalone evaluation executed | Actual comparison outputs captured | PASS |
 | Discrepancy calculation | PASS | Standalone discrepancy tests executed | Actual discrepancy outputs captured | PASS |
-| Evaluation persistence/retrieval | Historical — IN PROGRESS (02/09/2026) | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | IN PROGRESS |
-| Decision ROI calculation | Historical — IN PROGRESS (02/09/2026) | ROI formula documented; no real evaluated DB decisions available | No real ROI result | IN PROGRESS |
-| Positive outcomes tracking | Historical — NOT STARTED (02/09/2026) | No real outcome records available | No verified positive outcomes | NOT STARTED |
-| ROI displayed in analytics UI | Historical — IN PROGRESS (02/09/2026) | UI structure exists; live outcome data unavailable | No real ROI display evidence | IN PROGRESS |
+| Evaluation persistence/retrieval | Historical — IN PROGRESS (02/09/2026) | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | Historical — IN PROGRESS (02/09/2026) |
+| Decision ROI calculation | Historical — IN PROGRESS (02/09/2026) | ROI formula documented; no real evaluated DB decisions available | No real ROI result | Historical — IN PROGRESS (02/09/2026) |
+| Positive outcomes tracking | Historical — NOT STARTED (02/09/2026) | No real outcome records available | No verified positive outcomes | Historical — NOT STARTED (02/09/2026) |
+| ROI displayed in analytics UI | Historical — IN PROGRESS (02/09/2026) | UI structure exists; live outcome data unavailable | No real ROI display evidence | Historical — IN PROGRESS (02/09/2026) |
 
 ---
 

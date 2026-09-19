@@ -54,6 +54,52 @@ def test_database_connection_failure_is_reported(monkeypatch):
     assert response.json()["detail"] == "Database connection failed"
 
 
+def test_roi_analytics_counts_unevaluated_decisions(monkeypatch):
+    class FakeCursor:
+        def __init__(self):
+            self.query = None
+
+        def execute(self, query):
+            self.query = query
+
+        def fetchall(self):
+            return [
+                {"expected_cost": 100.0, "actual_cost": 80.0},
+                {"expected_cost": 200.0, "actual_cost": None},
+            ]
+
+        def close(self):
+            pass
+
+    class FakeConnection:
+        def __init__(self):
+            self.cursor_instance = FakeCursor()
+            self.closed = False
+
+        def cursor(self):
+            return self.cursor_instance
+
+        def close(self):
+            self.closed = True
+
+    connection = FakeConnection()
+    monkeypatch.setattr(main, "get_db_connection", lambda: connection)
+
+    response = TestClient(main.app).get("/decisions/analytics/roi")
+
+    assert response.status_code == 200
+    assert "LEFT JOIN LATERAL" in connection.cursor_instance.query
+    assert response.json() == {
+        "positive_outcome_definition": "actual_cost <= expected_cost",
+        "total_decisions": 2,
+        "evaluated_decisions": 1,
+        "positive_outcomes": 1,
+        "negative_outcomes": 0,
+        "positive_outcome_rate": 100.0,
+        "average_roi": 20.0,
+    }
+
+
 def test_outcome_requires_at_least_one_actual_value():
     client = TestClient(main.app)
 

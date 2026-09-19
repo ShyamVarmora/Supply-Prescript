@@ -13,7 +13,7 @@ Only tests that were actually executed are marked PASS.
 
 ---
 
-## Test 1 â€” Normal Constraints
+## Test 1 — Normal Constraints
 
 **Status: PASS**
 
@@ -29,7 +29,7 @@ Evidence:
 
 ---
 
-## Test 2 â€” Budget Constraint
+## Test 2 — Budget Constraint
 
 **Status: PASS**
 
@@ -54,7 +54,7 @@ Evidence:
 
 ---
 
-## Test 3 â€” Capacity Constraint
+## Test 3 — Capacity Constraint
 
 **Status: PASS**
 
@@ -80,7 +80,7 @@ Evidence:
 
 ---
 
-## Test 4 â€” Time Constraint
+## Test 4 — Time Constraint
 
 **Status: PASS**
 
@@ -105,7 +105,7 @@ Evidence:
 
 ---
 
-## Test 5 â€” Three Feasible Alternatives
+## Test 5 — Three Feasible Alternatives
 
 **Status: PASS**
 
@@ -143,7 +143,7 @@ Evidence:
 
 ---
 
-## Test 6 â€” Infeasible Option Rejected
+## Test 6 — Infeasible Option Rejected
 
 **Status: PASS**
 
@@ -163,7 +163,7 @@ Evidence:
 
 ---
 
-## Test 7 â€” Cost vs Speed Values
+## Test 7 — Cost vs Speed Values
 
 **Status: PASS**
 
@@ -179,7 +179,7 @@ Evidence:
 
 ---
 
-## Test 8 â€” API Integration
+## Test 8 — API Integration
 
 **Status: PASS**
 
@@ -204,7 +204,7 @@ Evidence:
 
 ---
 
-## Test 9 â€” Execute Decision
+## Test 9 — Execute Decision
 
 **Status: Historical — BLOCKED (02/09/2026)**
 
@@ -245,7 +245,7 @@ No fabricated results or metrics are reported.
 
 ---
 
-## Final Optimizer Evidence â€” 1/9/26
+## Final Optimizer Evidence — 1/9/26
 
 The optimizer was tested using normal and deliberately restrictive
 scenarios.
@@ -262,10 +262,10 @@ scenarios.
 
 The optimizer executed successfully and returned:
 
-- Air Freight â€” feasible
-- Secondary Supplier â€” feasible
-- Delay Launch â€” infeasible because its time exceeded the allowed time
-- Recommended option â€” Air Freight
+- Air Freight — feasible
+- Secondary Supplier — feasible
+- Delay Launch — infeasible because its time exceeded the allowed time
+- Recommended option — Air Freight
 
 ### Budget-Restricted Case
 
@@ -278,19 +278,19 @@ With budget set to 40:
 
 With allowed time set to 5:
 
-- Air Freight â€” feasible
-- Secondary Supplier â€” infeasible
-- Delay Launch â€” infeasible
+- Air Freight — feasible
+- Secondary Supplier — infeasible
+- Delay Launch — infeasible
 
 ### Capacity-Restricted Case
 
 With available capacity set to 40 and shipment capacity set to 50:
 
-- Option 1 â€” infeasible
-- Option 2 â€” infeasible
-- Option 3 â€” infeasible
-- `feasible_alternatives` â€” `[]`
-- `recommended_option` â€” `None`
+- Option 1 — infeasible
+- Option 2 — infeasible
+- Option 3 — infeasible
+- `feasible_alternatives` — `[]`
+- `recommended_option` — `None`
 
 No optimizer redesign was performed.
 
@@ -307,7 +307,7 @@ Final integrated verification was performed against the current devops implement
 - Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
 - ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
 - Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	testing/final-qa-matrix.md.
+- Final model checksum and timestamp recorded in `testing/final-qa-matrix.md`.
 - Browser closed-loop E2E completed successfully.
 
 ---

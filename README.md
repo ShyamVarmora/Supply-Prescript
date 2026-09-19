@@ -1,4 +1,4 @@
-# Supply Prescript
+﻿# Supply Prescript
 
 ## Closed-Loop Prescriptive Analytics for Supply Chain Operations
 
@@ -247,6 +247,11 @@ Decision Evaluation
 GET /decisions/{decision_id}/evaluation
 
 Evaluates the executed decision against the recorded actual outcome and supports discrepancy-driven feedback.
+
+Decision ROI Analytics
+GET /decisions/analytics/roi
+
+Returns aggregate metrics across all decision-log rows. Evaluated metrics use one latest outcome per decision with a non-null actual cost; average ROI is calculated only for positive expected costs.
 
 ---
 

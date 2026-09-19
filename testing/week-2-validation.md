@@ -437,7 +437,7 @@ Model load result:
 | Testing samples | 22620 |
 | MAE | 3.420092708832049 |
 | RMSE | 3.8571221151353994 |
-| R?? | 0.14264861146107266 |
+| R² | 0.14264861146107266 |
 
 ### Prediction Evidence
 

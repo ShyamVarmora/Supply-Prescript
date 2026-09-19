@@ -1,4 +1,4 @@
-# Supply Prescript â€” Week 3 Evaluation Evidence
+# Supply Prescript — Week 3 Evaluation Evidence
 
 ## Historical snapshot — 02/09/2026
 
@@ -49,7 +49,7 @@ company-provided business rule.
 
 ---
 
-## Test 1 â€” Exact Match
+## Test 1 — Exact Match
 
 **Status: PASS**
 

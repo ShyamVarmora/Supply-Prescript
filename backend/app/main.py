@@ -707,7 +707,7 @@ def decision_roi_analytics():
             """
             SELECT d.expected_cost, o.actual_cost
             FROM decision_log d
-            JOIN LATERAL (
+            LEFT JOIN LATERAL (
                 SELECT actual_cost
                 FROM actual_outcomes
                 WHERE decision_id = d.decision_id

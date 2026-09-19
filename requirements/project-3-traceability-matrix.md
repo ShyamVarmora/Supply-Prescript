@@ -73,7 +73,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Missing actual outcome handling | Evaluation workflow | Pending evaluation test passed | Pending state is shown when outcome is absent | Chetan | PASS |
 | Actual outcome capture | `actual_outcomes` + `POST /decisions/{id}/outcome` | Real PostgreSQL integration tests passed | Browser recorded actual cost 600, actual delay 6, completed | Mansi/Chetan | PASS |
 | Operational closed loop | Decision -> outcome -> evaluation APIs | Real PostgreSQL tests passed | Browser completed record -> recommend -> execute -> outcome -> evaluation | Chetan | PASS |
-| Decision ROI | ROI analytics endpoint and frontend | Real evaluated decisions returned computed ROI metrics | Browser displayed ROI for the evaluated decision and analytics totals | Chetan/Prashant | PASS |
+| Decision ROI | ROI analytics endpoint and frontend | All decision-log rows are counted; evaluated metrics use one latest non-null-cost outcome per decision; ROI uses positive expected costs | Browser displayed ROI for the evaluated decision and analytics totals | Chetan/Prashant | PASS |
 | Positive business outcomes | ROI analytics | Live analytics counted positive and negative outcomes from stored decisions | Browser displayed positive outcome count and rate | Chetan/Mansi | PASS |
 | Feedback/evaluation UI | `frontend/src/App.jsx` | Frontend lint/build PASS | Real evaluation and ROI rendered in browser | Yoshita | PASS |
 
@@ -102,7 +102,7 @@ PASS is used only where implementation and actual execution evidence support the
 | `GET /decisions/history` | Live stored decision history returned successfully | PASS |
 | `POST /decisions/{id}/outcome` | Browser recorded actual outcome successfully | PASS |
 | `GET /decisions/{id}/evaluation` | Live evaluation returned predicted/actual/difference/ROI/status | PASS |
-| `GET /decisions/analytics/roi` | HTTP 200 with computed decision counts, positive rate and average ROI | PASS |
+| `GET /decisions/analytics/roi` | HTTP 200 with all decision counts, latest-outcome evaluation counts, positive rate and average ROI | PASS |
 
 ---
 

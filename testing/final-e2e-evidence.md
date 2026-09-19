@@ -78,7 +78,7 @@ Evidence: `GET /decisions/history` returned the stored decision list with evalua
 
 ## 18. ROI Analytics
 Actual result: PASS
-Evidence: `GET /decisions/analytics/roi` returned computed analytics during the verified workflow; aggregate values are runtime data and are not presented as fixed repository facts.
+Evidence: `GET /decisions/analytics/roi` returned computed analytics during the verified workflow; total decisions include all `decision_log` rows, while evaluated metrics use one latest outcome per decision with a non-null actual cost. Aggregate values are runtime data and are not presented as fixed repository facts.
 
 ## 19. Discrepancy and Retraining
 Actual result: PASS

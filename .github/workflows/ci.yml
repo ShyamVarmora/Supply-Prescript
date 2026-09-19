@@ -15,6 +15,27 @@ jobs:
   backend:
     name: Backend checks
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4
+        env:
+          POSTGRES_DB: supply_prescript_db
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d supply_prescript_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ""
+      DB_NAME: supply_prescript_db
+      RUN_REAL_DB: "1"
 
     steps:
       - name: Checkout repository
@@ -35,9 +56,15 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall -q backend
 
+      - name: Initialize PostgreSQL schema
+        run: psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -f database/schema.sql
+
+      - name: Seed CI PostgreSQL fixtures
+        run: psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -f testing/ci_postgres_fixtures.sql
+
       - name: Run backend tests
         working-directory: backend
-        run: pytest -q
+        run: pytest -v
 
   frontend:
     name: Frontend checks

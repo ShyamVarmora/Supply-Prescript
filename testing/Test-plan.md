@@ -1,146 +1,104 @@
-﻿# Supply Prescript — Project 3 QA Test Plan
+# Supply Prescript - Project 3 QA Test Plan
+
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
 
 ## 1. Purpose
 
-This document defines the QA testing plan for the complete Supply Prescript Project 3 lifecycle.
+This document captures the final QA status for the verified Supply Prescript implementation.
 
-Testing covers the predictive model, prescriptive optimization, operational UI, database write-back, closed-loop validation, decision ROI, continuous learning, and final analyst workflow.
-
-No Project 3 functionality has been marked as PASS at this stage unless actual implementation evidence is available.
+The successful integrated PostgreSQL/browser verification on 12/09/2026 is the functional verification baseline. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
 
 ---
 
-## 2. Predictive Model
+## 2. Verified Workflow
 
-### Historical Supply-Chain Data
+The following workflow is verified in the current branch:
 
-- [ ] Historical supply-chain data loads correctly.
-- [ ] Required input fields are available.
-- [ ] Data can be consumed by the predictive model.
-
-### Predictive Model
-
-- [ ] XGBoost or the implemented predictive model trains successfully.
-- [ ] Disruption / shipment-delay prediction is produced.
-- [ ] Prediction output is generated for valid input data.
-- [ ] Model evaluation result is recorded.
-- [ ] Actual measured performance is documented.
-- [ ] No fabricated performance numbers are reported.
+- real supply-chain record lookup by record_id
+- XGBoost shipment-delay prediction
+- SciPy optimization with hard budget, time, and capacity checks
+- generation of three alternatives
+- selection of a feasible recommendation
+- decision write-back into PostgreSQL
+- actual outcome capture
+- evaluation and ROI calculation
+- discrepancy detection and retraining trigger
 
 ---
 
-## 3. Prescriptive Solver
+## 3. Automated Verification
 
-### Optimization
+### GitHub Actions
 
-- [ ] Optimization workflow executes successfully.
-- [ ] Budget constraint is enforced.
-- [ ] Time constraint is considered.
-- [ ] Capacity constraint is considered.
-- [ ] Three best alternative actions are generated.
-- [ ] Generated recommendations are based on available input data.
+- GitHub Actions CI runs `pytest -q` → 12 passed, 2 skipped, 1 warning.
 
----
+### Local full verification — 12/09/2026
 
-## 4. Operational UI
+- `$env:RUN_REAL_DB="1"; pytest backend/tests -v` → 14 passed, 0 failed, 0 skipped, 1 warning.
 
-### Application
+### Real PostgreSQL integration — 12/09/2026
 
-- [ ] React / Retool application starts successfully.
-- [ ] Main Supply Prescript screen loads.
-- [ ] Recommendations are displayed.
-- [ ] Cost vs Speed trade-offs are shown.
-- [ ] User can execute a decision.
-- [ ] Analyst can participate in the decision workflow.
+- `$env:RUN_REAL_DB="1"; pytest backend/tests/test_real_postgres.py -v` → 2 passed, 0 failed, 1 warning.
 
----
+### Frontend
 
-## 5. Write-Back
+- `npm.cmd --prefix frontend run lint` → passed
+- `npm.cmd --prefix frontend run build` → passed
 
-### Operational Database
+### Repository hygiene
 
-- [ ] Decision is inserted into the operational database.
-- [ ] Decision data is persisted correctly.
-- [ ] Stored decision can be retrieved.
-- [ ] Write-back does not create unintended duplicate records.
+- `git diff --check` → clean (no output)
 
 ---
 
-## 6. Closed Loop
+## 4. Required Evidence Rules
 
-### Outcome Verification
-
-- [ ] Predicted cost is recorded.
-- [ ] Actual outcome is captured.
-- [ ] Predicted cost can be compared with actual outcome.
-- [ ] Difference between predicted and actual outcome is calculated or displayed.
+- PASS only when actual implementation and execution evidence exist.
+- Historical snapshots remain valid only as historical development records.
+- Active final status is the successful 12/09/2026 integrated verification.
+- The 17/09/2026 PostgreSQL BLOCKED result is recorded separately as an environment-only rerun and does not replace the integrated result.
 
 ---
 
-## 7. Decision ROI
+## 5. Overall Final Test Status
 
-### ROI
+**Verified integrated status — 12/09/2026**
 
-- [ ] Decision ROI is calculated using actual available data.
-- [ ] ROI result is displayed.
-- [ ] ROI is traceable to the corresponding decision and outcome.
-
-No ROI value should be documented unless it has been actually calculated and verified.
+The integrated PostgreSQL-backed workflow was successfully verified on 12/09/2026 with backend API execution, real PostgreSQL decision write-back, actual outcome capture, evaluation, discrepancy detection, discrepancy-triggered XGBoost retraining, and frontend lint/build checks. The real PostgreSQL tests create and clean up temporary records, so this document does not claim a persistent decision ID or database count.
 
 ---
 
-## 8. Continuous Learning
+## 6. Final Verification Notes — QA-machine rerun 17/09/2026
 
-### Retraining
+Historical planning and verification material above is retained for audit continuity. The 17/09/2026 results below are environment-only rerun results and do not replace the successful 12/09/2026 integrated verification.
 
-- [ ] Prediction discrepancies can be detected.
-- [ ] Discrepancy information is recorded.
-- [ ] Retraining trigger behavior is verified.
-- [ ] XGBoost retraining workflow is verified where implemented.
-- [ ] Retraining does not use fabricated evaluation results.
+### Current final-QA results
 
----
+Direct POST /predict/shipment-delay → HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 12.37s.
+Real PostgreSQL rerun → BLOCKED because localhost:5432 is unavailable on this PC; no current 2 passed claim is made.
+npm.cmd --prefix frontend run lint → PASS.
+npm.cmd --prefix frontend run build → PASS; 19 modules transformed.
+git diff --check → clean.
 
-## 9. Database Connectivity
+Historical live-PostgreSQL evidence remains preserved separately and is not represented as the current local database state.
 
-- [ ] PostgreSQL or Snowflake connection is configured where required.
-- [ ] Database configuration is documented.
-- [ ] Actual database connectivity is verified when the database is available.
+### Scope
 
-If the database foundation is unavailable:
+No backend feature, frontend feature, database architecture, model artifact, or dependency rename was changed by this documentation-only cleanup.
 
-`BLOCKED - database foundation not yet available`
+### Exact warning captured
 
-Database connectivity must not be marked PASS without actual evidence.
+Current backend warning:
 
----
+`DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
 
-## 10. Final Analyst Workflow
+Source: `starlette/testclient.py:53`.
 
-- [ ] Analyst can review the prediction.
-- [ ] Analyst can review recommended actions.
-- [ ] Analyst can compare cost vs speed trade-offs.
-- [ ] Analyst can participate in the decision.
-- [ ] Analyst can execute the selected decision.
-- [ ] Decision is written back to the operational database.
-- [ ] Actual outcome can be used for closed-loop analysis.
+Current backend result: `12 passed, 2 skipped, 1 warning in 12.37s`.
 
----
+Current real-PostgreSQL rerun: `BLOCKED — 2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s.`
 
-## 11. Test Evidence Rules
-
-The following rules apply to all QA results:
-
-- Do not mark a test PASS without actual evidence.
-- Do not invent model accuracy or performance numbers.
-- Do not mark database connectivity PASS without actual connectivity evidence.
-- Record implementation evidence from the relevant PR, screenshot, test output, or application result.
-- Use BLOCKED when a required dependency is genuinely unavailable.
-
----
-
-## 12. Overall Test Status
-
-**Current Status: Partial Verification - Final QA Complete for Available Components; DB-Dependent E2E Blocked**
-
-Available Project 3 components have been marked using actual execution evidence. Database-dependent and production end-to-end requirements remain BLOCKED, NOT STARTED, IN PROGRESS, or FAIL where verification was not available.
+No `httpx2` → `httpx` dependency rename was made.

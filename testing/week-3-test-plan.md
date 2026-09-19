@@ -1,4 +1,8 @@
-﻿# Supply Prescript — Week 3 QA Test Plan
+# Supply Prescript — Week 3 QA Test Plan
+
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
 
 ## Purpose
 
@@ -61,7 +65,7 @@ Closed-Loop Evaluation
 
 - [ ] Decision exists.
 - [ ] Actual outcome is unavailable.
-- [x] Standalone evaluation verified; operational database-backed evaluation remains IN PROGRESS.
+- [x] Historical 02/09/2026 standalone evaluation verification; operational database-backed evaluation was IN PROGRESS at that time.
 - [ ] ROI is not calculated from incomplete data.
 
 ### Scenario 4 — Multiple Decisions
@@ -94,16 +98,16 @@ No fabricated cost, outcome, evaluation result, or ROI percentage should be repo
 
 | Requirement | Status |
 |---|---|
-| Recorded decision identification | IN PROGRESS |
+| Recorded decision identification | Historical — IN PROGRESS (02/09/2026) |
 | Predicted cost availability | PASS |
-| Actual historical outcome | NOT STARTED |
+| Actual historical outcome | Historical — NOT STARTED (02/09/2026) |
 | Predicted vs actual comparison | PASS |
 | Discrepancy calculation | PASS |
-| Evaluation persistence/retrieval | IN PROGRESS |
-| Decision ROI calculation | IN PROGRESS |
-| Positive outcomes count | NOT STARTED |
-| Total evaluated decisions count | NOT STARTED |
-| ROI displayed in analytics UI | IN PROGRESS |
+| Evaluation persistence/retrieval | Historical — IN PROGRESS (02/09/2026) |
+| Decision ROI calculation | Historical — IN PROGRESS (02/09/2026) |
+| Positive outcomes count | Historical — NOT STARTED (02/09/2026) |
+| Total evaluated decisions count | Historical — NOT STARTED (02/09/2026) |
+| ROI displayed in analytics UI | Historical — IN PROGRESS (02/09/2026) |
 | Empty state | PASS |
 
 ---
@@ -127,5 +131,19 @@ Final integrated verification was performed against the current devops implement
 - Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
 - ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
 - Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
+- Final model checksum and timestamp recorded in testing/final-qa-matrix.md.
 - Browser closed-loop E2E completed successfully.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
+
+- Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
+- Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC; the latest run ended with KeyboardInterrupt after 34.96s and no PostgreSQL test passed.
+- Frontend lint: PASS.
+- Frontend build: PASS; 19 modules transformed.
+- git diff --check: clean.
+- Historical live-PostgreSQL evidence remains preserved in the document above.

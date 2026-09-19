@@ -1,5 +1,13 @@
 # Supply Prescript - Project 3 Requirement Traceability Matrix
 
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
+
+## Verified integrated status — 12/09/2026
+
+> The PASS statuses in the sections below represent the successful integrated PostgreSQL/browser verification performed on 12/09/2026. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
+
 ## Purpose
 
 This matrix maps Project 3 requirements to implementation, actual verification evidence, demo evidence, owner, and status.
@@ -24,7 +32,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Historical supply-chain data | `data/raw/dynamic_supply_chain_logistics_dataset_with_country.csv` | 113097 rows and 18 columns verified | Real dataset used by workflow | Mansi | PASS |
 | Shipment-delay prediction | `backend/ml/predict.py`; `POST /predict/shipment-delay`; `POST /recommend` | Final live `/recommend` returned prediction target `delivery_time_deviation` and predicted delay 5.67630672454834 | Browser displayed prediction | Chetan | PASS |
 | React application | `frontend/` React/Vite application | `npm.cmd --prefix frontend run lint` PASS; production build PASS, 19 modules transformed | Browser UI loaded and completed closed-loop workflow | Yoshita | PASS |
-| PostgreSQL operational database | FastAPI + psycopg + PostgreSQL schema | Real PostgreSQL integration tests: 2/2 passed; 5 required tables verified; 113097 real records available | Browser write-back/evaluation used live PostgreSQL data | Mansi/Chetan | PASS |
+| PostgreSQL operational database | FastAPI + psycopg + PostgreSQL schema | Historical CSV: 113097 rows. PostgreSQL operational test database connected and verified with real test records used in the final E2E workflow. Five required tables verified. | Browser write-back/evaluation used live PostgreSQL data | Mansi/Chetan | PASS |
 
 ---
 
@@ -78,7 +86,7 @@ PASS is used only where implementation and actual execution evidence support the
 | Prediction discrepancy detection | `backend/ml/evaluate.py` | Discrepancy tests passed | Browser evaluation returned `discrepancy_detected` | Chetan | PASS |
 | Retraining trigger | `trigger_retraining_if_needed()` | Retraining trigger test passed | Real discrepancy evaluation triggered retraining in operational workflow | Chetan | PASS |
 | XGBoost retraining workflow | `retrain_model()` | Retraining workflow test passed and model training executed | Model artifact updated during verified retraining workflow | Chetan | PASS |
-| Production continuous-learning workflow | Decision outcome -> evaluation -> retraining | Operational evaluation returned retraining trigger metadata for discrepancy case | Closed-loop browser workflow produced discrepancy and evaluation | Chetan | PASS |
+| Discrepancy-triggered XGBoost retraining | Decision outcome -> evaluation -> retraining trigger | Operational evaluation returned retraining trigger metadata for discrepancy case | Closed-loop browser workflow produced discrepancy and evaluation | Chetan | PASS |
 | Final analyst workflow polish | React UI + API integration | Lint PASS; build PASS; `git diff --check` PASS | Browser closed-loop workflow completed without workflow-blocking CORS/API failure | Yoshita | PASS |
 
 ---
@@ -116,12 +124,12 @@ PASS is used only where implementation and actual execution evidence support the
 | Decision ROI from real outcomes | Browser displayed ROI and analytics based on stored outcomes | PASS |
 | Discrepancy detection | Evaluation returned `discrepancy_detected` | PASS |
 | Retraining trigger | Discrepancy evaluation triggered retraining | PASS |
-| Production continuous learning | DB-backed evaluation/retraining workflow verified | PASS |
+| Discrepancy-triggered XGBoost retraining | Evaluation returned `discrepancy_detected` and invoked the retraining path | PASS |
 | Full end-to-end acceptance workflow | Complete browser workflow executed with live backend/database | PASS |
 
 ---
 
-# Automated QA Evidence
+# Automated QA Evidence — 12/09/2026 integrated verification
 
 ## Backend
 
@@ -129,9 +137,7 @@ PASS is used only where implementation and actual execution evidence support the
 
 Result:
 
-`14 passed, 1 warning`
-
-The two skipped tests are the real PostgreSQL tests when `RUN_REAL_DB` is not enabled.
+`14 passed, 0 failed, 0 skipped, 1 warning`
 
 ## Real PostgreSQL
 
@@ -139,7 +145,7 @@ The two skipped tests are the real PostgreSQL tests when `RUN_REAL_DB` is not en
 
 Result:
 
-`2 passed, 1 warning`
+`2 passed, 0 failed, 1 warning`
 
 ## Frontend Lint
 
@@ -164,12 +170,6 @@ PASS; Vite 8.2.1; 19 modules transformed.
 Result:
 
 PASS; no output.
-
-
-
-Result:
-
-No matches in the final devops worktree.
 
 ---
 
@@ -217,3 +217,69 @@ The ROI analytics section also displayed counts derived from stored decisions, i
 No fabricated screenshots, database rows, test results, or ROI values are used.
 
 The final status is based on executed tests, live PostgreSQL behavior, backend responses, and the completed browser workflow.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical evidence above is retained for audit continuity.
+### Direct shipment-delay prediction
+
+Actual local verification:
+POST /predict/shipment-delay → HTTP 200
+prediction_target = delivery_time_deviation
+predicted_delivery_time_deviation = 5.67630672454834
+
+### PostgreSQL operational evidence
+
+Historical CSV: 113097 rows.
+PostgreSQL operational test database connected and verified with real test records used in the final E2E workflow.
+Five required tables verified.
+
+The current final-QA PC does not have PostgreSQL available on localhost:5432, so the latest local RUN_REAL_DB rerun is recorded as BLOCKED rather than claimed as passed.
+
+### Current automated verification
+
+pytest backend/tests -v -W always → 12 passed, 2 skipped, 1 warning in 12.37s.
+
+### Current frontend verification
+
+npm.cmd --prefix frontend run lint → PASS.
+npm.cmd --prefix frontend run build → PASS; 19 modules transformed.
+git diff --check → clean.
+
+### Historical SQL evidence retained
+
+Decision 50: record_id 1, recommendation_id 109, selected_action Air Freight, decision_status SELECTED.
+Outcome 44: decision_id 50, actual_cost 600, actual_delay_days 6, outcome_status completed.
+
+Retraining is documented as discrepancy-triggered XGBoost retraining only. No production continuous-learning deployment is claimed.
+
+### Explicit final API and SQL evidence
+
+Current local direct prediction: `POST /predict/shipment-delay` → `HTTP 200`
+
+```json
+{"prediction_target":"delivery_time_deviation","predicted_delivery_time_deviation":5.67630672454834}
+```
+
+Historical SQL evidence includes persisted prediction record_id=1 with target delivery_time_deviation and value 6.1492509841918945; recommendation 109 for record 1 was Air Freight; Decision 50 was record 1 / recommendation 109 / Air Freight / SELECTED; Outcome 44 was decision 50 / cost 600 / delay 6 / completed.
+
+Current backend result: `12 passed, 2 skipped, 1 warning in 12.37s`.
+
+Exact warning: `DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.`
+
+Current local PostgreSQL integration: `BLOCKED — 2 tests collected; first test reached the PostgreSQL connection and the run ended with KeyboardInterrupt after 34.96s; no PostgreSQL test passed.`
+
+
+---
+
+## QA-machine rerun — 17/09/2026
+
+This is an environment-only rerun on the final-QA machine. It does not replace the successful 12/09/2026 integrated verification and does not indicate that the implementation stopped working.
+
+- Backend unit/integration suite: PASS — 12 passed, 2 skipped, 1 warning in 12.37s.
+- PostgreSQL integration suite: BLOCKED — PostgreSQL was unavailable on localhost:5432; 2 tests were collected, the first test reached the connection attempt, and the run ended with KeyboardInterrupt after 34.96s. No current PostgreSQL pass result is claimed.
+- Frontend lint: PASS.
+- Frontend production build: PASS; 19 modules transformed.
+- Repository hygiene: PASS; git diff --check clean.

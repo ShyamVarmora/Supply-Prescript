@@ -1,4 +1,8 @@
-﻿# Supply Prescript — Week 2 QA Test Plan
+# Supply Prescript — Week 2 QA Test Plan
+
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
 
 ## Purpose
 
@@ -39,7 +43,7 @@ No unverified test results or fabricated values will be reported.
 
 ## 3. Write-Back Preparation
 
-These checks remain NOT STARTED or BLOCKED until the required implementation and verification evidence are available.
+These checks reflect the historical 02/09/2026 planning state; the final integrated verification is recorded separately below.
 
 - [ ] Execute Decision control exists.
 - [ ] Selected recommendation can be identified.
@@ -77,12 +81,12 @@ No final numerical budget, solver performance, or database result should be inve
 | Capacity constraint | PASS |
 | SciPy LP solver | PASS |
 | Three alternative actions | PASS |
-| Recommendation cards | IN PROGRESS |
-| Cost display | IN PROGRESS |
-| Speed/time display | IN PROGRESS |
-| Cost-vs-speed trade-off | IN PROGRESS |
-| Execute Decision | IN PROGRESS |
-| Database INSERT | BLOCKED |
+| Recommendation cards | Historical — IN PROGRESS (02/09/2026) |
+| Cost display | Historical — IN PROGRESS (02/09/2026) |
+| Speed/time display | Historical — IN PROGRESS (02/09/2026) |
+| Cost-vs-speed trade-off | Historical — IN PROGRESS (02/09/2026) |
+| Execute Decision | Historical — IN PROGRESS (02/09/2026) |
+| Database INSERT | Historical — BLOCKED (02/09/2026) |
 
 ---
 
@@ -90,7 +94,7 @@ No final numerical budget, solver performance, or database result should be inve
 
 Week 2 validation will be completed after the optimization engine and prescriptive UI implementation provide sufficient evidence.
 
-The verified backend optimization checks are PASS. Frontend live-value rendering remains IN PROGRESS, Execute Decision remains IN PROGRESS, and database write-back is BLOCKED.
+Historical 02/09/2026 conclusion: frontend live-value rendering was IN PROGRESS, Execute Decision was IN PROGRESS, and database write-back was BLOCKED. The final integrated verification below supersedes these historical statuses.
 
 ## Final Verification Update - 2026-09-14
 
@@ -105,5 +109,19 @@ Final integrated verification was performed against the current devops implement
 - Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
 - ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
 - Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
+- Final model checksum and timestamp recorded in 	testing/final-qa-matrix.md.
 - Browser closed-loop E2E completed successfully.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
+
+- Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
+- Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC; latest run ended with KeyboardInterrupt after 34.96s and no PostgreSQL test passed.
+- Frontend lint: PASS.
+- Frontend build: PASS; 19 modules transformed.
+- git diff --check: clean.
+- Historical live-PostgreSQL evidence remains preserved in the document above.

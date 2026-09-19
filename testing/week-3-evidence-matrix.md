@@ -1,4 +1,8 @@
-﻿# Supply Prescript — Week 3 Evidence Matrix
+# Supply Prescript — Week 3 Evidence Matrix
+
+## Historical snapshot — 02/09/2026
+
+> The material below is retained as historical QA evidence. It is not the final integrated status.
 
 ## Purpose
 
@@ -34,7 +38,7 @@ Compare the predicted cost of the user's selected decision against the actual hi
 
 ### Status
 
-NOT STARTED - implementation not yet available.
+Historical — NOT STARTED (02/09/2026) — implementation not yet available.
 
 This follows the PDF directly. The PDF does not merely ask for a UI mockup; it requires comparison against the actual historical database outcome.
 
@@ -65,7 +69,7 @@ Build an analytics view showing Decision ROI and tracking how often AI recommend
 
 ### Status
 
-NOT STARTED - implementation not yet available.
+Historical — NOT STARTED (02/09/2026) — implementation not yet available.
 
 Again, this comes directly from the Week 3 requirement.
 
@@ -96,13 +100,13 @@ A missing dependency must not be replaced with fabricated data.
 | Requirement | Implementation Evidence | Data Evidence | UI Evidence | Status |
 |---|---|---|---|---|
 | Predicted cost available | PASS | Standalone evaluator received predicted cost input | Actual standalone evaluation evidence | PASS |
-| Actual outcome available | NOT STARTED | No database-backed actual outcome | No real outcome evidence | NOT STARTED |
+| Actual outcome available | Historical — NOT STARTED (02/09/2026) | No database-backed actual outcome | No real outcome evidence | Historical — NOT STARTED (02/09/2026) |
 | Predicted vs actual comparison | PASS | Standalone evaluation executed | Actual comparison outputs captured | PASS |
 | Discrepancy calculation | PASS | Standalone discrepancy tests executed | Actual discrepancy outputs captured | PASS |
-| Evaluation persistence/retrieval | IN PROGRESS | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | IN PROGRESS |
-| Decision ROI calculation | IN PROGRESS | ROI formula documented; no real evaluated DB decisions available | No real ROI result | IN PROGRESS |
-| Positive outcomes tracking | NOT STARTED | No real outcome records available | No verified positive outcomes | NOT STARTED |
-| ROI displayed in analytics UI | IN PROGRESS | UI structure exists; live outcome data unavailable | No real ROI display evidence | IN PROGRESS |
+| Evaluation persistence/retrieval | Historical — IN PROGRESS (02/09/2026) | Standalone evaluation exists; database persistence not verified | No DB persistence evidence | Historical — IN PROGRESS (02/09/2026) |
+| Decision ROI calculation | Historical — IN PROGRESS (02/09/2026) | ROI formula documented; no real evaluated DB decisions available | No real ROI result | Historical — IN PROGRESS (02/09/2026) |
+| Positive outcomes tracking | Historical — NOT STARTED (02/09/2026) | No real outcome records available | No verified positive outcomes | Historical — NOT STARTED (02/09/2026) |
+| ROI displayed in analytics UI | Historical — IN PROGRESS (02/09/2026) | UI structure exists; live outcome data unavailable | No real ROI display evidence | Historical — IN PROGRESS (02/09/2026) |
 
 ---
 
@@ -128,11 +132,11 @@ A requirement can only move from NOT STARTED/BLOCKED to PASS after the correspon
 | Historical dataset | PASS | Real dataset used by training was verified independently of database runtime | Training dataset evidence available | PASS |
 | Predictive model | PASS | Actual model load and training evidence verified |
 | Prescriptive solver | PASS | Actual optimizer execution verified |
-| Database write-back | BLOCKED | No database runtime or INSERT/SELECT evidence |
-| Closed-loop evaluation | IN PROGRESS | Standalone evaluator verified; DB workflow not verified |
-| Decision ROI | IN PROGRESS | Formula documented; real outcome-based ROI not verified |
-| Feedback analytics | IN PROGRESS | UI structure exists; real evaluation data unavailable |
-| Continuous learning | IN PROGRESS | Standalone retraining trigger/workflow verified; production loop not verified |
+| Database write-back | Historical — BLOCKED (02/09/2026) | No database runtime or INSERT/SELECT evidence |
+| Closed-loop evaluation | Historical — IN PROGRESS (02/09/2026) | Standalone evaluator verified; DB workflow not verified |
+| Decision ROI | Historical — IN PROGRESS (02/09/2026) | Formula documented; real outcome-based ROI not verified |
+| Feedback analytics | Historical — IN PROGRESS (02/09/2026) | UI structure exists; real evaluation data unavailable |
+| Continuous learning | Historical — IN PROGRESS (02/09/2026) | Standalone retraining trigger/workflow verified; production loop not verified |
 
 ---
 
@@ -158,5 +162,19 @@ Final integrated verification was performed against the current devops implement
 - Evaluation returned discrepancy_detected and ROI 12.377519407267744%.
 - ROI analytics returned 8 evaluated decisions, 5 positive outcomes, 3 negative outcomes, 62.5% positive rate, average ROI -0.30889857936569803%.
 - Retraining timestamp persisted for Decision 50.
-- Final model checksum and timestamp recorded in 	esting/final-qa-matrix.md.
+- Final model checksum and timestamp recorded in testing/final-qa-matrix.md.
 - Browser closed-loop E2E completed successfully.
+
+---
+
+## Final integrated verification — 17/09/2026
+
+Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
+
+- Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
+- Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.
+- Current local PostgreSQL integration rerun: BLOCKED because localhost:5432 is unavailable on this PC; the latest run ended with KeyboardInterrupt after 34.96s and no PostgreSQL test passed.
+- Frontend lint: PASS.
+- Frontend build: PASS; 19 modules transformed.
+- git diff --check: clean.
+- Historical live-PostgreSQL evidence remains preserved in the document above.

@@ -98,7 +98,7 @@ Evidence:
 
 All PASS entries in the 12/09/2026 integrated matrix are based on actual execution evidence. No fabricated database records, screenshots, performance values, or ROI values are asserted.
 
-The 12/09/2026 run is the verified functional baseline for the implementation in this PR. Documentation-only cleanup followed; no backend/frontend feature or database architecture changes were introduced afterward. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.
+The 12/09/2026 run is the historical successful integrated PostgreSQL/browser verification baseline. The 17/09/2026 QA-machine rerun was separate and BLOCKED because PostgreSQL was unavailable. On 19/09/2026, the ROI analytics semantics were corrected and a matching unit test was added; current code was re-tested separately after that correction. Retraining is described as discrepancy-triggered XGBoost retraining; no production continuous-learning deployment is claimed.
 
 ---
 

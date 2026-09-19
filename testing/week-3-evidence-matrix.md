@@ -169,7 +169,7 @@ Final integrated verification was performed against the current devops implement
 
 ## Final integrated verification — 17/09/2026
 
-Historical evidence above is retained for audit continuity. This section records the latest final-QA status.
+Historical evidence above is retained for audit continuity. This section records the separate 17/09/2026 final-QA status; it predates the 19/09/2026 ROI analytics correction and is not the current-code result.
 
 - Direct POST /predict/shipment-delay: HTTP 200; predicted_delivery_time_deviation = 5.67630672454834.
 - Backend automated tests: 12 passed, 2 skipped, 1 warning in 12.37s.

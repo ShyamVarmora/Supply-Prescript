@@ -6,7 +6,7 @@
 
 ## Verified integrated status — 12/09/2026
 
-> The PASS statuses in the sections below represent the successful integrated PostgreSQL/browser verification performed on 12/09/2026. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
+> The PASS statuses in the sections below represent the historical successful integrated PostgreSQL/browser verification performed on 12/09/2026. A separate QA-machine rerun on 17/09/2026 was BLOCKED because PostgreSQL was unavailable. On 19/09/2026, the ROI analytics semantics were corrected and a matching unit test was added; the current implementation requires fresh verification after that correction.
 
 ## Purpose
 

@@ -6,7 +6,7 @@
 
 ## Verified integrated status — 12/09/2026
 
-> The active PASS statuses below are based on the successful integrated PostgreSQL/browser verification performed on 12/09/2026. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
+> The PASS statuses below are historical evidence from the successful integrated PostgreSQL/browser verification performed on 12/09/2026. The 17/09/2026 QA-machine rerun was separate and BLOCKED because PostgreSQL was unavailable. The 19/09/2026 ROI analytics semantic correction and matching unit test require current-code verification, which is reported separately below.
 
 ## Scope
 
@@ -53,7 +53,11 @@ The actual DB and API evidence captured during the final verification run showed
 
 ## Final Conclusion
 
-The 12/09/2026 integrated verification established the verified functional status of the implemented closed-loop workflow. Later documentation changes did not change the implementation.
+The 12/09/2026 integrated verification established the historical functional baseline for the closed-loop workflow. The 19/09/2026 ROI analytics correction changed backend behavior and added a matching test, so the current-code results must not be represented as part of the 12/09/2026 evidence.
+
+## Current-code audit — 19/09/2026
+
+The ROI analytics semantic correction and matching unit test were added on 19/09/2026. Current automated backend, fresh real-PostgreSQL, frontend lint/build, and diff checks are reported by the final release audit; they are separate from the historical 12/09/2026 evidence.
 
 ---
 

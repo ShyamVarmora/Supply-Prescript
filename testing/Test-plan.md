@@ -8,7 +8,7 @@
 
 This document captures the final QA status for the verified Supply Prescript implementation.
 
-The successful integrated PostgreSQL/browser verification on 12/09/2026 is the functional verification baseline. Documentation-only cleanup followed; no backend/frontend/database feature changes were introduced afterward.
+The successful integrated PostgreSQL/browser verification on 12/09/2026 is the historical functional verification baseline. The 17/09/2026 QA-machine rerun was separate and BLOCKED because PostgreSQL was unavailable. The ROI analytics semantic correction and matching unit test were added on 19/09/2026, so current code must be re-tested after that change.
 
 ---
 
@@ -87,7 +87,7 @@ Historical live-PostgreSQL evidence remains preserved separately and is not repr
 
 ### Scope
 
-No backend feature, frontend feature, database architecture, model artifact, or dependency rename was changed by this documentation-only cleanup.
+This historical section does not include the later 19/09/2026 ROI analytics semantic correction and matching unit test. Current-code verification after that change is tracked separately from this historical QA-machine rerun.
 
 ### Exact warning captured
 

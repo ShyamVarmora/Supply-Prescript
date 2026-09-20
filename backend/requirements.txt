@@ -1,10 +1,11 @@
 fastapi
 uvicorn
 pandas
-scikit-learn
+scikit-learn==1.9.0
 xgboost
 joblib
 scipy
 psycopg[binary]
 httpx2
 pytest
+anyio==4.14.2

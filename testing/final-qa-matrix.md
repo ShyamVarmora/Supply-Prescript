@@ -1,5 +1,17 @@
 # Supply Prescript - Final QA Matrix
 
+## Current verified release status — 2026-09-20
+
+Current verification on the devops branch is as follows:
+
+- Backend: `python -W error -m pytest -v` → 15 passed, 0 skipped, 0 warnings
+- Real PostgreSQL: `RUN_REAL_DB=1 python -W error -m pytest -v` → 2 real DB tests passed, 0 skipped, 0 warnings
+- Frontend: `npm run lint` and `npm run build` → passed
+- Dependency check: `python -m pip check` → passed
+- Repository hygiene: `git diff --check` → passed
+
+Historical dated QA sections remain preserved below for audit continuity only; the active verification status above reflects the current code.
+
 ## Historical snapshot — 02/09/2026
 
 > Historical snapshot only: all results in the table above reflect the 02/09/2026 state. The verified integrated acceptance matrix below is dated 12/09/2026; the 17/09/2026 section records a separate environment rerun.

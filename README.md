@@ -8,6 +8,18 @@ The system goes beyond predicting that a disruption may occur. It uses the predi
 
 ---
 
+## Current verified release status — 2026-09-20
+
+Current verification on the devops branch is as follows:
+
+- Backend: `python -W error -m pytest -v` → 15 passed, 0 skipped, 0 warnings
+- Real PostgreSQL suite: `RUN_REAL_DB=1 python -W error -m pytest -v` → 2 real DB tests passed, 0 skipped, 0 warnings
+- Frontend: `npm run lint` and `npm run build` → passed
+- Dependency check: `python -m pip check` → passed
+- Repository hygiene: `git diff --check` → passed
+
+Historical dated QA evidence is preserved below for audit continuity. The active verification status above is the current code result.
+
 ## 1. Problem Statement
 
 Traditional predictive analytics can identify a future supply-chain disruption, but prediction alone does not tell an operator what action should be taken.
